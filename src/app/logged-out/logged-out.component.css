@@ -1,0 +1,21 @@
+.logged-out-container {
+  text-align: center;
+  margin-top: 100px;
+  font-family: Arial, sans-serif;
+}
+.logged-out-container h2 {
+  color: #0a7af1;
+}
+.logged-out-container button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #0a7af1;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.logged-out-container button:hover {
+  background-color: #065bb5;
+}
+

@@ -1,0 +1,206 @@
+<app-header [loggedIn]="isLoggedIn" (logout)="router.navigate(['/logged-out'])"></app-header>
+
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <h2>My Profile</h2>
+      <button class="edit-btn" (click)="toggleEdit()" *ngIf="!isEditing">
+        <span class="edit-icon">✏️</span> Edit Profile
+      </button>
+      <div class="action-buttons" *ngIf="isEditing">
+        <button class="save-btn" (click)="saveProfile()">Save Changes</button>
+        <button class="cancel-btn" (click)="toggleEdit()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <div class="profile-content">
+      <!-- Photo Upload Section -->
+      <div class="profile-section">
+        <div class="field-group">
+          <label class="field-label">Profile Photo</label>
+          <div class="photo-upload-container">
+            <div class="photo-preview-wrapper">
+              <div class="photo-preview" *ngIf="photoPreview">
+                <img [src]="photoPreview" alt="Profile Photo" class="profile-photo" />
+                <button
+                  type="button"
+                  class="remove-photo-btn"
+                  *ngIf="isEditing"
+                  (click)="removePhoto()"
+                  title="Remove photo"
+                >
+                  ×
+                </button>
+              </div>
+              <div class="photo-placeholder" *ngIf="!photoPreview">
+                <span class="placeholder-icon">👤</span>
+                <span class="placeholder-text">No Photo</span>
+              </div>
+            </div>
+            <div class="photo-upload-controls" *ngIf="isEditing">
+              <input
+                type="file"
+                id="photo-input"
+                name="photo"
+                accept="image/*"
+                (change)="onPhotoSelected($event)"
+                class="photo-input"
+              />
+              <label for="photo-input" class="photo-upload-btn">
+                <span class="upload-icon">📷</span>
+                {{ photoPreview ? 'Change Photo' : 'Upload Photo' }}
+              </label>
+              <p class="photo-hint">Max size: 5MB (JPG, PNG, GIF)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Username/Email Section -->
+      <div class="profile-section">
+        <div class="field-group">
+          <label for="username" class="field-label">
+            Username <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            [(ngModel)]="profile.username"
+            [readonly]="!isEditing"
+            class="field-input"
+            placeholder="Enter your username"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <label for="email" class="field-label">
+            Email ID <span class="required">*</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [(ngModel)]="profile.email"
+            [readonly]="!isEditing"
+            class="field-input"
+            placeholder="Enter your email address"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Contact Number Section -->
+      <div class="profile-section">
+        <div class="field-group">
+          <label for="contactNo" class="field-label">Contact Number</label>
+          <input
+            type="tel"
+            id="contactNo"
+            name="contactNo"
+            [(ngModel)]="profile.contactNo"
+            [readonly]="!isEditing"
+            class="field-input"
+            placeholder="Enter your contact number"
+          />
+        </div>
+      </div>
+
+
+
+      <!-- Address Section -->
+      <div class="profile-section">
+        <h3 class="section-title">Address Details</h3>
+        <div class="field-group">
+          <label for="address" class="field-label">Address Line</label>
+          <textarea
+            id="address"
+            name="address"
+            [(ngModel)]="profile.address"
+            [readonly]="!isEditing"
+            class="field-textarea"
+            placeholder="Enter your address line"
+            rows="2"
+          ></textarea>
+        </div>
+        <div class="address-grid">
+          <div class="field-group">
+            <label for="street" class="field-label">Street</label>
+            <input
+              type="text"
+              id="street"
+              name="street"
+              [(ngModel)]="profile.street"
+              [readonly]="!isEditing"
+              class="field-input"
+              placeholder="Street name"
+            />
+          </div>
+          <div class="field-group">
+            <label for="city" class="field-label">City</label>
+            <input
+              type="text"
+              id="city"
+              name="city"
+              [(ngModel)]="profile.city"
+              [readonly]="!isEditing"
+              class="field-input"
+              placeholder="City"
+            />
+          </div>
+          <div class="field-group">
+            <label for="state" class="field-label">State</label>
+            <input
+              type="text"
+              id="state"
+              name="state"
+              [(ngModel)]="profile.state"
+              [readonly]="!isEditing"
+              class="field-input"
+              placeholder="State/Province"
+            />
+          </div>
+          <div class="field-group">
+            <label for="country" class="field-label">Country</label>
+            <input
+              type="text"
+              id="country"
+              name="country"
+              [(ngModel)]="profile.country"
+              [readonly]="!isEditing"
+              class="field-input"
+              placeholder="Country"
+            />
+          </div>
+          <div class="field-group">
+            <label for="pincode" class="field-label">Pincode</label>
+            <input
+              type="text"
+              id="pincode"
+              name="pincode"
+              [(ngModel)]="profile.pincode"
+              [readonly]="!isEditing"
+              class="field-input"
+              placeholder="Postal/Zip code"
+              maxlength="10"
+            />
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
+
+
+

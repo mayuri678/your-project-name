@@ -1,0 +1,98 @@
+<header class="home-header">
+  <div class="header-content">
+
+    <!-- Left: Logo and Company Name -->
+    <div class="header-left">
+      <div class="logo">RB</div>
+      <h1 class="company-name">Resume Builder</h1>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="header-nav">
+      <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
+      <a class="nav-link" [routerLink]="loggedIn ? ['/about'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">About</a>
+      <a
+        class="nav-link"
+        [routerLink]="loggedIn ? ['/templates'] : [{ outlets: { modal: ['login'] } }]"
+        routerLinkActive="active"
+      >
+        Templates
+      </a>
+      <div class="nav-dropdown" (mouseleave)="closeExamples()">
+        <button class="nav-link dropdown-trigger" (click)="toggleExamples()">Resume Examples ▾</button>
+        <div class="dropdown-panel" *ngIf="isExamplesOpen">
+          <button class="dropdown-item" *ngFor="let c of exampleCategories" (click)="goToExample(c)">{{ c }}</button>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item link" routerLink="/examples" (click)="closeExamples()">View all</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Right: Contact and Account -->
+    <div class="contact-info">
+      <!-- Contact Button -->
+      <a href="https://wa.me/918080156065" target="_blank" class="contact-btn" aria-label="Contact us on WhatsApp">💬 CONTACT</a>
+
+      <!-- ✅ Login Button: Only visible if not logged in -->
+      <button *ngIf="!loggedIn" class="login-btn" (click)="goToLogin()">Login</button>
+
+      <!-- User Profile Avatar: Visible if logged in -->
+      <div class="user-profile" *ngIf="loggedIn">
+        <button class="user-avatar" (click)="toggleAccount()" [attr.aria-haspopup]="true" [attr.aria-expanded]="isAccountOpen">
+          {{ getUserInitial() }}
+        </button>
+        <div class="user-menu" *ngIf="isAccountOpen" (mouseleave)="closeAccount()">
+          <!-- Current User Info Section -->
+          <div class="user-info current-user">
+            <div class="user-avatar-large">{{ getUserInitial() }}</div>
+            <div class="user-details">
+              <div class="user-name">{{ getCurrentUserName() }}</div>
+              <div class="user-email">{{ getCurrentUserEmail() }}</div>
+              <div class="user-status">Current User</div>
+            </div>
+          </div>
+          
+          <!-- All Logged-In Users Section -->
+          <div class="logged-in-users-section" *ngIf="loggedInUsers.length > 0">
+            <div class="section-header">
+              <span class="section-title">All Logged-In Users ({{ loggedInUsers.length }})</span>
+            </div>
+            <div class="users-list">
+              <div class="user-item" *ngFor="let user of loggedInUsers" [class.current-user-item]="user.email === currentUserEmail">
+                <div class="user-item-avatar">{{ getUserInitial(user) }}</div>
+                <div class="user-item-details">
+                  <div class="user-item-name">{{ user.name }}</div>
+                  <div class="user-item-email">{{ user.email }}</div>
+                  <div class="user-item-time">{{ formatLoginTime(user.loginTime) }}</div>
+                </div>
+                <button class="user-item-logout" (click)="logoutUser(user)" title="Logout this user">
+                  <span class="logout-icon">🚪</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="menu-divider" *ngIf="loggedInUsers.length > 0"></div>
+          
+          <!-- Menu Actions -->
+          <div class="menu-actions">
+            <button class="menu-item" (click)="goToProfile(); closeAccount()">
+              <span class="menu-icon">👤</span>
+              Profile
+            </button>
+            <button class="menu-item" (click)="goToSettings(); closeAccount()">
+              <span class="menu-icon">⚙️</span>
+              Settings
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item logout" (click)="logout.emit(); closeAccount()">
+              <span class="menu-icon">🚪</span>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</header>

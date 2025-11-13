@@ -1,0 +1,108 @@
+<!-- Login Modal Backdrop -->
+<div class="modal-backdrop" (click)="onClose()"></div>
+
+<!-- Login Modal Container -->
+<div class="modal-container login-card">
+  <!-- Modal Header -->
+  <div class="modal-header">
+    <h3>{{ isRegisterMode ? 'Register' : 'Login' }}</h3>
+    <button class="close-btn" (click)="onClose()">×</button>
+  </div>
+
+  <!-- Success Message -->
+  <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+
+  <!-- Login/Register Form -->
+  <form (ngSubmit)="isRegisterMode ? onRegister() : onLogin()" #authForm="ngForm" novalidate>
+
+    <!-- Name (only for registration) -->
+    <label for="name" class="input-label" *ngIf="isRegisterMode">Name (Optional)</label>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      [(ngModel)]="name"
+      *ngIf="isRegisterMode"
+      class="input-field"
+      placeholder="Your name"
+    />
+
+    <!-- Email/Phone -->
+    <label for="email" class="input-label">Email or Username</label>
+    <input
+      type="text"
+      id="email"
+      name="email"
+      [(ngModel)]="email"
+      required
+      class="input-field"
+      [placeholder]="isRegisterMode ? 'Enter your email' : 'Enter email or username'"
+    />
+
+    <!-- Password -->
+    <label for="password" class="input-label">Password</label>
+    <div style="position: relative;">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        id="password"
+        name="password"
+        [(ngModel)]="password"
+        required
+        class="input-field"
+        placeholder="Enter your password"
+        [style.paddingRight]="!isRegisterMode ? '40px' : '12px'"
+      />
+      <!-- Password Toggle (only for login) -->
+      <button type="button" class="password-toggle" *ngIf="!isRegisterMode" (click)="togglePasswordVisibility()">
+        {{ showPassword ? '🙈' : '👁️' }}
+      </button>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="accept-btn full">
+      {{ isRegisterMode ? 'REGISTER' : 'LOGIN' }}
+    </button>
+
+    <!-- Error Message -->
+    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <!-- Toggle Mode Button -->
+    <div class="toggle-mode">
+      <button type="button" class="link-button" (click)="toggleMode()">
+        {{ isRegisterMode ? 'Already have an account? Login' : "Don't have an account? Register" }}
+      </button>
+    </div>
+
+    <!-- Test Users Quick Login (only in login mode) -->
+    <div class="test-users-section" *ngIf="!isRegisterMode && testUsers.length > 0">
+      <div class="test-users-divider">
+        <span>Quick Login with Test Users</span>
+      </div>
+      <div class="test-users-list">
+        <button
+          type="button"
+          class="test-user-btn"
+          *ngFor="let user of testUsers"
+          (click)="quickLogin(user)"
+          [title]="'Login as ' + user.name + ' (' + user.email + ')'"
+        >
+          <span class="user-avatar-small">{{ user.name.charAt(0).toUpperCase() }}</span>
+          <span class="user-info-text">
+            <strong>{{ user.name }}</strong>
+            <small>{{ user.email }}</small>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cancel Button -->
+    <button type="button" class="back-btn full" (click)="onClose()">BACK</button>
+
+  </form>
+
+  <!-- Modal Footer -->
+  <div class="modal-footer">
+    <span class="foot-text">By continuing you agree to our Terms & Privacy.</span>
+  </div>
+</div>
+

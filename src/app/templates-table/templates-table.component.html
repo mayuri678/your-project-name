@@ -1,0 +1,120 @@
+<app-header
+  [loggedIn]="isLoggedIn"
+  [showTemplates]="true"
+  (logout)="logout()"
+></app-header>
+
+<div class="templates-container">
+  <div class="templates-header">
+    <h1>Resume Templates</h1>
+    <p>Choose from our collection of professional resume templates. Filter by category, color, layout, and features to find the perfect template for your needs.</p>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="category-filter">Category:</label>
+      <select id="category-filter" [(ngModel)]="selectedCategory" (change)="applyFilters()">
+        <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="color-filter">Color:</label>
+      <select id="color-filter" [(ngModel)]="selectedColor" (change)="applyFilters()">
+        <option *ngFor="let color of colors" [value]="color">{{ color | titlecase }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="columns-filter">Columns:</label>
+      <select id="columns-filter" [(ngModel)]="selectedColumns" (change)="applyFilters()">
+        <option *ngFor="let column of columns" [value]="column">{{ column === 'All' ? 'All' : column + ' Column' + (column !== '1' ? 's' : '') }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="headshot-filter">Photo:</label>
+      <select id="headshot-filter" [(ngModel)]="selectedHeadshot" (change)="applyFilters()">
+        <option *ngFor="let headshot of headshots" [value]="headshot">{{ headshot }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary">
+    <span class="results-count">Showing {{ filteredTemplates.length }} template{{ filteredTemplates.length !== 1 ? 's' : '' }}</span>
+    <span class="total-count">out of {{ allTemplates.length }} total</span>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="showSuccessMessage" class="success-message">
+    <span class="success-icon">✅</span>
+    <span class="success-text">{{ successMessage }}</span>
+  </div>
+
+  <!-- Templates Table -->
+  <div class="table-container">
+    <table class="templates-table">
+      <thead>
+        <tr>
+          <th>Template Name</th>
+          <th>Category</th>
+          <th>Color</th>
+          <th>Layout</th>
+          <th>Features</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let template of filteredTemplates" class="template-row">
+          <td class="template-name">
+            <div class="name-cell">
+              <span class="template-title">{{ template.name }}</span>
+              <span class="template-id">ID: {{ template.id }}</span>
+            </div>
+          </td>
+          <td class="template-category">
+            <span class="category-badge">{{ template.category }}</span>
+          </td>
+          <td class="template-color">
+            <div class="color-indicator" [ngClass]="getColorClass(template.color)"></div>
+            <span class="color-name">{{ template.color | titlecase }}</span>
+          </td>
+          <td class="template-layout">
+            <span class="columns-info">{{ template.columns }} Column{{ template.columns > 1 ? 's' : '' }}</span>
+          </td>
+          <td class="template-features">
+            <div class="features-list">
+              <span *ngIf="template.hasHeadshot" class="feature-tag photo">📷 Photo</span>
+              <span *ngIf="template.hasGraphics" class="feature-tag graphics">🎨 Graphics</span>
+              <span *ngIf="!template.hasHeadshot && !template.hasGraphics" class="feature-tag minimal">✨ Minimal</span>
+            </div>
+          </td>
+          <td class="template-status">
+            <span *ngIf="template.recommended" class="status-badge recommended">⭐ Recommended</span>
+            <span *ngIf="!template.recommended" class="status-badge standard">Standard</span>
+          </td>
+          <td class="template-actions">
+            <button class="action-btn preview-btn" (click)="previewTemplate(template)">
+              👁️ Preview
+            </button>
+            <button class="action-btn use-btn" (click)="selectTemplate(template, $event)">
+              ✏️ Use Template
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No Results Message -->
+  <div *ngIf="filteredTemplates.length === 0" class="no-results">
+    <div class="no-results-content">
+      <h3>No templates found</h3>
+      <p>Try adjusting your filters to see more templates.</p>
+      <button class="reset-filters-btn" (click)="resetFilters()">Reset Filters</button>
+    </div>
+  </div>
+</div>

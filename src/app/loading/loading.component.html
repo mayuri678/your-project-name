@@ -1,0 +1,54 @@
+<div class="loading-wrapper">
+  <div class="avatar">
+    <ng-container [ngSwitch]="variant">
+      <!-- Chef -->
+      <svg *ngSwitchCase="'chef'" width="140" height="140" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Chef illustration">
+        <circle cx="100" cy="100" r="90" fill="#FFE2B5"/>
+        <rect x="60" y="28" width="80" height="40" rx="12" fill="#F7EFE6"/>
+        <circle cx="100" cy="100" r="36" fill="#FFB28A"/>
+        <rect x="70" y="140" width="60" height="16" rx="8" fill="#E3B489"/>
+      </svg>
+
+      <!-- Manager -->
+      <svg *ngSwitchCase="'manager'" width="140" height="140" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Manager illustration">
+        <circle cx="100" cy="100" r="90" fill="#CFE3FF"/>
+        <circle cx="100" cy="100" r="36" fill="#FFB28A"/>
+        <rect x="74" y="86" width="22" height="10" rx="5" fill="#333"/>
+        <rect x="104" y="86" width="22" height="10" rx="5" fill="#333"/>
+        <rect x="70" y="140" width="60" height="16" rx="8" fill="#B0C8EA"/>
+      </svg>
+
+      <!-- Nurse -->
+      <svg *ngSwitchCase="'nurse'" width="140" height="140" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Nurse illustration">
+        <circle cx="100" cy="100" r="90" fill="#FFD3D6"/>
+        <rect x="62" y="58" width="76" height="22" rx="11" fill="#E8F0F8"/>
+        <circle cx="100" cy="100" r="36" fill="#FFB28A"/>
+        <rect x="70" y="140" width="60" height="16" rx="8" fill="#F2B9BE"/>
+      </svg>
+
+      <!-- Sales Associate -->
+      <svg *ngSwitchCase="'sales'" width="140" height="140" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Sales associate illustration">
+        <circle cx="100" cy="100" r="90" fill="#D6E7C7"/>
+        <ellipse cx="100" cy="86" rx="46" ry="26" fill="#6B4F3A"/>
+        <circle cx="100" cy="100" r="36" fill="#FFB28A"/>
+        <rect x="70" y="140" width="60" height="16" rx="8" fill="#C7DBB3"/>
+      </svg>
+
+      <!-- Genius -->
+      <svg *ngSwitchCase="'genius'" width="140" height="140" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Genius illustration">
+        <circle cx="100" cy="100" r="90" fill="#FFCCB3"/>
+        <path d="M64 90c8-18 26-30 36-30s28 12 36 30" fill="#CC6A4D"/>
+        <circle cx="100" cy="100" r="36" fill="#FFB28A"/>
+        <rect x="70" y="140" width="60" height="18" rx="9" fill="#CC6A4D"/>
+      </svg>
+    </ng-container>
+  </div>
+  <h2>Let’s create a resume for the</h2>
+  <h1><span class="accent">{{ titleText }}</span></h1>
+  <h3>in you!</h3>
+  <div class="progress">
+    <div class="bar" [style.width.%]="progress"></div>
+  </div>
+</div>
+
+

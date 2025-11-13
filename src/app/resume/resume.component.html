@@ -1,0 +1,723 @@
+<app-header [loggedIn]="isLoggedIn" [showTemplates]="true" (logout)="logout()" (templates)="toggleTemplateSelection()"></app-header>
+
+
+
+<!-- Template Selection Interface -->
+<div *ngIf="showTemplateSelection" class="template-selection-overlay">
+  <div class="template-selection-modal">
+    <div class="template-selection-header">
+      <h2>Templates we recommend for you</h2>
+      <p>You can always change your template later.</p>
+      
+      <button class="close-btn" (click)="showTemplateSelection = false">✕</button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <span class="filter-label">Filter by</span>
+
+      <div class="filter-dropdown">
+        <select [(ngModel)]="filterOptions.headshot" (change)="applyFilters()">
+          <option value="all">Headshot</option>
+          <option value="with">With headshot</option>
+          <option value="without">Without headshot</option>
+        </select>
+      </div>
+
+      <div class="filter-dropdown">
+        <select [(ngModel)]="filterOptions.graphics" (change)="applyFilters()">
+          <option value="all">Graphics</option>
+          <option value="with">With graphics</option>
+          <option value="without">Without graphics</option>
+        </select>
+      </div>
+
+      <div class="filter-dropdown">
+        <select [(ngModel)]="filterOptions.columns" (change)="applyFilters()">
+          <option value="all">Columns</option>
+          <option value="1">1 column</option>
+          <option value="2">2 columns</option>
+        </select>
+      </div>
+
+      <div class="filter-dropdown">
+        <select [(ngModel)]="filterOptions.color" (change)="applyFilters()">
+          <option value="all">Colors</option>
+          <option value="blue">Blue</option>
+          <option value="green">Green</option>
+          <option value="purple">Purple</option>
+          <option value="black">Black</option>
+          <option value="navy">Navy</option>
+          <option value="orange">Orange</option>
+          <option value="gray">Gray</option>
+          <option value="darkblue">Dark Blue</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Results and Active Filters -->
+    <div class="results-section">
+      <span class="results-count">Results ({{ filteredTemplates.length }})</span>
+
+      <div class="active-filters" *ngIf="activeFilters.length > 0">
+        <span *ngFor="let filter of activeFilters" class="filter-pill">
+          {{ filter }}
+          <button (click)="clearAllFilters()" class="remove-filter">✕</button>
+        </span>
+        <button class="clear-filters" (click)="clearAllFilters()">
+          <span>🔄</span> Clear filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Template Preview Cards -->
+    <div class="template-grid">
+      <div *ngFor="let template of filteredTemplates"
+           class="template-card"
+           [class.selected]="selectedTemplate === template.id"
+           (click)="selectTemplate(template.id)">
+
+        <div class="template-preview" [ngClass]="'preview-' + template.id">
+          <div class="preview-header">
+            <div class="preview-name">{{ name }}</div>
+            <div class="preview-title">{{ title }}</div>
+          </div>
+          <div class="preview-content">
+            <div class="preview-section">Skills</div>
+            <div class="preview-section">Experience</div>
+            <div class="preview-section">Education</div>
+          </div>
+        </div>
+
+        <div class="template-info">
+          <h3>{{ template.name }}</h3>
+          <div class="template-badges">
+            <span *ngIf="template.recommended" class="badge recommended">Recommended</span>
+            <span class="badge">{{ template.columns }} column{{ template.columns > 1 ? 's' : '' }}</span>
+            <span *ngIf="template.hasHeadshot" class="badge">With photo</span>
+            <span *ngIf="template.hasGraphics" class="badge">With graphics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 1 -->
+<div *ngIf="selectedTemplate === 'template1'" class="resume-container template1">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 2 -->
+<div *ngIf="selectedTemplate === 'template2'" class="resume-container template2">
+  <div class="template2-main">
+    <!-- LEFT: Resume Details -->
+    <div class="template2-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+
+    <!-- RIGHT: Photo and Contact Info -->
+    <div class="template2-sidebar">
+      <div class="photo">
+        <img src="assets/mayuri.jpg" alt="Profile Photo">
+      </div>
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 3 -->
+<div *ngIf="selectedTemplate === 'template3'" class="resume-container template3">
+  <div class="header">
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 4 -->
+<div *ngIf="selectedTemplate === 'template4'" class="resume-container template4">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 5 -->
+<div *ngIf="selectedTemplate === 'template5'" class="resume-container template5">
+  <div class="template5-main">
+    <!-- LEFT: Resume Details -->
+    <div class="template5-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+
+    <!-- RIGHT: Photo and Contact Info -->
+    <div class="template5-sidebar">
+      <div class="photo">
+        <img src="assets/mayuri.jpg" alt="Profile Photo">
+      </div>
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 6 -->
+<div *ngIf="selectedTemplate === 'template6'" class="resume-container template6">
+  <div class="header">
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 7 -->
+<div *ngIf="selectedTemplate === 'template7'" class="resume-container template7">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 8 -->
+<div *ngIf="selectedTemplate === 'template8'" class="resume-container template8">
+  <div class="template8-main">
+    <!-- LEFT: Resume Details -->
+    <div class="template8-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+
+    <!-- RIGHT: Photo and Contact Info -->
+    <div class="template8-sidebar">
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 9 -->
+<div *ngIf="selectedTemplate === 'template9'" class="resume-container template9">
+  <div class="header">
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 10 -->
+<div *ngIf="selectedTemplate === 'template10'" class="resume-container template10">
+  <div class="template10-main">
+    <!-- LEFT: Resume Details -->
+    <div class="template10-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+
+    <!-- RIGHT: Photo and Contact Info -->
+    <div class="template10-sidebar">
+      <div class="photo">
+        <img src="assets/mayuri.jpg" alt="Profile Photo">
+      </div>
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 11 -->
+<div *ngIf="selectedTemplate === 'template11'" class="resume-container template11">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 12 -->
+<div *ngIf="selectedTemplate === 'template12'" class="resume-container template12">
+  <div class="header">
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 13 -->
+<div *ngIf="selectedTemplate === 'template13'" class="resume-container template13">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 14 -->
+<div *ngIf="selectedTemplate === 'template14'" class="resume-container template14">
+  <div class="template14-main">
+    <div class="template14-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+    <div class="template14-sidebar">
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 15 -->
+<div *ngIf="selectedTemplate === 'template15'" class="resume-container template15">
+  <div class="header">
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 16 -->
+<div *ngIf="selectedTemplate === 'template16'" class="resume-container template16">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 17 -->
+<div *ngIf="selectedTemplate === 'template17'" class="resume-container template17">
+  <div class="template17-main">
+    <div class="template17-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+    <div class="template17-sidebar">
+      <div class="photo">
+        <img src="assets/mayuri.jpg" alt="Profile Photo">
+      </div>
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 18 -->
+<div *ngIf="selectedTemplate === 'template18'" class="resume-container template18">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 19 -->
+<div *ngIf="selectedTemplate === 'template19'" class="resume-container template19">
+  <div class="header">
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 20 -->
+<div *ngIf="selectedTemplate === 'template20'" class="resume-container template20">
+  <div class="template20-main">
+    <div class="template20-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+    <div class="template20-sidebar">
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 21 -->
+<div *ngIf="selectedTemplate === 'template21'" class="resume-container template21">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 22 -->
+<div *ngIf="selectedTemplate === 'template22'" class="resume-container template22">
+  <div class="template22-main">
+    <div class="template22-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+    <div class="template22-sidebar">
+      <div class="photo">
+        <img src="assets/mayuri.jpg" alt="Profile Photo">
+      </div>
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 23 -->
+<div *ngIf="selectedTemplate === 'template23'" class="resume-container template23">
+  <div class="header">
+    <div class="photo">
+      <img src="assets/mayuri.jpg" alt="Profile Photo">
+    </div>
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 24 -->
+<div *ngIf="selectedTemplate === 'template24'" class="resume-container template24">
+  <div class="template24-main">
+    <div class="template24-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+    <div class="template24-sidebar">
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 25 -->
+<div *ngIf="selectedTemplate === 'template25'" class="resume-container template25">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<!-- TEMPLATE 26 -->
+<div *ngIf="selectedTemplate === 'template26'" class="resume-container template26">
+  <div class="template26-main">
+    <div class="template26-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+    <div class="template26-sidebar">
+      <div class="photo">
+        <img src="assets/mayuri.jpg" alt="Profile Photo">
+      </div>
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 27 -->
+<div *ngIf="selectedTemplate === 'template27'" class="resume-container template27">
+  <div class="template27-main">
+    <div class="template27-details">
+      <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+    </div>
+    <div class="template27-sidebar">
+      <div class="photo">
+        <img src="assets/mayuri.jpg" alt="Profile Photo">
+      </div>
+      <div class="info">
+        <h1>{{ name }}</h1>
+        <h2>{{ title }}</h2>
+        <p><b>Email:</b> {{ email }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Location:</b> {{ location }}</p>
+        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p><b>GitHub:</b> {{ github }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE 28 -->
+<div *ngIf="selectedTemplate === 'template28'" class="resume-container template28">
+  <div class="header">
+    <div class="info">
+      <h1>{{ name }}</h1>
+      <h2>{{ title }}</h2>
+      <p><b>Email:</b> {{ email }}</p>
+      <p><b>Phone:</b> {{ phone }}</p>
+      <p><b>Location:</b> {{ location }}</p>
+      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p><b>GitHub:</b> {{ github }}</p>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
+</div>
+
+<ng-template #resumeDetails>
+  <section>
+    <h3>Education</h3>
+    <ul>
+      <li *ngFor="let edu of education">
+        <b>{{ edu.degree }}</b> - {{ edu.institute }} ({{ edu.year }})
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Skills</h3>
+    <ul>
+      <li *ngFor="let skill of skills">{{ skill }}</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Experience</h3>
+    <ul>
+      <li *ngFor="let exp of experience">
+        <b>{{ exp.role }}</b> at {{ exp.company }} ({{ exp.duration }})
+        <p>{{ exp.description }}</p>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Highlights</h3>
+    <ul>
+      <li *ngFor="let point of highlights">{{ point }}</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Technical Skills</h3>
+    <ul>
+      <li *ngFor="let tech of technicalSkills">{{ tech }}</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Projects</h3>
+    <ul>
+      <li *ngFor="let proj of projects">
+        <b>{{ proj.name }}</b> ({{ proj.technology }})
+        <p>{{ proj.description }}</p>
+      </li>
+    </ul>
+  </section>
+
+  <section *ngIf="certifications.length > 0">
+    <h3>Certifications</h3>
+    <ul>
+      <li *ngFor="let cert of certifications">{{ cert }}</li>
+    </ul>
+  </section>
+</ng-template>
+
+<app-footer></app-footer>

@@ -1,0 +1,209 @@
+<app-header
+  [loggedIn]="isLoggedIn"
+  [showTemplates]="true"
+  (logout)="logout()"
+  (templates)="toggleTemplateSelection()"
+></app-header>
+
+<div class="examples-wrapper">
+  <!-- Resume Templates Showcase Section -->
+  <div class="resume-showcase-section" *ngIf="!selectedCategory">
+    <div class="resume-showcase-content">
+      <div class="resume-showcase-left">
+        <div class="resume-showcase-text">
+          <h1 class="resume-showcase-title">Professional Resume Templates</h1>
+          <p class="resume-showcase-description">
+            Choose from hundreds of professionally designed resume templates. 
+            Create a standout resume that gets you noticed by employers.
+          </p>
+          <div class="resume-showcase-actions">
+            <button class="btn-primary" (click)="openExample(categories[0])">Browse Templates</button>
+            <button class="btn-secondary" (click)="openExample('Student')">Student Templates</button>
+          </div>
+        </div>
+      </div>
+      <div class="resume-showcase-right">
+        <div class="resume-templates-stack">
+          <div class="resume-template-card template-1" (click)="openExample(categories[0])">
+            <div class="template-content">
+              <div class="template-sidebar">
+                <div class="template-avatar"></div>
+                <div class="template-name">David Doe</div>
+                <div class="template-role">English Teacher</div>
+                <div class="template-contact">
+                  <div>📞 +1 234 567 8900</div>
+                  <div>✉️ david@example.com</div>
+                  <div>📍 New York, NY</div>
+                </div>
+                <div class="template-section">
+                  <div class="template-section-title">SKILLS</div>
+                  <div>Web Development</div>
+                  <div>UI/UX Design</div>
+                </div>
+                <div class="template-section">
+                  <div class="template-section-title">LANGUAGES</div>
+                  <div>English, Spanish</div>
+                </div>
+              </div>
+              <div class="template-main">
+                <div class="template-section">
+                  <div class="template-section-title">EDUCATION</div>
+                  <div class="template-item">
+                    <div class="template-item-title">Master of Education</div>
+                    <div class="template-item-detail">University Name, 2020</div>
+                  </div>
+                </div>
+                <div class="template-section">
+                  <div class="template-section-title">EXPERIENCE</div>
+                  <div class="template-item">
+                    <div class="template-item-title">English Teacher</div>
+                    <div class="template-item-detail">School Name, 2020-Present</div>
+                  </div>
+                </div>
+                <div class="template-section">
+                  <div class="template-section-title">CERTIFICATIONS</div>
+                  <div class="template-item">Teaching Certificate</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="resume-template-card template-2" (click)="openExample(categories[1])">
+            <div class="template-label">MARKETING</div>
+          </div>
+          <div class="resume-template-card template-3" (click)="openExample(categories[2])">
+            <div class="template-label">MANAGER</div>
+          </div>
+          <div class="resume-template-card template-4" (click)="openExample(categories[3])">
+            <div class="template-label">ENGINEER</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keep only the modal/popup view -->
+  <div
+    *ngIf="selectedCategory"
+    class="modal-backdrop"
+    (click)="closeExample()"
+  ></div>
+
+  <div *ngIf="selectedCategory" class="modal">
+    <button class="modal-close" (click)="closeExample()">✕</button>
+    <div class="modal-header">
+      <h2>{{ selectedCategory }}</h2>
+      <p *ngIf="selectedCategory === 'Student'">
+        Comprehensive resume examples for students at every level - from high school to graduate school. 
+        Each example includes detailed content tailored to your specific situation.
+      </p>
+      <p *ngIf="selectedCategory !== 'Student'">
+        Professional, modern, and creative templates for this role.
+      </p>
+      <div class="category-menu">
+        <button class="menu-trigger" (click)="toggleCategoryMenu($event)">
+          Browse Categories ▾
+        </button>
+        <div class="menu-panel" *ngIf="isCategoryMenuOpen" (click)="$event.stopPropagation()">
+          <button class="menu-item" *ngFor="let c of categories" (click)="selectCategory(c)">
+            {{ c }}
+            <span *ngIf="c === 'Student'" class="student-badge">25 Examples</span>
+          </button>
+        </div>
+        <button class="debug-btn" (click)="debugTemplates()" style="margin-left: 10px; padding: 5px 10px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">Debug</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <label>
+        Headshot:
+        <select [(ngModel)]="filterOptions.headshot" (change)="applyFilters()">
+          <option value="">All</option>
+          <option value="yes">With photo</option>
+          <option value="no">Without photo</option>
+        </select>
+      </label>
+
+      <label>
+        Graphics:
+        <select [(ngModel)]="filterOptions.graphics" (change)="applyFilters()">
+          <option value="">All</option>
+          <option value="simple">Simple</option>
+          <option value="graphic">Graphic</option>
+        </select>
+      </label>
+
+      <label>
+        Columns:
+        <select [(ngModel)]="filterOptions.columns" (change)="applyFilters()">
+          <option value="">All</option>
+          <option value="1">1 Column</option>
+          <option value="2">2 Columns</option>
+        </select>
+      </label>
+
+      <label>
+        Color:
+        <select [(ngModel)]="filterOptions.color" (change)="applyFilters()">
+          <option value="">All</option>
+          <option value="blue">Blue</option>
+          <option value="gray">Gray</option>
+          <option value="green">Green</option>
+          <option value="black">Black</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="results-bar">
+      <div class="results-count">
+        Showing {{ currentTemplates.length }} templates
+        <span *ngIf="selectedCategory === 'Student'" class="detailed-count">
+          ({{ getDetailedExamplesCount() }} with detailed examples)
+        </span>
+      </div>
+    </div>
+
+    <div class="examples-grid">
+      <div class="example-card" *ngFor="let tmpl of currentTemplates">
+        <div class="example-header">{{ tmpl }}</div>
+        <div class="example-body">
+          <div class="resume-preview" *ngIf="getResumeData(tmpl); else defaultPreview">
+            <div class="preview-section" *ngIf="getResumeData(tmpl).sections.objective">
+              <div class="preview-title">Objective</div>
+              <div class="preview-content">{{ getResumeData(tmpl).sections.objective | slice:0:80 }}...</div>
+            </div>
+            <div class="preview-section" *ngIf="getResumeData(tmpl).sections.education">
+              <div class="preview-title">Education</div>
+              <div class="preview-content">{{ getResumeData(tmpl).sections.education | slice:0:60 }}...</div>
+            </div>
+            <div class="preview-section" *ngIf="getResumeData(tmpl).sections.skills">
+              <div class="preview-title">Skills</div>
+              <div class="preview-content">{{ getResumeData(tmpl).sections.skills | slice:0:50 }}...</div>
+            </div>
+          </div>
+          <ng-template #defaultPreview>
+            <div class="line"></div>
+            <div class="line short"></div>
+          </ng-template>
+        </div>
+        <div class="example-tags">
+          <span class="tag" *ngIf="getResumeData(tmpl)">Detailed Example</span>
+          <span class="tag">Professional</span>
+          <span class="tag">Modern</span>
+        </div>
+        <div class="example-description" *ngIf="getResumeData(tmpl)">
+          {{ getResumeData(tmpl).description }}
+        </div>
+        <div class="example-actions">
+          <button class="btn sm" (click)="previewTemplate(tmpl)">Preview</button>
+          <button class="btn sm primary" (click)="useTemplate(tmpl)">Use Template</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showTemplateSelection" class="template-selection-overlay">
+    <button class="close-btn" (click)="showTemplateSelection = false">✕</button>
+    <p>Template selection goes here</p>
+  </div>
+
+</div>
