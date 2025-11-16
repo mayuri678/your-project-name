@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-home',
@@ -27,12 +28,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   private typingIndex = 0;
   private typingTimer: any;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit() {
-    if (this.isBrowser()) {
-      this.loggedIn = localStorage.getItem('loggedIn') === 'true';
-    }
+    this.loggedIn = this.authService.isLoggedIn();
     this.beginTypingAnimation();
   }
 
@@ -92,16 +91,15 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // 👉 Logout
   logout(): void {
-    if (this.isBrowser()) {
-      localStorage.removeItem('loggedIn');
-      localStorage.removeItem('isLoggedIn');
-      this.loggedIn = false;
-      this.router.navigate(['/logged-out']);
-    }
+    this.authService.logout();
+    this.loggedIn = false;
+    this.router.navigate(['/logged-out']);
   }
 
   goToTemplates(): void {
-    if (this.loggedIn) {
+    const isLoggedIn = this.authService.isLoggedIn();
+    this.loggedIn = isLoggedIn;
+    if (isLoggedIn) {
       this.router.navigate(['/resume']);
     } else {
       // Show resume options modal if not logged in, or navigate if logged in
@@ -118,7 +116,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   designResume(): void {
-    if (this.loggedIn) {
+    const isLoggedIn = this.authService.isLoggedIn();
+    this.loggedIn = isLoggedIn;
+    if (isLoggedIn) {
       this.router.navigate(['/resume']);
     } else {
       // Navigate to login first

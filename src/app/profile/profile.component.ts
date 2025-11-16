@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, UserProfile } from '../auth.service';
+import { SupabaseService } from '../services/supabase.service';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -35,8 +36,13 @@ export class ProfileComponent implements OnInit {
   photoPreview: string | null = null;
   selectedFile: File | null = null;
 
+  // User data from Supabase users table
+  supabaseUser: any = null;
+  loading: boolean = false;
+
   constructor(
     private authService: AuthService,
+    private supabaseService: SupabaseService,
     public router: Router
   ) {}
 
@@ -49,11 +55,41 @@ export class ProfileComponent implements OnInit {
     this.loadProfile();
   }
 
-  loadProfile(): void {
+  async loadProfile(): Promise<void> {
+    this.loading = true;
     const currentUser = this.authService.getCurrentUser();
+    
     if (currentUser) {
       this.profile.email = currentUser.email;
       this.profile.username = currentUser.name || currentUser.email.split('@')[0];
+      
+      // Fetch user data from Supabase users table
+      try {
+        const { data, error } = await this.supabaseService.getUserByEmail(currentUser.email);
+        
+        if (error) {
+          // Don't show error for 406 (RLS policy) or if user doesn't exist in custom table
+          const errorStatus = (error as any).status;
+          if (errorStatus !== 406 && error.code !== 'PGRST116') {
+            console.error('Error fetching user from Supabase:', error);
+          }
+          // User might not exist in custom users table yet - that's okay
+        } else if (data) {
+          this.supabaseUser = data;
+          // Update profile with data from Supabase
+          if (data.full_name) {
+            this.profile.username = data.full_name;
+          }
+          if (data.email) {
+            this.profile.email = data.email;
+          }
+        }
+      } catch (err: any) {
+        // Ignore 406 errors
+        if (err?.status !== 406 && err?.code !== 'PGRST116') {
+          console.error('Exception loading user from Supabase:', err);
+        }
+      }
     }
 
     // Load saved profile data from localStorage
@@ -79,6 +115,8 @@ export class ProfileComponent implements OnInit {
         this.photoPreview = this.profile.photo;
       }
     }
+    
+    this.loading = false;
   }
 
   toggleEdit(): void {
@@ -94,7 +132,7 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  saveProfile(): void {
+  async saveProfile(): Promise<void> {
     // Validate required fields
     if (!this.profile.email || !this.profile.username) {
       this.errorMessage = 'Email and Username are required fields.';
@@ -125,7 +163,30 @@ export class ProfileComponent implements OnInit {
       this.profile.photo = this.photoPreview;
     }
 
-    // Save profile
+    // Save to Supabase users table if user exists
+    if (this.supabaseUser && this.supabaseUser.id) {
+      try {
+        const { data, error } = await this.supabaseService.updateUser(this.supabaseUser.id, {
+          full_name: this.profile.username,
+          email: this.profile.email
+        });
+
+        if (error) {
+          console.error('Error updating user in Supabase:', error);
+          this.errorMessage = 'Failed to update user in database. Please try again.';
+          return;
+        } else if (data) {
+          this.supabaseUser = data;
+          console.log('User updated in Supabase:', data);
+        }
+      } catch (err) {
+        console.error('Exception updating user in Supabase:', err);
+        this.errorMessage = 'Failed to update user in database. Please try again.';
+        return;
+      }
+    }
+
+    // Save profile to localStorage
     const success = this.authService.saveUserProfile(this.profile);
     
     if (success) {

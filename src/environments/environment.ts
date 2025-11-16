@@ -1,6 +1,6 @@
 // src/environments/environment.ts
 export const environment = {
   production: false,
-  supabaseUrl: 'https://kbgzpusbovtbbbwhoocu.supabase.co',      // <-- from Supabase dashboard
-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiZ3pwdXNib3Z0YmJid2hvb2N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MjA1MzQsImV4cCI6MjA3NTM5NjUzNH0.fZds30dkIfdz_QvNvq4L-RY4ive_4pbdKZ8t9ZVHkAU'                          // <-- anon / publishable key
+  supabaseUrl: 'https://kwlaqovlzhxghwtilxxu.supabase.co',     // <-- from Supabase dashboard
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3bGFxb3Zsemh4Z2h3dGlseHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MjQ0MzMsImV4cCI6MjA3ODUwMDQzM30.L2jcB8zc2sN1GH3F9CNhKLbaD2jAFs_iGmcFSYA6vQA'                         // <-- anon / publishable key
 };

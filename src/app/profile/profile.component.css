@@ -37,6 +37,87 @@
   background-clip: text;
 }
 
+/* User Table Info Section */
+.user-table-info {
+  margin-bottom: 30px;
+}
+
+.info-card {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.info-card h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #667eea;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 10px;
+}
+
+/* User Data Table */
+.user-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-data-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.user-data-table thead th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-data-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.user-data-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.user-data-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.user-data-table .table-label {
+  padding: 12px 15px;
+  font-weight: 600;
+  color: #4b5563;
+  font-size: 0.95rem;
+  width: 30%;
+  background-color: #f9fafb;
+}
+
+.user-data-table .table-value {
+  padding: 12px 15px;
+  color: #1f2937;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 20px;
+  color: #667eea;
+  font-weight: 500;
+}
+
 .edit-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;

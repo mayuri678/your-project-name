@@ -19,6 +19,46 @@
     <!-- Error Message -->
     <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
 
+    <!-- Loading Indicator -->
+    <div class="loading-message" *ngIf="loading">Loading user data...</div>
+
+    <!-- User Info from Database Table -->
+    <div class="user-table-info" *ngIf="supabaseUser && !loading">
+      <div class="info-card">
+        <h3>📊 Logged-in User Data from Supabase Table</h3>
+        <table class="user-data-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="table-label"><strong>Full Name:</strong></td>
+              <td class="table-value">{{ supabaseUser.full_name || 'Not set' }}</td>
+            </tr>
+            <tr>
+              <td class="table-label"><strong>Email:</strong></td>
+              <td class="table-value">{{ supabaseUser.email }}</td>
+            </tr>
+            <tr>
+              <td class="table-label"><strong>User ID:</strong></td>
+              <td class="table-value">{{ supabaseUser.id }}</td>
+            </tr>
+            <tr>
+              <td class="table-label"><strong>Created At:</strong></td>
+              <td class="table-value">{{ supabaseUser.created_at | date:'medium' }}</td>
+            </tr>
+            <tr *ngIf="supabaseUser.password">
+              <td class="table-label"><strong>Password:</strong></td>
+              <td class="table-value">••••••••</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="profile-content">
       <!-- Photo Upload Section -->
       <div class="profile-section">

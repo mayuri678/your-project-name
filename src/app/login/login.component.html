@@ -64,7 +64,15 @@
     </button>
 
     <!-- Error Message -->
-    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="error" *ngIf="errorMessage">
+      {{ errorMessage }}
+      <div class="error-help" *ngIf="errorMessage.includes('No account found') || errorMessage.includes('Invalid email or password')">
+        <p><strong>Don't have an account?</strong></p>
+        <button type="button" class="link-button register-link" (click)="toggleMode()">
+          Click here to Register
+        </button>
+      </div>
+    </div>
 
     <!-- Toggle Mode Button -->
     <div class="toggle-mode">
