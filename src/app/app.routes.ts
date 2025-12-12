@@ -11,6 +11,7 @@ import { ResumeExamplesComponent } from './resume-examples/resume-examples.compo
 import { TemplatesTableComponent } from './templates-table/templates-table.component';
 import { ProfileComponent } from './profile/profile.component';
 import { SettingsComponent } from './settings/settings.component';
+import { MyTemplatesComponent } from './my-templates/my-templates.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -28,5 +29,6 @@ export const routes: Routes = [
   { path: 'contact', component: ContactComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
+  { path: 'my-templates', component: MyTemplatesComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: 'home' }
 ];

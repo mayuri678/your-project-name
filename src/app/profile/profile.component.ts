@@ -10,7 +10,7 @@ import { FooterComponent } from '../footer/footer.component';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
@@ -60,8 +60,19 @@ export class ProfileComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     
     if (currentUser) {
-      this.profile.email = currentUser.email;
-      this.profile.username = currentUser.name || currentUser.email.split('@')[0];
+      // Check if user is gulvemayuri63 and load their specific data
+      if (currentUser.email === 'gulvemayuri63') {
+        this.profile.username = 'Mayuri Gulve';
+        this.profile.email = 'gulvemayuri63@gmail.com';
+        this.profile.contactNo = '+91-9876543210';
+        this.profile.location = 'Pune, Maharashtra, India';
+        this.profile.city = 'Pune';
+        this.profile.state = 'Maharashtra';
+        this.profile.country = 'India';
+      } else {
+        this.profile.email = currentUser.email;
+        this.profile.username = currentUser.name || currentUser.email.split('@')[0];
+      }
       
       // Fetch user data from Supabase users table
       try {
@@ -92,27 +103,29 @@ export class ProfileComponent implements OnInit {
       }
     }
 
-    // Load saved profile data from localStorage
-    const savedProfile = this.authService.getUserProfile();
-    if (savedProfile) {
-      // Merge saved profile with default values to ensure all fields exist
-      this.profile = {
-        username: savedProfile.username || this.profile.username,
-        email: savedProfile.email || this.profile.email,
-        contactNo: savedProfile.contactNo || '',
-        notification: savedProfile.notification !== undefined ? savedProfile.notification : true,
-        address: savedProfile.address || '',
-        street: savedProfile.street || '',
-        city: savedProfile.city || '',
-        state: savedProfile.state || '',
-        country: savedProfile.country || '',
-        pincode: savedProfile.pincode || '',
-        location: savedProfile.location || '',
-        photo: savedProfile.photo || ''
-      };
-      // Set photo preview if photo exists
-      if (this.profile.photo) {
-        this.photoPreview = this.profile.photo;
+    // Load saved profile data from localStorage (skip for gulvemayuri63)
+    if (currentUser && currentUser.email !== 'gulvemayuri63') {
+      const savedProfile = this.authService.getUserProfile();
+      if (savedProfile) {
+        // Merge saved profile with default values to ensure all fields exist
+        this.profile = {
+          username: savedProfile.username || this.profile.username,
+          email: savedProfile.email || this.profile.email,
+          contactNo: savedProfile.contactNo || '',
+          notification: savedProfile.notification !== undefined ? savedProfile.notification : true,
+          address: savedProfile.address || '',
+          street: savedProfile.street || '',
+          city: savedProfile.city || '',
+          state: savedProfile.state || '',
+          country: savedProfile.country || '',
+          pincode: savedProfile.pincode || '',
+          location: savedProfile.location || '',
+          photo: savedProfile.photo || ''
+        };
+        // Set photo preview if photo exists
+        if (this.profile.photo) {
+          this.photoPreview = this.profile.photo;
+        }
       }
     }
     

@@ -1,28 +1,33 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
-import { FooterComponent } from '../footer/footer.component';
+
 import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, CommonModule, FormsModule, HeaderComponent, FooterComponent],
+  imports: [RouterModule, CommonModule, FormsModule, HeaderComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
   loggedIn: boolean = false;
   isLoginOpen: boolean = false; // no longer used for popup
-  isAboutOpen: boolean = false;
   showResumeOptions: boolean = false;
+  showLearnMore: boolean = false;
   typedName: string = '';
+
+  // Resume form data
+  resumeData = {
+    fullName: '',
+    email: '',
+    profession: ''
+  };
   typingComplete: boolean = false;
   builderNameInput: string = '';
-
-  @ViewChild('aboutSection') aboutSection?: ElementRef<HTMLElement>;
 
   private readonly fullBuilderName = 'Resume Builder...';
   private typingIndex = 0;
@@ -39,22 +44,42 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.clearTypingTimer();
   }
 
-  // popup handled via named router outlet 'modal'
-
-  // 👉 About modal (no navigation)
-  openAbout(): void {
-    this.isAboutOpen = true;
-  }
-
-  closeAbout(): void {
-    this.isAboutOpen = false;
-  }
-
   onBuilderNameChange(value: string): void {
     this.builderNameInput = value;
     this.clearTypingTimer();
     this.typedName = value || this.fullBuilderName;
     this.typingComplete = true;
+  }
+
+  learnMore(): void {
+    this.showLearnMore = true;
+  }
+
+  closeLearnMore(): void {
+    this.showLearnMore = false;
+  }
+
+  createResume(): void {
+    if (!this.resumeData.fullName || !this.resumeData.email) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.resumeData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    this.router.navigate(['/builder'], {
+      queryParams: {
+        name: this.resumeData.fullName,
+        email: this.resumeData.email,
+        profession: this.resumeData.profession || ''
+      }
+    });
+
+    this.closeLearnMore();
   }
 
   private beginTypingAnimation(): void {
@@ -89,7 +114,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 👉 Logout
   logout(): void {
     this.authService.logout();
     this.loggedIn = false;
@@ -99,11 +123,27 @@ export class HomeComponent implements OnInit, OnDestroy {
   goToTemplates(): void {
     const isLoggedIn = this.authService.isLoggedIn();
     this.loggedIn = isLoggedIn;
+
     if (isLoggedIn) {
       this.router.navigate(['/resume']);
     } else {
-      // Show resume options modal if not logged in, or navigate if logged in
       this.showResumeOptions = true;
+    }
+  }
+
+  goToResumeEditor(): void {
+    const isLoggedIn = this.authService.isLoggedIn();
+    this.loggedIn = isLoggedIn;
+
+    if (isLoggedIn) {
+      this.router.navigate(['/resume'], {
+        queryParams: {
+          template: 'template1',
+          edit: 'true'
+        }
+      });
+    } else {
+      this.router.navigate([{ outlets: { modal: ['login'] } }]);
     }
   }
 
@@ -118,18 +158,21 @@ export class HomeComponent implements OnInit, OnDestroy {
   designResume(): void {
     const isLoggedIn = this.authService.isLoggedIn();
     this.loggedIn = isLoggedIn;
+
     if (isLoggedIn) {
-      this.router.navigate(['/resume']);
+      this.router.navigate(['/resume'], {
+        queryParams: {
+          template: 'template1',
+          edit: 'true'
+        }
+      });
     } else {
-      // Navigate to login first
       this.router.navigate([{ outlets: { modal: ['login'] } }]);
     }
     this.closeResumeOptions();
   }
 
   getGoogleTemplates(): void {
-    // Open Google Docs resume templates in a new tab
-    // Direct link to Google Docs template gallery (resume templates)
     window.open('https://docs.google.com/document/u/0/?ftv=1&tgif=d&resourcekey=0', '_blank');
     this.closeResumeOptions();
   }

@@ -6,12 +6,48 @@
   <div class="hero-content">
     <h1 class="hero-title">About Resume Builder</h1>
     <p class="hero-subtitle">
-      Your trusted partner in creating professional resumes that get you noticed
+      Your trusted partner in creating professional resumes that get you noticed - ankhi
     </p>
+    <div class="hero-actions">
+      <button type="button" class="cta-btn primary" (click)="goToTemplates()">
+        <span class="btn-icon">📄</span>
+        Browse Templates
+      </button>
+      <button type="button" class="cta-btn secondary" (click)="createResumeDirectly()">
+        <span class="btn-icon">✏️</span>
+        Start Building
+      </button>
+    </div>
   </div>
 </div>
-<app-footer></app-footer>
 
-
-
-
+<!-- Additional About Content -->
+<div class="about-content">
+  <div class="container">
+    <div class="about-section">
+      <h2>Why Choose Our Resume Builder?</h2>
+      <div class="features-grid">
+        <div class="feature">
+          <i class="fas fa-magic"></i>
+          <h3>Easy to Use</h3>
+          <p>Create professional resumes in minutes with our intuitive interface.</p>
+        </div>
+        <div class="feature">
+          <i class="fas fa-file-alt"></i>
+          <h3>Multiple Templates</h3>
+          <p>Choose from a variety of professionally designed templates.</p>
+        </div>
+        <div class="feature">
+          <i class="fas fa-download"></i>
+          <h3>Download Anywhere</h3>
+          <p>Download your resume in multiple formats including PDF and DOCX.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mission-section">
+      <h2>Our Mission</h2>
+      <p>At Resume Builder, we believe that everyone deserves a professional resume that showcases their skills and experience effectively. Our mission is to simplify the resume creation process and help job seekers stand out in today's competitive job market.</p>
+    </div>
+  </div>
+</div>

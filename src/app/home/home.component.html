@@ -1,175 +1,219 @@
 <app-header [loggedIn]="loggedIn" (logout)="logout()"></app-header>
 
-<!-- Resume Templates Showcase Section -->
-<section class="resume-showcase-section">
-  <div class="resume-showcase-container">
-    <!-- Left Section: Personal Introduction -->
-    <div class="resume-showcase-left">
-      <div class="resume-showcase-content">
-        <span class="resume-badge">Professional Resume Builder</span>
-        <h2 class="resume-greeting">Hello My Name Is</h2>
-        <h1 class="resume-name">
-          <span class="typed-text">{{ typedName }}</span><span class="typing-cursor">|</span>
-        </h1>
-        <p class="resume-description">
-          Get insights into how often your resume is viewed, which sections are attracting the most attention, and more. Adjust your content based on real-time data to optimize your chances.
-        </p>
-        <div class="resume-actions">
-          <button type="button" class="cta-btn primary" (click)="openResumeOptions()">
-            <span class="btn-icon">📄</span>
-            Create Resume
-          </button>
-          <button type="button" class="cta-btn secondary" (click)="openAbout()">
-            <span class="btn-icon">ℹ️</span>
-            Learn More
-          </button>
+<main>
+
+  <!-- Resume Templates Showcase Section -->
+  <section class="resume-showcase-section">
+    <div class="resume-showcase-container">
+
+      <!-- Left Section -->
+      <div class="resume-showcase-left">
+        <div class="resume-showcase-content">
+          <span class="resume-badge">Professional Resume Builder</span>
+          <h2 class="resume-greeting">Hello My Name Is</h2>
+
+          <h1 class="resume-name">
+            <span class="typed-text">{{ typedName }}</span>
+            <span class="typing-cursor">|</span>
+          </h1>
+
+          <p class="resume-description">
+            Get insights into how often your resume is viewed, which sections are attracting the most attention, and more.
+          </p>
+
+          <div class="resume-actions">
+            <button type="button" class="cta-btn primary" (click)="getGoogleTemplates()">
+              <span class="btn-icon">📄</span>
+              Create Resume
+            </button>
+
+            <button type="button" class="cta-btn secondary" (click)="learnMore()">
+              <span class="btn-icon">✨</span>
+              Learn More
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Right Section: Resume Templates Stack -->
-    <div class="resume-showcase-right">
-      <div class="resume-templates-container">
-        <h2 class="resume-title">RESUME</h2>
-        <div class="resume-templates-stack">
-          <!-- Main Template (Front) -->
-          <div class="resume-template-card template-main" (click)="goToTemplates()">
-            <div class="template-header">
-              <div class="template-avatar-large"></div>
-              <div class="template-name-role">
-                <div class="template-name-main">Divya</div>
-                <div class="template-role-main">English Teacher</div>
+      <!-- Right Section Templates -->
+      <div class="resume-showcase-right">
+        <div class="resume-templates-container">
+          <h2 class="resume-title">RESUME</h2>
+
+          <div class="resume-templates-stack">
+
+            <!-- Main Card -->
+            <div class="resume-template-card template-main" (click)="goToTemplates()">
+              <div class="template-header">
+                <div class="template-avatar-large"></div>
+                <div class="template-name-role">
+                  <div class="template-name-main">Divya</div>
+                  <div class="template-role-main">English Teacher</div>
+                </div>
               </div>
-            </div>
-            <div class="template-body">
-              <div class="template-section-info">
-                <div class="info-item">
-                  <span class="info-label">INFORMATION</span>
-                  <div class="info-content">
-                    <div>📞 +1 234 567 8900</div>
-                    <div>✉️ divya@example.com</div>
-                    <div>📍 India</div>
+
+              <div class="template-body">
+                <div class="template-section-info">
+                  <div class="info-item">
+                    <span class="info-label">INFORMATION</span>
+                    <div class="info-content">
+                      <div>📞 +1 234 567 8900</div>
+                      <div>✉️ divya@example.com</div>
+                      <div>📍 India</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="template-section-education">
+                  <span class="section-title">EDUCATION</span>
+                  <div class="section-content">
+                    <div>Master of Education</div>
+                    <div>University Name, 2020</div>
                   </div>
                 </div>
               </div>
-              <div class="template-section-education">
-                <span class="section-title">EDUCATION</span>
-                <div class="section-content">
-                  <div>Master of Education</div>
-                  <div>University Name, 2020</div>
-                </div>
-              </div>
             </div>
-          </div>
 
-          <!-- Background Templates (Layered) -->
-          <div class="resume-template-card template-background-1" (click)="goToTemplates()">
-            <div class="template-label-bg">MARKETING</div>
-          </div>
-          <div class="resume-template-card template-background-2" (click)="goToTemplates()">
-            <div class="template-label-bg">MANAGER</div>
-          </div>
-          <div class="resume-template-card template-background-3" (click)="goToTemplates()">
-            <div class="template-label-bg">ENGINEER</div>
-          </div>
-          <div class="resume-template-card template-background-4" (click)="goToTemplates()">
-            <div class="template-label-bg">DESIGNER</div>
-          </div>
+            <!-- Other Background Templates -->
+            <div class="resume-template-card template-background-1" (click)="goToTemplates()">
+              <div class="template-label-bg">MARKETING</div>
+            </div>
 
+            <div class="resume-template-card template-background-2" (click)="goToTemplates()">
+              <div class="template-label-bg">MANAGER</div>
+            </div>
+
+            <div class="resume-template-card template-background-3" (click)="goToTemplates()">
+              <div class="template-label-bg">ENGINEER</div>
+            </div>
+
+            <div class="resume-template-card template-background-4" (click)="goToTemplates()">
+              <div class="template-label-bg">DESIGNER</div>
+            </div>
+
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
 
+    </div>
+  </section>
+
+
+
+</main>
 
 <!-- Resume Options Modal -->
 <div *ngIf="showResumeOptions" class="resume-options-overlay" (click)="closeResumeOptions()">
   <div class="resume-options-modal" (click)="$event.stopPropagation()">
+
     <div class="resume-options-header">
       <h2>Create Your Resume</h2>
       <button class="close-modal-btn" (click)="closeResumeOptions()">×</button>
     </div>
+
     <div class="resume-options-content">
+
+      <!-- Design Resume Card -->
       <div class="resume-option-card" (click)="designResume()">
         <div class="option-icon">🎨</div>
         <h3>Design Resume</h3>
         <p>Use our resume builder to create a professional resume with customizable templates</p>
+
         <div class="option-features">
           <span class="feature-badge">✓ Customizable</span>
           <span class="feature-badge">✓ Professional</span>
           <span class="feature-badge">✓ Easy to Use</span>
         </div>
-        <button class="option-btn primary-option" (click)="designResume(); $event.stopPropagation()">Start Designing</button>
+
+        <button class="option-btn primary-option" (click)="designResume(); $event.stopPropagation()">
+          ✨ Start Designing Now
+        </button>
       </div>
 
+      <!-- GOOGLE TEMPLATES CARD (restored) -->
       <div class="resume-option-card" (click)="getGoogleTemplates()">
         <div class="option-icon">📚</div>
         <h3>Google Templates</h3>
         <p>Browse and download resume templates from Google Docs</p>
+
         <div class="option-features">
           <span class="feature-badge">✓ Free Templates</span>
           <span class="feature-badge">✓ Google Docs</span>
           <span class="feature-badge">✓ Various Styles</span>
         </div>
-        <button class="option-btn secondary-option" (click)="getGoogleTemplates(); $event.stopPropagation()">Browse Templates</button>
+
+        <button class="option-btn secondary-option" (click)="getGoogleTemplates(); $event.stopPropagation()">
+          Browse Templates
+        </button>
       </div>
+
     </div>
   </div>
 </div>
 
 <!-- Learn More Modal -->
-<div *ngIf="isAboutOpen" class="resume-options-overlay learn-more-overlay" (click)="closeAbout()">
+<div *ngIf="showLearnMore" class="learn-more-overlay" (click)="closeLearnMore()">
   <div class="learn-more-modal" (click)="$event.stopPropagation()">
+
     <div class="learn-more-header">
-      <h2>Learn More</h2>
-      <button class="close-modal-btn" (click)="closeAbout()">×</button>
+      <div class="header-content">
+        <h2>Why Choose Resume Builder?</h2>
+        <p class="header-subtitle">Create professional resumes that get you noticed</p>
+      </div>
+
+      <button class="close-modal-btn" (click)="closeLearnMore()" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
+
     <div class="learn-more-content">
-      <div class="learn-more-intro">
-        <p>
-          Welcome to Resume Builder, the premier platform for creating professional, ATS-friendly resumes
-          that help you stand out in today's competitive job market.
-        </p>
-      </div>
 
-      <div class="learn-more-section">
-        <h3>Our Mission</h3>
-        <p>
-          At Resume Builder, our mission is to empower job seekers with the tools and resources they need
-          to create compelling resumes that pass Applicant Tracking Systems (ATS) and impress hiring managers.
-        </p>
-      </div>
+      <div class="features-grid-new">
 
-      <div class="learn-more-contact">
-        <h3>Get in Touch</h3>
-        <p>Have questions or need assistance? We're here to help! Reach out to us through any of the following channels:</p>
-        <div class="contact-methods-modal">
-          <div class="contact-method-modal">
-            <span class="contact-icon-modal">💬</span>
-            <div>
-              <strong>WhatsApp</strong>
-              <p><a href="https://wa.me/918080156065" target="_blank">+91 8080156065</a></p>
-            </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
           </div>
-          <div class="contact-method-modal">
-            <span class="contact-icon-modal">📧</span>
-            <div>
-              <strong>Email</strong>
-              <p><a href="mailto:gulvemayuri63@gmail.com">gulvemayuri63@gmail.com</a></p>
-            </div>
+          <h3>28+ Professional Templates</h3>
+          <p>Choose from ATS-friendly templates</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            </svg>
           </div>
-
-
+          <h3>Easy Editing</h3>
+          <p>No design skills needed</p>
         </div>
-        <div class="contact-buttons">
-          <a href="https://wa.me/918080156065" target="_blank" class="contact-btn-modal">Contact Us on WhatsApp</a>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            </svg>
+          </div>
+          <h3>Download as PDF</h3>
+          <p>High-quality PDF export</p>
         </div>
+
       </div>
+
+      <div class="cta-section-new">
+        <h3>Ready to Build Your Perfect Resume?</h3>
+        <button class="cta-button-new" (click)="closeLearnMore(); openResumeOptions()">
+          <span>Get Started Free</span>
+        </button>
+      </div>
+
     </div>
   </div>
 </div>
-
-<app-footer></app-footer>
-
-

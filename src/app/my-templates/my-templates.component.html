@@ -1,0 +1,31 @@
+<app-header [loggedIn]="isLoggedIn" (logout)="onLogout()"></app-header>
+
+<div class="my-templates-container">
+  <div class="templates-header">
+    <h1>My Saved Templates</h1>
+    <p>View and edit your saved resume templates</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading templates...</div>
+
+  <div *ngIf="!loading && templates.length === 0" class="no-templates">
+    <h3>No templates saved yet</h3>
+    <p>Start creating and saving templates to see them here.</p>
+    <button class="create-btn" (click)="router.navigate(['/resume'])">Create New Template</button>
+  </div>
+
+  <div *ngIf="!loading && templates.length > 0" class="templates-grid">
+    <div *ngFor="let template of templates" class="template-card">
+      <div class="template-info">
+        <h3>{{ template.title }}</h3>
+        <p class="template-category">{{ template.category }}</p>
+        <p class="template-date">Saved: {{ template.created_at | date:'short' }}</p>
+      </div>
+      <div class="template-actions">
+        <button class="view-btn" (click)="viewTemplate(template)">👁️ View</button>
+        <button class="edit-btn" (click)="editTemplate(template)">📝 Edit</button>
+        <button class="delete-btn" (click)="deleteTemplate(template)">🗑️ Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

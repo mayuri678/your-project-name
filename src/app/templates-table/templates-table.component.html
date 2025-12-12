@@ -97,12 +97,11 @@
             <span *ngIf="!template.recommended" class="status-badge standard">Standard</span>
           </td>
           <td class="template-actions">
-            <button class="action-btn preview-btn" (click)="previewTemplate(template)">
-              👁️ Preview
+            
+            <button class="action-btn edit-btn" (click)="editTemplate(template)" title="Edit Template">
+              ✏️ Edit
             </button>
-            <button class="action-btn use-btn" (click)="selectTemplate(template, $event)">
-              ✏️ Use Template
-            </button>
+            
           </td>
         </tr>
       </tbody>
@@ -115,6 +114,99 @@
       <h3>No templates found</h3>
       <p>Try adjusting your filters to see more templates.</p>
       <button class="reset-filters-btn" (click)="resetFilters()">Reset Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div *ngIf="showPreviewModal" class="preview-modal-overlay" (click)="closePreviewModal()">
+  <div class="preview-modal" (click)="$event.stopPropagation()">
+    <div class="preview-modal-header">
+      <h2>{{ selectedTemplate?.name }} - Preview</h2>
+      <button class="close-modal-btn" (click)="closePreviewModal()">×</button>
+    </div>
+    <div class="preview-modal-content">
+      <div class="template-preview">
+        <div class="template-preview-image">
+          <!-- Placeholder for template preview image -->
+          <div class="template-placeholder" [ngClass]="'template-' + (selectedTemplate?.id || '1')">
+            <div class="template-preview-header">
+              <h3>{{ selectedTemplate?.name }}</h3>
+              <div class="template-preview-meta">
+                <span class="template-category">{{ selectedTemplate?.category }}</span>
+                <span class="template-color" [ngClass]="'color-' + (selectedTemplate?.color || 'blue')"></span>
+              </div>
+            </div>
+            <div class="template-preview-body">
+              <div class="template-preview-sidebar" *ngIf="selectedTemplate?.columns === 2">
+                <div class="preview-section">
+                  <h4>Contact</h4>
+                  <p>Email: {{ userEmail }}</p>
+                  <p>Phone: {{ userPhone }}</p>
+                </div>
+                <div class="preview-section">
+                  <h4>Skills</h4>
+                  <ul>
+                    <li>Skill 1</li>
+                    <li>Skill 2</li>
+                    <li>Skill 3</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="template-preview-main">
+                <div class="preview-section">
+                  <h4>{{ userName }}</h4>
+                  <p>{{ userEmail }}</p>
+                </div>
+                <div class="preview-section">
+                  <h4>Professional Summary</h4>
+                  <p>A brief summary of your professional background and skills.</p>
+                </div>
+                <div class="preview-section">
+                  <h4>Experience</h4>
+                  <div class="experience-item">
+                    <h5>Job Title</h5>
+                    <p>Company Name | 2020 - Present</p>
+                    <p>Brief description of your role and achievements.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="template-details">
+          <h3>Template Details</h3>
+          <div class="detail-item">
+            <span class="detail-label">Category:</span>
+            <span class="detail-value">{{ selectedTemplate?.category }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Color:</span>
+            <span class="detail-value">{{ selectedTemplate?.color | titlecase }}</span>
+            <span class="color-swatch" [ngClass]="'color-' + (selectedTemplate?.color || 'blue')"></span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Layout:</span>
+            <span class="detail-value">{{ selectedTemplate?.columns }} Column{{ selectedTemplate?.columns > 1 ? 's' : '' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Features:</span>
+            <div class="features-list">
+              <span *ngIf="selectedTemplate?.hasHeadshot" class="feature-tag photo">📷 Photo</span>
+              <span *ngIf="selectedTemplate?.hasGraphics" class="feature-tag graphics">🎨 Graphics</span>
+              <span *ngIf="!selectedTemplate?.hasHeadshot && !selectedTemplate?.hasGraphics" class="feature-tag minimal">✨ Minimal</span>
+            </div>
+          </div>
+          <div class="preview-actions">
+            <button class="cta-btn primary" (click)="selectTemplate(selectedTemplate)">
+              ✏️ Use This Template
+            </button>
+            <button class="cta-btn secondary" (click)="closePreviewModal()">
+              Close Preview
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

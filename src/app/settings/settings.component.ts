@@ -66,7 +66,7 @@ interface AppSettings {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css']
 })

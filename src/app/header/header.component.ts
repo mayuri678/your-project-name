@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService, LoggedInUser } from '../auth.service';
@@ -16,36 +16,32 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   @Output() about = new EventEmitter<void>();
   @Output() resume = new EventEmitter<void>();
-  @Output() login = new EventEmitter<void>();   // ✅ Already present
+  @Output() login = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
   @Output() templates = new EventEmitter<void>();
 
   isAccountOpen: boolean = false;
-  isExamplesOpen: boolean = false;
+  isTemplatesOpen: boolean = false;
   loggedInUsers: LoggedInUser[] = [];
   currentUserEmail: string = '';
   private refreshInterval: any;
 
-  // Categories shown in the Resume Examples dropdown
-  exampleCategories: string[] = [
-    'Accountant',
-    'Bartender',
-    'Certified Nursing Assistant',
-    'College',
-    'Data Scientist',
-    'Graphic Design',
-    'High School',
-    'Medical Assistant',
-    'Microsoft Word',
-    'Project Manager',
-    'Registered Nurse',
-    'Server',
-    'Software Engineer',
-    'Student',
-    'Teacher'
+  templateList = [
+    { id: 'template1', name: 'Classic Blue' },
+    { id: 'template2', name: 'Modern Sidebar' },
+    { id: 'template3', name: 'Header Style' },
+    { id: 'template4', name: 'Minimal Black' },
+    { id: 'template5', name: 'Professional Navy' },
+    { id: 'template6', name: 'Creative Orange' },
+    { id: 'template7', name: 'Executive Gray' },
+    { id: 'template8', name: 'Tech Modern' },
+    { id: 'template9', name: 'Academic Dark Blue' },
+    { id: 'template10', name: 'Startup Green' },
+    { id: 'template11', name: 'Corporate Navy' },
+    { id: 'template12', name: 'Artistic Purple' }
   ];
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private elementRef: ElementRef) {}
 
   ngOnInit(): void {
     this.loadLoggedInUsers();
@@ -125,23 +121,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return `${diffDays}d ago`;
   }
 
-  // Resume Examples dropdown controls
-  toggleExamples(): void {
-    this.isExamplesOpen = !this.isExamplesOpen;
-  }
-
-  closeExamples(): void {
-    this.isExamplesOpen = false;
-  }
-
-  goToExample(category: string): void {
-    this.closeExamples();
-    this.router.navigate(['/examples'], { queryParams: { category } });
-  }
-
-  // ✅ Login button click method
   goToLogin(): void {
-    this.login.emit(); // emit kartoy if parent wants to listen
+    this.login.emit(); 
     this.router.navigate([{ outlets: { modal: ['login'] } }]);
   }
 
@@ -151,5 +132,32 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   goToSettings(): void {
     this.router.navigate(['/settings']);
+  }
+
+  onTemplatesClick(): void {
+    if (this.loggedIn) {
+      this.templates.emit();
+    } else {
+      this.goToLogin();
+    }
+  }
+
+  toggleTemplates(): void {
+    if (!this.loggedIn) {
+      this.goToLogin();
+      return;
+    }
+    this.isTemplatesOpen = !this.isTemplatesOpen;
+  }
+
+  closeTemplates(): void {
+    this.isTemplatesOpen = false;
+  }
+
+  selectTemplate(template: any): void {
+    this.router.navigate(['/resume'], {
+      queryParams: { template: template.id, edit: 'true' }
+    });
+    this.closeTemplates();
   }
 }

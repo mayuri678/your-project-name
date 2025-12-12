@@ -1,3 +1,28 @@
+/* Ensure the app takes at least the full viewport height */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content-wrap {
+  flex: 1;
+  /* This will push the footer to the bottom */
+  padding-bottom: 2rem; /* Add some space above the footer */
+}
+
+/* Make sure the footer is at the bottom */
+app-footer {
+  margin-top: auto;
+}
+
+/* Navbar styles */
 .navbar {
   background-color: #0a7af1;
   padding: 10px;

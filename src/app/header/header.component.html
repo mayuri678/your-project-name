@@ -11,21 +11,9 @@
     <nav class="header-nav">
       <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
       <a class="nav-link" [routerLink]="loggedIn ? ['/about'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">About</a>
-      <a
-        class="nav-link"
-        [routerLink]="loggedIn ? ['/templates'] : [{ outlets: { modal: ['login'] } }]"
-        routerLinkActive="active"
-      >
-        Templates
-      </a>
-      <div class="nav-dropdown" (mouseleave)="closeExamples()">
-        <button class="nav-link dropdown-trigger" (click)="toggleExamples()">Resume Examples ▾</button>
-        <div class="dropdown-panel" *ngIf="isExamplesOpen">
-          <button class="dropdown-item" *ngFor="let c of exampleCategories" (click)="goToExample(c)">{{ c }}</button>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item link" routerLink="/examples" (click)="closeExamples()">View all</a>
-        </div>
-      </div>
+      <a class="nav-link" [routerLink]="loggedIn ? ['/my-templates'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">My Templates</a>
+      <a class="nav-link" [routerLink]="loggedIn ? ['/templates'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">Templates</a>
+      
     </nav>
 
     <!-- Right: Contact and Account -->
@@ -51,7 +39,7 @@
               <div class="user-status">Current User</div>
             </div>
           </div>
-          
+
           <!-- All Logged-In Users Section -->
           <div class="logged-in-users-section" *ngIf="loggedInUsers.length > 0">
             <div class="section-header">
@@ -71,9 +59,9 @@
               </div>
             </div>
           </div>
-          
+
           <div class="menu-divider" *ngIf="loggedInUsers.length > 0"></div>
-          
+
           <!-- Menu Actions -->
           <div class="menu-actions">
             <button class="menu-item" (click)="goToProfile(); closeAccount()">

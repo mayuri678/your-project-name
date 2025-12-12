@@ -1,7 +1,14 @@
 
 
-<!-- Here all pages will be displayed -->
-<router-outlet></router-outlet>
+<div class="app-container">
+  <!-- Here all pages will be displayed -->
+  <div class="content-wrap">
+    <router-outlet></router-outlet>
+  </div>
+
+  <!-- Footer will be at the bottom of the page -->
+  <app-footer></app-footer>
+</div>
 
 <!-- Named outlet for modal/popups (e.g., login) -->
 <router-outlet name="modal"></router-outlet>

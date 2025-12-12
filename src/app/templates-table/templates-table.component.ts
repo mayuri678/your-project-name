@@ -13,6 +13,11 @@ import { HeaderComponent } from '../header/header.component';
 })
 export class TemplatesTableComponent implements OnInit {
   isLoggedIn = true;
+  showPreviewModal = false;
+  selectedTemplate: any = null;
+  userName: string = 'Your Name';
+  userEmail: string = 'your.email@example.com';
+  userPhone: string = '(123) 456-7890';
 
   // All available resume templates organized by category - matching resume component IDs
   allTemplates: any[] = [
@@ -76,8 +81,28 @@ export class TemplatesTableComponent implements OnInit {
 
   constructor(private router: Router) {}
 
+  private loadUserInfo(): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const currentUserName = localStorage.getItem('currentUserName');
+      const currentUserEmail = localStorage.getItem('currentUserEmail');
+      
+      if (currentUserName) this.userName = currentUserName;
+      if (currentUserEmail) {
+        // Check if it's gulvemayuri63 account
+        if (currentUserEmail === 'gulvemayuri63') {
+          this.userName = 'Mayuri Gulve';
+          this.userEmail = 'gulvemayuri63@gmail.com';
+          this.userPhone = '+91-9876543210';
+        } else {
+          this.userEmail = currentUserEmail;
+        }
+      }
+    }
+  }
+
   ngOnInit(): void {
     this.filteredTemplates = [...this.allTemplates];
+    this.loadUserInfo();
   }
 
   applyFilters(): void {
@@ -112,9 +137,17 @@ export class TemplatesTableComponent implements OnInit {
   }
 
   previewTemplate(template: any): void {
-    console.log('Preview template:', template);
-    // You can implement a preview modal here
-    alert(`Preview: ${template.name}\n\nCategory: ${template.category}\nColor: ${template.color}\nColumns: ${template.columns}\nPhoto: ${template.hasHeadshot ? 'Yes' : 'No'}\nGraphics: ${template.hasGraphics ? 'Yes' : 'No'}`);
+    this.selectedTemplate = { ...template };
+    this.showPreviewModal = true;
+    // Prevent scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+  }
+
+  closePreviewModal(): void {
+    this.showPreviewModal = false;
+    this.selectedTemplate = null;
+    // Re-enable scrolling when modal is closed
+    document.body.style.overflow = '';
   }
 
   getColorClass(color: string): string {
@@ -127,6 +160,38 @@ export class TemplatesTableComponent implements OnInit {
     this.selectedColumns = 'All';
     this.selectedHeadshot = 'All';
     this.applyFilters();
+  }
+
+  downloadTemplate(template: any): void {
+    // In a real application, this would download the template file
+    // For now, we'll just show a success message
+    this.showSuccessMessage = true;
+    this.successMessage = `Downloading ${template.name} template...`;
+    
+    // Simulate download
+    setTimeout(() => {
+      this.successMessage = `${template.name} template downloaded successfully!`;
+    }, 1000);
+
+    // Hide the message after 5 seconds
+    setTimeout(() => {
+      this.showSuccessMessage = false;
+    }, 5000);
+  }
+
+  editTemplate(template: any): void {
+    // In a real application, this would open the template in an editor
+    // For now, we'll navigate to the resume editor with the selected template
+    this.router.navigate(['/resume'], { 
+      queryParams: { 
+        template: template.id,
+        edit: 'true'
+      } 
+    }).then(() => {
+      console.log('Opening template for editing:', template.name);
+    }).catch((error) => {
+      console.error('Navigation failed:', error);
+    });
   }
 
   logout() {

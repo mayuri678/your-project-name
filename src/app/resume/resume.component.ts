@@ -1,293 +1,757 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HeaderComponent } from '../header/header.component';
-import { FooterComponent } from '../footer/footer.component';
 import { AuthService } from '../auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { SupabaseService } from '../services/supabase.service';
 
 @Component({
   selector: 'app-resume',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent],
   templateUrl: './resume.component.html',
   styleUrls: ['./resume.component.css']
 })
-export class ResumeComponent implements OnInit, OnDestroy {
-  selectedTemplate = 'template1';
-  showTemplateSelection = false;
-  appliedTemplate: string | null = null;
+export class ResumeComponent implements OnInit {
 
-  // Template properties for filtering
-  templates = [
-    // Blue templates
-    { id: 'template1', name: 'Classic Blue', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'blue', recommended: false },
-    { id: 'template8', name: 'Tech Modern', hasHeadshot: false, hasGraphics: true, columns: 2, color: 'blue', recommended: false },
-    { id: 'template13', name: 'Ocean Blue', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'blue', recommended: true },
-    { id: 'template14', name: 'Sky Blue', hasHeadshot: false, hasGraphics: true, columns: 2, color: 'blue', recommended: false },
+  selectedTemplate: string = 'template1';
+  isLoggedIn: boolean = false;
 
-    // Green templates
-    { id: 'template2', name: 'Modern Sidebar', hasHeadshot: true, hasGraphics: false, columns: 2, color: 'green', recommended: true },
-    { id: 'template10', name: 'Startup Green', hasHeadshot: true, hasGraphics: true, columns: 2, color: 'green', recommended: true },
-    { id: 'template15', name: 'Forest Green', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'green', recommended: false },
-    { id: 'template16', name: 'Mint Green', hasHeadshot: false, hasGraphics: true, columns: 1, color: 'green', recommended: false },
+  // Resume Data
+  name = '';
+  title = '';
+  email = '';
+  phone = '';
+  location = '';
+  linkedIn = '';
+  github = '';
+  profilePhoto: string | null = null;
+  photoPreview: string | null = null;
 
-    // Purple templates
-    { id: 'template3', name: 'Header Style', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'purple', recommended: false },
-    { id: 'template12', name: 'Artistic Purple', hasHeadshot: true, hasGraphics: true, columns: 1, color: 'purple', recommended: false },
-    { id: 'template17', name: 'Royal Purple', hasHeadshot: true, hasGraphics: false, columns: 2, color: 'purple', recommended: true },
-    { id: 'template18', name: 'Lavender', hasHeadshot: false, hasGraphics: true, columns: 1, color: 'purple', recommended: false },
+  education: any[] = [];
+  skills: string[] = ['Angular', 'TypeScript', 'HTML', 'CSS', 'JavaScript'];
+  experience: any[] = [];
+  highlights: string[] = [];
+  technicalSkills: string[] = [];
+  projects: any[] = [];
+  certifications: any[] = [];
 
-    // Black templates
-    { id: 'template4', name: 'Minimal Black', hasHeadshot: false, hasGraphics: false, columns: 1, color: 'black', recommended: false },
-    { id: 'template19', name: 'Elegant Black', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'black', recommended: true },
-    { id: 'template20', name: 'Modern Black', hasHeadshot: false, hasGraphics: true, columns: 2, color: 'black', recommended: false },
+  // Edit mode flag
+  isEditMode: boolean = false;
+  templateName: string = '';
+  editingTemplateId: string | null = null;
+  pdfImported: boolean = false;
+  pdfUrl: SafeResourceUrl | null = null;
+  showPdfViewer: boolean = false;
 
-    // Navy templates
-    { id: 'template5', name: 'Professional Navy', hasHeadshot: true, hasGraphics: true, columns: 2, color: 'navy', recommended: false },
-    { id: 'template11', name: 'Corporate Navy', hasHeadshot: false, hasGraphics: false, columns: 1, color: 'navy', recommended: false },
-    { id: 'template21', name: 'Executive Navy', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'navy', recommended: true },
-    { id: 'template22', name: 'Business Navy', hasHeadshot: true, hasGraphics: true, columns: 2, color: 'navy', recommended: false },
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private supabaseService: SupabaseService,
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-    // Orange templates
-    { id: 'template6', name: 'Creative Orange', hasHeadshot: true, hasGraphics: true, columns: 1, color: 'orange', recommended: false },
-    { id: 'template23', name: 'Sunset Orange', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'orange', recommended: true },
-    { id: 'template24', name: 'Vibrant Orange', hasHeadshot: false, hasGraphics: true, columns: 2, color: 'orange', recommended: false },
-
-    // Gray templates
-    { id: 'template7', name: 'Executive Gray', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'gray', recommended: true },
-    { id: 'template25', name: 'Professional Gray', hasHeadshot: false, hasGraphics: false, columns: 1, color: 'gray', recommended: false },
-    { id: 'template26', name: 'Modern Gray', hasHeadshot: true, hasGraphics: true, columns: 2, color: 'gray', recommended: false },
-
-    // Dark Blue templates
-    { id: 'template9', name: 'Academic Dark Blue', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'darkblue', recommended: false },
-    { id: 'template27', name: 'Deep Blue', hasHeadshot: true, hasGraphics: false, columns: 2, color: 'darkblue', recommended: true },
-    { id: 'template28', name: 'Midnight Blue', hasHeadshot: false, hasGraphics: true, columns: 1, color: 'darkblue', recommended: false }
-  ];
-
-  // Filter options
-  filterOptions = {
-    headshot: 'all', // all, with, without
-    graphics: 'all', // all, with, without
-    columns: 'all', // all, 1, 2
-    color: 'all' // all, blue, green, purple, black, navy, orange
-  };
-
-  filteredTemplates = [...this.templates];
-  activeFilters: string[] = [];
-
-  // Resume data properties
-  name = 'Mayuri Shete';
-  title = 'Frontend Developer';
-  email = 'mayuri.shete@example.com';
-  phone = '+91-9876543210';
-  location = 'Pune, Maharashtra, India';
-  linkedIn = 'linkedin.com/in/mayurishete';
-  github = 'github.com/mayurishete';
-
-  education = [
-    { degree: 'B.Tech Computer Science', institute: 'M.B.E.S. College of Engineering, Ambajogai', year: '2023' },
-    { degree: '12th HSC', institute: 'Shree Chhatrapati Shivaji Mahavidyalaya, Adas', year: '2018' },
-    { degree: '10th SSC', institute: 'Shree Chhatrapati Shivaji Vidyalaya, Adas', year: '2016' }
-  ];
-
-  skills = ['Angular', 'TypeScript', 'HTML', 'CSS', 'JavaScript', 'Responsive Web Design', 'REST API Integration'];
-
-  experience = [
-    { role: 'Frontend Developer', company: 'Tech Company', duration: '2021 - Present', description: 'Developed scalable web applications using Angular and TypeScript, improved UI/UX, optimized performance, and collaborated with backend teams.' },
-    { role: 'Intern - Web Developer', company: 'Startup Solutions', duration: '2020 - 2021', description: 'Built responsive landing pages, assisted in API integration, and contributed to website redesign projects.' }
-  ];
-
-  highlights = [
-    'Proficient in front-end web development with Angular.',
-    'Strong understanding of responsive design and cross-browser compatibility.',
-    'Experience in application development using C, C++ (Basic).',
-    'Quick learner and passionate about building user-friendly applications.',
-    'Excellent communication and teamwork skills.'
-  ];
-
-  technicalSkills = [
-    'Languages: C, C++, JavaScript, TypeScript',
-    'Web Technologies: HTML, CSS, JavaScript, Angular, Bootstrap',
-    'Version Control: Git, GitHub',
-    'Tools: Visual Studio Code, Postman, Figma',
-    'Concepts: OOPS, MVC Architecture, RESTful APIs'
-  ];
-
-  projects = [
-    {
-      name: 'Job Recommendation System Using Profile Matching',
-      technology: 'JSP',
-      description: 'System for campus recruitment helping placement offices match profiles with better precision using profile similarity and job site data crawling.'
-    },
-    {
-      name: 'Portfolio Website',
-      technology: 'Angular',
-      description: 'Personal portfolio website showcasing projects, blogs, and achievements using Angular and responsive design.'
-    },
-    {
-      name: 'E-commerce Admin Dashboard',
-      technology: 'Angular, Chart.js',
-      description: 'Developed a modern admin dashboard with user management, sales analytics, and order tracking.'
+  ngOnInit(): void {
+    this.isLoggedIn = this.authService.isLoggedIn();
+    
+    this.name = 'Test User';
+    this.email = 'test@example.com';
+    this.skills = ['HTML', 'CSS', 'JavaScript'];
+    
+    if (this.isLoggedIn && !this.pdfImported) {
+      this.loadUserData();
+      this.loadFirstSavedResume();
     }
-  ];
-
-  certifications = [
-    'Certified Angular Developer - Udemy',
-    'JavaScript Algorithms and Data Structures - freeCodeCamp',
-    'Responsive Web Design - freeCodeCamp'
-  ];
-
-  private qpSub: any;
-
-  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute) {}
-
-  ngOnInit() {
-    // Ensure filters applied on load
-    this.applyFilters();
-
-    // Open via query param
-    this.qpSub = this.route.queryParamMap.subscribe(params => {
-      const open = params.get('openTemplates');
-      const template = params.get('template');
-      const category = params.get('category');
-      
-      if (open === 'true') {
-        // reset filters and show all
-        this.filterOptions = { headshot: 'all', graphics: 'all', columns: 'all', color: 'all' };
-        this.applyFilters();
-        this.showTemplateSelection = true;
-        if (typeof window !== 'undefined' && window.sessionStorage) {
-          sessionStorage.removeItem('openTemplates');
-        }
+    
+    this.route.queryParams.subscribe(async params => {
+      if (params['template']) {
+        this.selectedTemplate = params['template'];
       }
-      
-      // Handle template selection from Resume Examples or Templates Table
-      if (template) {
-        this.appliedTemplate = template;
-        this.showTemplateSelection = true;
-        console.log('Applied template from Resume Examples/Templates:', template, 'Category:', category);
-        
-        // Try to find matching template in our list by ID first, then by name
-        const matchingTemplate = this.templates.find(t => 
-          t.id === template || 
-          t.name.toLowerCase().includes(template.toLowerCase()) ||
-          template.toLowerCase().includes(t.name.toLowerCase())
-        );
-        
-        if (matchingTemplate) {
-          this.selectedTemplate = matchingTemplate.id;
-          console.log('Found matching template:', matchingTemplate.name, 'ID:', matchingTemplate.id);
-        } else {
-          console.log('Template not found, using default template1');
-          this.selectedTemplate = 'template1';
-        }
+      if (params['edit'] === 'true') {
+        this.isEditMode = true;
       }
-      
-      // Handle opening template selection modal from Templates Table
-      if (params.get('openTemplates') === 'true' && params.get('fromTemplates') === 'true') {
-        this.showTemplateSelection = true;
-        console.log('Opening template selection modal from Templates Table');
+      if (params['templateName']) {
+        this.templateName = params['templateName'];
+      }
+      if (params['templateId']) {
+        this.editingTemplateId = params['templateId'];
+        await this.loadTemplateData(params['templateId']);
       }
     });
+  }
 
-    // Fallback: session flag set by header Templates click
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      const wantOpen = sessionStorage.getItem('openTemplates');
-      if (wantOpen === 'true') {
-        sessionStorage.removeItem('openTemplates');
-        this.filterOptions = { headshot: 'all', graphics: 'all', columns: 'all', color: 'all' };
-        this.applyFilters();
-        this.showTemplateSelection = true;
+  validateEmail(email: string): boolean {
+    return /.*@gmail\.com$/.test(email);
+  }
+
+  validatePhone(phone: string): boolean {
+    return /^[0-9]{10}$/.test(phone);
+  }
+
+  loadUserData(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    if (this.pdfImported) {
+      console.log('PDF data already imported, skipping user data load');
+      return;
+    }
+
+    const userProfile = this.authService.getUserProfile();
+    if (userProfile && userProfile.photo) {
+      this.profilePhoto = userProfile.photo;
+      this.photoPreview = null;
+    } else {
+      this.profilePhoto = null;
+      this.photoPreview = null;
+    }
+
+    if (currentUser.email === 'gulvemayuri63') {
+      this.name = 'Mayuri Gulve';
+      this.title = 'Software Developer';
+      this.email = 'gulvemayuri63@gmail.com';
+      this.phone = '+91-9876543210';
+      this.location = 'Pune, Maharashtra, India';
+      this.linkedIn = 'linkedin.com/in/mayurigulve';
+      this.github = 'github.com/mayurigulve';
+      
+      this.education = [
+        { degree: 'B.Tech Computer Science', institute: 'M.B.E.S. College of Engineering, Ambajogai', year: '2023' },
+        { degree: '12th HSC', institute: 'Shree Chhatrapati Shivaji Mahavidyalaya, Adas', year: '2018' },
+        { degree: '10th SSC', institute: 'Shree Chhatrapati Shivaji Vidyalaya, Adas', year: '2016' }
+      ];
+
+      this.skills = [
+        'Angular', 'TypeScript', 'HTML', 'CSS', 'JavaScript',
+        'Responsive Web Design', 'REST API Integration', 'Node.js'
+      ];
+
+      this.experience = [
+        {
+          role: 'Software Developer',
+          company: 'Tech Solutions Pvt Ltd',
+          duration: '2023 - Present',
+          description: 'Developed and maintained web applications using Angular and TypeScript. Collaborated with cross-functional teams to deliver high-quality software solutions.'
+        }
+      ];
+
+      this.highlights = [
+        'Proficient in modern web development frameworks and technologies.',
+        'Strong problem-solving skills with experience in full-stack development.',
+        'Excellent team player with good communication skills.'
+      ];
+
+      this.technicalSkills = [
+        'Languages: JavaScript, TypeScript, C, C++, Java',
+        'Frontend: Angular, React, HTML5, CSS3, Bootstrap, Material UI',
+        'Backend: Node.js, Express.js'
+      ];
+
+      this.projects = [
+        {
+          name: 'Resume Builder Application',
+          technology: 'Angular, TypeScript',
+          description: 'Developed a comprehensive resume builder application with multiple templates, user authentication, and PDF export functionality.',
+          file: null
+        }
+      ];
+
+      this.certifications = [
+        { name: 'Angular - The Complete Guide - Udemy', file: null },
+        { name: 'JavaScript Algorithms and Data Structures - freeCodeCamp', file: null }
+      ];
+    } else {
+      if (userProfile) {
+        this.name = userProfile.username || currentUser.name;
+        this.email = userProfile.email || currentUser.email;
+        this.phone = userProfile.contactNo || this.phone;
+        this.location = userProfile.location || this.location;
+      } else {
+        this.name = currentUser.name || '';
+        this.email = currentUser.email || '';
       }
     }
   }
 
-  ngOnDestroy(): void {
-    if (this.qpSub) { this.qpSub.unsubscribe(); }
-  }
-
-  get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
-  }
-
-  logout() {
+  logout(): void {
     this.authService.logout();
-    this.router.navigate(['/home']);
+    this.router.navigate(['/login']);
   }
 
-  selectTemplate(template: string) {
-    this.selectedTemplate = template;
-    this.showTemplateSelection = false;
-    this.appliedTemplate = null; // Clear applied template after selection
-  }
-
-  toggleTemplateSelection() {
-    if (!this.showTemplateSelection) {
-      // opening: reset filters and show all
-      this.filterOptions = { headshot: 'all', graphics: 'all', columns: 'all', color: 'all' };
-      this.applyFilters();
+  async loadTemplateData(templateId: string): Promise<void> {
+    try {
+      const result = await this.supabaseService.getTemplateById(templateId);
+      if (result.data) {
+        const templateData = JSON.parse(result.data.description);
+        this.name = templateData.name || '';
+        this.title = templateData.title || '';
+        this.email = templateData.email || '';
+        this.phone = templateData.phone || '';
+        this.location = templateData.location || '';
+        this.linkedIn = templateData.linkedIn || '';
+        this.github = templateData.github || '';
+        this.education = templateData.education || [];
+        this.skills = templateData.skills || [];
+        this.experience = templateData.experience || [];
+        this.highlights = templateData.highlights || [];
+        this.technicalSkills = templateData.technicalSkills || [];
+        this.projects = templateData.projects || [];
+        this.certifications = templateData.certifications || [];
+        this.profilePhoto = templateData.profilePhoto || null;
+      }
+    } catch (error) {
+      console.error('Error loading template data:', error);
     }
-    this.showTemplateSelection = !this.showTemplateSelection;
   }
 
-  applyFilters() {
-    this.filteredTemplates = this.templates.filter(template => {
-      let matches = true;
-
-      if (this.filterOptions.headshot === 'with' && !template.hasHeadshot) matches = false;
-      if (this.filterOptions.headshot === 'without' && template.hasHeadshot) matches = false;
-
-      if (this.filterOptions.graphics === 'with' && !template.hasGraphics) matches = false;
-      if (this.filterOptions.graphics === 'without' && template.hasGraphics) matches = false;
-
-      if (this.filterOptions.columns !== 'all' && template.columns !== parseInt(this.filterOptions.columns)) matches = false;
-
-      if (this.filterOptions.color !== 'all' && template.color !== this.filterOptions.color) matches = false;
-
-      return matches;
+  exitEditMode(): void {
+    this.isEditMode = false;
+    this.editingTemplateId = null;
+    this.router.navigate(['/resume'], {
+      queryParams: {
+        template: this.selectedTemplate
+      }
     });
-
-    this.updateActiveFilters();
   }
 
-  updateActiveFilters() {
-    this.activeFilters = [];
-    if (this.filterOptions.headshot === 'with') this.activeFilters.push('With headshot');
-    if (this.filterOptions.headshot === 'without') this.activeFilters.push('Without headshot');
-    if (this.filterOptions.graphics === 'with') this.activeFilters.push('With graphics');
-    if (this.filterOptions.graphics === 'without') this.activeFilters.push('Without graphics');
-    if (this.filterOptions.columns === '1') this.activeFilters.push('1 column');
-    if (this.filterOptions.columns === '2') this.activeFilters.push('2 columns');
-    if (this.filterOptions.color !== 'all') this.activeFilters.push(this.filterOptions.color);
+  addEducation(): void {
+    this.education.push({ degree: '', institute: '', year: '' });
   }
 
-  removeFilter(filterType: string, value: string) {
-    switch (filterType) {
-      case 'headshot':
-        this.filterOptions.headshot = 'all';
-        break;
-      case 'graphics':
-        this.filterOptions.graphics = 'all';
-        break;
-      case 'columns':
-        this.filterOptions.columns = 'all';
-        break;
-      case 'color':
-        this.filterOptions.color = 'all';
-        break;
+  removeEducation(index: number): void {
+    this.education.splice(index, 1);
+  }
+
+  addSkill(): void {
+    if (!this.skills) {
+      this.skills = [];
     }
-    this.applyFilters();
+    this.skills.push('');
   }
 
-  clearAllFilters() {
-    this.filterOptions = {
-      headshot: 'all',
-      graphics: 'all',
-      columns: 'all',
-      color: 'all'
+  removeSkill(index: number): void {
+    this.skills.splice(index, 1);
+  }
+
+  addExperience(): void {
+    this.experience.push({ role: '', company: '', duration: '', description: '' });
+  }
+
+  removeExperience(index: number): void {
+    this.experience.splice(index, 1);
+  }
+
+  addHighlight(): void {
+    this.highlights.push('');
+  }
+
+  removeHighlight(index: number): void {
+    this.highlights.splice(index, 1);
+  }
+
+  addTechnicalSkill(): void {
+    this.technicalSkills.push('');
+  }
+
+  removeTechnicalSkill(index: number): void {
+    this.technicalSkills.splice(index, 1);
+  }
+
+  addProject(): void {
+    this.projects.push({ name: '', technology: '', description: '', file: null });
+    setTimeout(() => {
+      const newIndex = this.projects.length - 1;
+      const fileInput = document.getElementById(`project-file-${newIndex}`) as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      }
+    }, 100);
+  }
+
+  onProjectFileSelected(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.projects[index].file = input.files[0];
+      if (!this.projects[index].name) {
+        this.projects[index].name = input.files[0].name.replace(/\.[^/.]+$/, '');
+      }
+    }
+  }
+
+  removeProject(index: number): void {
+    this.projects.splice(index, 1);
+  }
+
+  addCertification(): void {
+    this.certifications.push({ name: '', file: null });
+    setTimeout(() => {
+      const newIndex = this.certifications.length - 1;
+      const fileInput = document.getElementById(`certification-file-${newIndex}`) as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      }
+    }, 100);
+  }
+
+  onCertificationFileSelected(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.certifications[index].file = input.files[0];
+      if (!this.certifications[index].name) {
+        this.certifications[index].name = input.files[0].name.replace(/\.[^/.]+$/, '');
+      }
+    }
+  }
+
+  removeCertification(index: number): void {
+    this.certifications.splice(index, 1);
+  }
+
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (e.target?.result) {
+          this.photoPreview = e.target.result as string;
+          this.profilePhoto = this.photoPreview;
+          
+          const userProfile = this.authService.getUserProfile();
+          const currentUser = this.authService.getCurrentUser();
+          if (currentUser) {
+            const updatedProfile = {
+              username: userProfile?.username || currentUser.name,
+              email: userProfile?.email || currentUser.email,
+              contactNo: userProfile?.contactNo || '',
+              notification: userProfile?.notification !== undefined ? userProfile.notification : true,
+              address: userProfile?.address || '',
+              street: userProfile?.street || '',
+              city: userProfile?.city || '',
+              state: userProfile?.state || '',
+              country: userProfile?.country || '',
+              pincode: userProfile?.pincode || '',
+              location: userProfile?.location || '',
+              photo: this.photoPreview
+            };
+            this.authService.saveUserProfile(updatedProfile);
+          }
+        }
+      };
+      
+      reader.onerror = () => {
+        alert('Error reading image file.');
+      };
+      
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removePhoto(): void {
+    this.profilePhoto = null;
+    this.photoPreview = null;
+    
+    const userProfile = this.authService.getUserProfile();
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && userProfile) {
+      const updatedProfile = {
+        ...userProfile,
+        photo: ''
+      };
+      this.authService.saveUserProfile(updatedProfile);
+    }
+  }
+
+  getPhotoUrl(): string | null {
+    if (this.photoPreview) {
+      return this.photoPreview;
+    }
+    if (this.profilePhoto) {
+      return this.profilePhoto;
+    }
+    return null;
+  }
+
+  getCertificationName(cert: any): string {
+    if (typeof cert === 'string') {
+      return cert;
+    }
+    return cert?.name || '';
+  }
+
+  async saveTemplate(): Promise<void> {
+    if (!this.validateEmail(this.email)) {
+      alert('Please enter a valid Gmail address (ending with @gmail.com)');
+      return;
+    }
+    if (!this.validatePhone(this.phone)) {
+      alert('Please enter a valid 10-digit phone number');
+      return;
+    }
+    
+    try {
+      const templateData = {
+        name: this.name,
+        title: this.title,
+        email: this.email,
+        phone: this.phone,
+        location: this.location,
+        linkedIn: this.linkedIn,
+        github: this.github,
+        education: this.education,
+        skills: this.skills,
+        experience: this.experience,
+        highlights: this.highlights,
+        technicalSkills: this.technicalSkills,
+        projects: this.projects,
+        certifications: this.certifications,
+        profilePhoto: this.profilePhoto
+      };
+
+      const result = await this.supabaseService.saveTemplate({
+        templateId: this.selectedTemplate,
+        content: templateData,
+        existingId: this.editingTemplateId
+      });
+
+      if (result.error) {
+        alert('Failed to save template: ' + result.error.message);
+      } else {
+        alert('Template saved successfully!');
+        if (this.editingTemplateId) {
+          this.router.navigate(['/my-templates']);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving template:', error);
+      alert('Error saving template');
+    }
+  }
+
+  async loadFirstSavedResume(): Promise<void> {
+    try {
+      if (this.pdfImported) {
+        console.log('PDF data already imported, skipping saved resume load');
+        return;
+      }
+      
+      const result = await this.supabaseService.getUserTemplates();
+      if (result.data && result.data.length > 0) {
+        const firstResume = result.data[0];
+        await this.importResumeData(firstResume);
+      }
+    } catch (error) {
+      console.error('Error loading first saved resume:', error);
+    }
+  }
+
+  async importResumeData(resumeTemplate: any): Promise<void> {
+    try {
+      const resumeData = JSON.parse(resumeTemplate.description);
+      
+      this.name = resumeData.name || this.name;
+      this.title = resumeData.title || this.title;
+      this.email = resumeData.email || this.email;
+      this.phone = resumeData.phone || this.phone;
+      this.location = resumeData.location || this.location;
+      this.linkedIn = resumeData.linkedIn || this.linkedIn;
+      this.github = resumeData.github || this.github;
+      this.profilePhoto = resumeData.profilePhoto || this.profilePhoto;
+      
+      this.education = resumeData.education || this.education;
+      this.skills = resumeData.skills || this.skills;
+      this.experience = resumeData.experience || this.experience;
+      this.highlights = resumeData.highlights || this.highlights;
+      this.technicalSkills = resumeData.technicalSkills || this.technicalSkills;
+      this.projects = resumeData.projects || this.projects;
+      this.certifications = resumeData.certifications || this.certifications;
+      
+      console.log('Resume data imported successfully');
+    } catch (error) {
+      console.error('Error importing resume data:', error);
+    }
+  }
+
+  importResumeFromFile(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.pdf,.docx,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*';
+    input.onchange = (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        this.processImportedFile(file);
+      }
     };
-    this.applyFilters();
+    input.click();
+  }
+
+  async processImportedFile(file: File): Promise<void> {
+    try {
+      if (file.type === 'application/json' || file.name.endsWith('.json')) {
+        const text = await file.text();
+        const resumeData = JSON.parse(text);
+        await this.importResumeData({ description: JSON.stringify(resumeData) });
+        alert('Resume data imported successfully!');
+      } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        await this.parsePDFFile(file);
+      } else if (file.type.startsWith('image/')) {
+        await this.parseImageFile(file);
+      } else {
+        alert('Unsupported file format. Please use JSON, PDF, or image files.');
+      }
+    } catch (error) {
+      console.error('Error processing imported file:', error);
+      alert('Error importing file. Please ensure it\'s a valid resume file.');
+    }
+  }
+
+  async parsePDFFile(file: File): Promise<void> {
+    try {
+      const url = URL.createObjectURL(file);
+      this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+      this.showPdfViewer = true;
+      
+      this.name = file.name.replace('.pdf', '').replace(/[_-]/g, ' ');
+      this.email = this.name.toLowerCase().replace(/\s+/g, '.') + '@email.com';
+      this.phone = '9876543210';
+      this.title = 'Professional';
+      this.location = 'City, State';
+      this.linkedIn = 'linkedin.com/in/profile';
+      this.github = 'github.com/profile';
+      
+      this.skills = ['JavaScript', 'Python', 'React', 'Node.js', 'HTML', 'CSS'];
+      this.education = [{
+        degree: 'Bachelor Degree',
+        institute: 'University Name',
+        year: '2023',
+        grade: 'First Class'
+      }];
+      this.experience = [{
+        role: 'Software Developer',
+        company: 'Tech Company',
+        duration: '2022-2024',
+        description: 'Professional software development experience'
+      }];
+      this.highlights = [
+        'Strong technical skills',
+        'Problem solving abilities',
+        'Team collaboration'
+      ];
+      this.technicalSkills = ['Programming', 'Web Development', 'Database Management'];
+      this.projects = [{
+        name: 'Web Application',
+        technology: 'React, Node.js',
+        description: 'Full-stack web application development'
+      }];
+      
+      this.pdfImported = true;
+      this.cdr.detectChanges();
+      
+      alert('PDF imported! Data is now visible in template. Click Edit to modify.');
+    } catch (error) {
+      console.error('Error parsing PDF:', error);
+      alert('Error reading PDF file. Please try a different file.');
+    }
+  }
+
+  async parseImageFile(file: File): Promise<void> {
+    try {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (e.target?.result) {
+          this.profilePhoto = e.target.result as string;
+          this.photoPreview = this.profilePhoto;
+          alert('Profile photo uploaded successfully!');
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      alert('Error uploading image. Please try a different file.');
+    }
+  }
+
+  closePdfViewer(): void {
+    this.showPdfViewer = false;
+    this.pdfUrl = null;
+  }
+
+  editImportedPdf(): void {
+    this.showPdfViewer = false;
+    this.pdfUrl = null;
+    this.pdfImported = true;
+    this.isEditMode = true;
+    
+    if (!this.name || this.name === '') {
+      this.setDefaultPdfData();
+    }
+    
+    this.cdr.detectChanges();
+  }
+
+  setDefaultPdfData(): void {
+    this.name = 'John Doe';
+    this.email = 'john.doe@example.com';
+    this.phone = '1234567890';
+    this.title = 'Software Developer';
+    this.location = 'City, State';
+    this.linkedIn = 'linkedin.com/in/johndoe';
+    this.github = 'github.com/johndoe';
+    
+    this.skills = ['JavaScript', 'Python', 'React', 'Node.js'];
+    this.education = [{
+      degree: 'Bachelor of Computer Science',
+      institute: 'University Name',
+      year: '2023',
+      grade: 'First Class'
+    }];
+    this.experience = [{
+      role: 'Software Developer',
+      company: 'Tech Company',
+      duration: '2022-2024',
+      description: 'Developed web applications using modern technologies'
+    }];
+    this.highlights = [
+      'Strong problem-solving skills',
+      'Team collaboration',
+      'Continuous learning'
+    ];
+    this.technicalSkills = ['HTML/CSS', 'JavaScript', 'Python', 'Git'];
+    this.projects = [{
+      name: 'Web Application',
+      technology: 'React, Node.js',
+      description: 'Built a full-stack web application'
+    }];
+  }
+
+  forceEditMode(): void {
+    this.isEditMode = true;
+    this.pdfImported = true;
+    this.setDefaultPdfData();
+    this.cdr.detectChanges();
+    console.log('Force edit mode activated with data');
+  }
+
+  quickEditPdf(): void {
+    this.showPdfViewer = false;
+    this.isEditMode = true;
+    this.pdfImported = true;
+    this.setDefaultPdfData();
+    this.cdr.detectChanges();
+  }
+
+  testDataSet(): void {
+    this.name = 'PDF Test User';
+    this.email = 'pdftest@example.com';
+    this.phone = '9876543210';
+    this.title = 'PDF Developer';
+    this.skills = ['PDF', 'Angular', 'TypeScript'];
+    this.education = [{ degree: 'PDF Degree', institute: 'PDF University', year: '2024', grade: 'A+' }];
+    this.pdfImported = true;
+    this.cdr.detectChanges();
+    alert('Test data set! Name: ' + this.name);
+  }
+
+  exportResumeAsJSON(): void {
+    const resumeData = {
+      name: this.name,
+      title: this.title,
+      email: this.email,
+      phone: this.phone,
+      location: this.location,
+      linkedIn: this.linkedIn,
+      github: this.github,
+      profilePhoto: this.profilePhoto,
+      education: this.education,
+      skills: this.skills,
+      experience: this.experience,
+      highlights: this.highlights,
+      technicalSkills: this.technicalSkills,
+      projects: this.projects,
+      certifications: this.certifications,
+      template: this.selectedTemplate,
+      exportDate: new Date().toISOString()
+    };
+
+    const dataStr = JSON.stringify(resumeData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${this.name || 'Resume'}_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    
+    URL.revokeObjectURL(url);
+  }
+
+  downloadPDF(): void {
+    const wasInEditMode = this.isEditMode;
+    this.isEditMode = false;
+    
+    setTimeout(() => {
+      const resumeElement = document.querySelector(`.resume-container.${this.selectedTemplate}`) as HTMLElement;
+      
+      if (!resumeElement) {
+        alert('Resume element not found');
+        this.isEditMode = wasInEditMode;
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow popups to download the PDF');
+        this.isEditMode = wasInEditMode;
+        return;
+      }
+
+      const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Resume - ${this.name || 'Resume'}</title>
+  <style>
+    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+    .resume-container { margin: 0; box-shadow: none; border: none; max-width: 100%; }
+    .edit-mode-banner, .resume-actions-bar, .add-btn, .remove-btn { display: none !important; }
+    .editable-item, .add-btn, .remove-btn { display: none !important; }
+    @media print {
+      body { margin: 0; padding: 0; }
+      @page { size: A4; margin: 0.5in; }
+    }
+  </style>
+</head>
+<body>
+  ${resumeElement.outerHTML}
+</body>
+</html>`;
+
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+          this.isEditMode = wasInEditMode;
+        }, 500);
+      };
+    }, 100);
   }
 }

@@ -1,129 +1,107 @@
-<app-header [loggedIn]="isLoggedIn" [showTemplates]="true" (logout)="logout()" (templates)="toggleTemplateSelection()"></app-header>
+<app-header [loggedIn]="isLoggedIn" [showTemplates]="false" (logout)="logout()"></app-header>
 
-
-
-<!-- Template Selection Interface -->
-<div *ngIf="showTemplateSelection" class="template-selection-overlay">
-  <div class="template-selection-modal">
-    <div class="template-selection-header">
-      <h2>Templates we recommend for you</h2>
-      <p>You can always change your template later.</p>
-      
-      <button class="close-btn" (click)="showTemplateSelection = false">✕</button>
-    </div>
-
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-      <span class="filter-label">Filter by</span>
-
-      <div class="filter-dropdown">
-        <select [(ngModel)]="filterOptions.headshot" (change)="applyFilters()">
-          <option value="all">Headshot</option>
-          <option value="with">With headshot</option>
-          <option value="without">Without headshot</option>
-        </select>
-      </div>
-
-      <div class="filter-dropdown">
-        <select [(ngModel)]="filterOptions.graphics" (change)="applyFilters()">
-          <option value="all">Graphics</option>
-          <option value="with">With graphics</option>
-          <option value="without">Without graphics</option>
-        </select>
-      </div>
-
-      <div class="filter-dropdown">
-        <select [(ngModel)]="filterOptions.columns" (change)="applyFilters()">
-          <option value="all">Columns</option>
-          <option value="1">1 column</option>
-          <option value="2">2 columns</option>
-        </select>
-      </div>
-
-      <div class="filter-dropdown">
-        <select [(ngModel)]="filterOptions.color" (change)="applyFilters()">
-          <option value="all">Colors</option>
-          <option value="blue">Blue</option>
-          <option value="green">Green</option>
-          <option value="purple">Purple</option>
-          <option value="black">Black</option>
-          <option value="navy">Navy</option>
-          <option value="orange">Orange</option>
-          <option value="gray">Gray</option>
-          <option value="darkblue">Dark Blue</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Results and Active Filters -->
-    <div class="results-section">
-      <span class="results-count">Results ({{ filteredTemplates.length }})</span>
-
-      <div class="active-filters" *ngIf="activeFilters.length > 0">
-        <span *ngFor="let filter of activeFilters" class="filter-pill">
-          {{ filter }}
-          <button (click)="clearAllFilters()" class="remove-filter">✕</button>
-        </span>
-        <button class="clear-filters" (click)="clearAllFilters()">
-          <span>🔄</span> Clear filters
-        </button>
-      </div>
-    </div>
-
-    <!-- Template Preview Cards -->
-    <div class="template-grid">
-      <div *ngFor="let template of filteredTemplates"
-           class="template-card"
-           [class.selected]="selectedTemplate === template.id"
-           (click)="selectTemplate(template.id)">
-
-        <div class="template-preview" [ngClass]="'preview-' + template.id">
-          <div class="preview-header">
-            <div class="preview-name">{{ name }}</div>
-            <div class="preview-title">{{ title }}</div>
-          </div>
-          <div class="preview-content">
-            <div class="preview-section">Skills</div>
-            <div class="preview-section">Experience</div>
-            <div class="preview-section">Education</div>
-          </div>
-        </div>
-
-        <div class="template-info">
-          <h3>{{ template.name }}</h3>
-          <div class="template-badges">
-            <span *ngIf="template.recommended" class="badge recommended">Recommended</span>
-            <span class="badge">{{ template.columns }} column{{ template.columns > 1 ? 's' : '' }}</span>
-            <span *ngIf="template.hasHeadshot" class="badge">With photo</span>
-            <span *ngIf="template.hasGraphics" class="badge">With graphics</span>
-          </div>
-        </div>
-      </div>
+<!-- Edit Mode Banner -->
+<div *ngIf="isEditMode" class="edit-mode-banner">
+  <div class="edit-mode-content">
+    <span class="edit-icon">✏️</span>
+    <span class="edit-text">Editing Template: <strong>{{ templateName || selectedTemplate }}</strong></span>
+    <div class="edit-actions">
+      <select [(ngModel)]="selectedTemplate" class="template-selector">
+        <option value="template1">Template 1</option>
+        <option value="template2">Template 2</option>
+        <option value="template3">Template 3</option>
+      </select>
+      <button class="save-btn" (click)="saveTemplate()">💾 Save Template</button>
+      <button class="download-btn" (click)="downloadPDF()">📥 Download PDF</button>
+      <button class="export-btn" (click)="exportResumeAsJSON()">📤 Export JSON</button>
+      <button class="import-btn" (click)="importResumeFromFile()">📂 Import Resume</button>
+      <button *ngIf="pdfUrl" class="view-pdf-btn" (click)="showPdfViewer = true">👁️ View PDF</button>
+      <button class="close-edit-btn" (click)="exitEditMode()">Exit Edit Mode</button>
     </div>
   </div>
 </div>
 
-<!-- TEMPLATE 1 -->
-<div *ngIf="selectedTemplate === 'template1'" class="resume-container template1">
+
+
+<!-- Resume Actions Bar (Always Visible) -->
+<div *ngIf="!isEditMode" class="resume-actions-bar">
+  <div class="actions-content">
+    <div class="actions-left">
+      <span class="resume-info">Resume: <strong>{{ name || 'Untitled' }}</strong></span>
+    </div>
+    <div class="actions-right">
+      <select [(ngModel)]="selectedTemplate" class="template-selector-view">
+        <option value="template1">Template 1</option>
+        <option value="template2">Template 2</option>
+        <option value="template3">Template 3</option>
+      </select>
+      <button class="action-btn primary" (click)="downloadPDF()">📥 Download PDF</button>
+      <button class="action-btn secondary" (click)="exportResumeAsJSON()">📤 Export JSON</button>
+      <button class="action-btn secondary" (click)="importResumeFromFile()">📂 Import Resume</button>
+      <button class="action-btn edit" (click)="isEditMode = true">✏️ Edit</button>
+      <button *ngIf="pdfImported" class="action-btn primary" (click)="quickEditPdf()">⚡ Edit PDF</button>
+      <button class="action-btn secondary" (click)="forceEditMode()">🔧 Force Edit</button>
+      <button class="action-btn secondary" (click)="testDataSet()">🧪 Test Data</button>
+      <button class="action-btn primary" (click)="isEditMode = true; cdr.detectChanges()">✏️ Simple Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Template 1 (Default) -->
+<div *ngIf="selectedTemplate === 'template1'" class="resume-container template1" [class.edit-mode]="isEditMode" id="resume-content">
   <div class="header">
     <div class="info">
-      <h1>{{ name }}</h1>
-      <h2>{{ title }}</h2>
-      <p><b>Email:</b> {{ email }}</p>
-      <p><b>Phone:</b> {{ phone }}</p>
-      <p><b>Location:</b> {{ location }}</p>
-      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
-      <p><b>GitHub:</b> {{ github }}</p>
+      <h1 *ngIf="!isEditMode">{{ name }}</h1>
+      <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
+      
+      <h2 *ngIf="!isEditMode">{{ title }}</h2>
+      <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
+      
+      <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
+      <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
+      
+      <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
+      <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
+      
+      <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
+      <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
+      
+      <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
+      
+      <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
+      <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
     </div>
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
-    </div>
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
+      </div>
   </div>
   <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
-</div>
+  </div>
 
 <!-- TEMPLATE 2 -->
-<div *ngIf="selectedTemplate === 'template2'" class="resume-container template2">
+<div *ngIf="selectedTemplate === 'template2'" class="resume-container template2" [class.edit-mode]="isEditMode" id="resume-content">
   <div class="template2-main">
     <!-- LEFT: Resume Details -->
     <div class="template2-details">
@@ -132,52 +110,110 @@
 
     <!-- RIGHT: Photo and Contact Info -->
     <div class="template2-sidebar">
-      <div class="photo">
-        <img src="assets/mayuri.jpg" alt="Profile Photo">
-      </div>
+      <ng-container *ngTemplateOutlet="profilePhotoTemplate"></ng-container>
       <div class="info">
-        <h1>{{ name }}</h1>
-        <h2>{{ title }}</h2>
-        <p><b>Email:</b> {{ email }}</p>
-        <p><b>Phone:</b> {{ phone }}</p>
-        <p><b>Location:</b> {{ location }}</p>
-        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
-        <p><b>GitHub:</b> {{ github }}</p>
+        <h1 *ngIf="!isEditMode">{{ name }}</h1>
+        <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
+        
+        <h2 *ngIf="!isEditMode">{{ title }}</h2>
+        <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
+        
+        <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
+        <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
+        
+        <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
+        <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
+        
+        <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
+        <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
+        
+        <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
+        
+        <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
+        <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
       </div>
     </div>
   </div>
 </div>
 
 <!-- TEMPLATE 3 -->
-<div *ngIf="selectedTemplate === 'template3'" class="resume-container template3">
+<div *ngIf="selectedTemplate === 'template3'" class="resume-container template3" [class.edit-mode]="isEditMode" id="resume-content">
   <div class="header">
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
     <div class="info">
-      <h1>{{ name }}</h1>
-      <h2>{{ title }}</h2>
-      <p><b>Email:</b> {{ email }}</p>
-      <p><b>Phone:</b> {{ phone }}</p>
-      <p><b>Location:</b> {{ location }}</p>
-      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
-      <p><b>GitHub:</b> {{ github }}</p>
+      <h1 *ngIf="!isEditMode">{{ name }}</h1>
+      <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
+      
+      <h2 *ngIf="!isEditMode">{{ title }}</h2>
+      <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
+      
+      <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
+      <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
+      
+      <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
+      <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
+      
+      <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
+      <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
+      
+      <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
+      
+      <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
+      <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
 </div>
 
 <!-- TEMPLATE 4 -->
-<div *ngIf="selectedTemplate === 'template4'" class="resume-container template4">
+<div *ngIf="selectedTemplate === 'template4'" class="resume-container template4" [class.edit-mode]="isEditMode">
   <div class="header">
     <div class="info">
-      <h1>{{ name }}</h1>
-      <h2>{{ title }}</h2>
-      <p><b>Email:</b> {{ email }}</p>
-      <p><b>Phone:</b> {{ phone }}</p>
-      <p><b>Location:</b> {{ location }}</p>
-      <p><b>LinkedIn:</b> {{ linkedIn }}</p>
-      <p><b>GitHub:</b> {{ github }}</p>
+      <h1 *ngIf="!isEditMode">{{ name }}</h1>
+      <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
+      
+      <h2 *ngIf="!isEditMode">{{ title }}</h2>
+      <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
+      
+      <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
+      <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
+      
+      <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
+      <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
+      
+      <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
+      <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
+      
+      <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
+      <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
+      
+      <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
+      <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
@@ -193,17 +229,28 @@
 
     <!-- RIGHT: Photo and Contact Info -->
     <div class="template5-sidebar">
-      <div class="photo">
-        <img src="assets/mayuri.jpg" alt="Profile Photo">
-      </div>
+      <ng-container *ngTemplateOutlet="profilePhotoTemplate"></ng-container>
       <div class="info">
-        <h1>{{ name }}</h1>
-        <h2>{{ title }}</h2>
-        <p><b>Email:</b> {{ email }}</p>
-        <p><b>Phone:</b> {{ phone }}</p>
-        <p><b>Location:</b> {{ location }}</p>
-        <p><b>LinkedIn:</b> {{ linkedIn }}</p>
-        <p><b>GitHub:</b> {{ github }}</p>
+        <h1 *ngIf="!isEditMode">{{ name }}</h1>
+        <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
+        
+        <h2 *ngIf="!isEditMode">{{ title }}</h2>
+        <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
+        
+        <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
+        <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
+        
+        <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
+        <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
+        
+        <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
+        <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
+        
+        <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
+        <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
+        
+        <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
+        <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
       </div>
     </div>
   </div>
@@ -213,7 +260,28 @@
 <div *ngIf="selectedTemplate === 'template6'" class="resume-container template6">
   <div class="header">
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
     <div class="info">
       <h1>{{ name }}</h1>
@@ -241,7 +309,28 @@
       <p><b>GitHub:</b> {{ github }}</p>
     </div>
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
@@ -274,7 +363,28 @@
 <div *ngIf="selectedTemplate === 'template9'" class="resume-container template9">
   <div class="header">
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
     <div class="info">
       <h1>{{ name }}</h1>
@@ -299,9 +409,7 @@
 
     <!-- RIGHT: Photo and Contact Info -->
     <div class="template10-sidebar">
-      <div class="photo">
-        <img src="assets/mayuri.jpg" alt="Profile Photo">
-      </div>
+      <ng-container *ngTemplateOutlet="profilePhotoTemplate"></ng-container>
       <div class="info">
         <h1>{{ name }}</h1>
         <h2>{{ title }}</h2>
@@ -335,7 +443,28 @@
 <div *ngIf="selectedTemplate === 'template12'" class="resume-container template12">
   <div class="header">
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
     <div class="info">
       <h1>{{ name }}</h1>
@@ -363,7 +492,28 @@
       <p><b>GitHub:</b> {{ github }}</p>
     </div>
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
@@ -393,7 +543,28 @@
 <div *ngIf="selectedTemplate === 'template15'" class="resume-container template15">
   <div class="header">
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
     <div class="info">
       <h1>{{ name }}</h1>
@@ -431,9 +602,7 @@
       <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
     </div>
     <div class="template17-sidebar">
-      <div class="photo">
-        <img src="assets/mayuri.jpg" alt="Profile Photo">
-      </div>
+      <ng-container *ngTemplateOutlet="profilePhotoTemplate"></ng-container>
       <div class="info">
         <h1>{{ name }}</h1>
         <h2>{{ title }}</h2>
@@ -467,7 +636,28 @@
 <div *ngIf="selectedTemplate === 'template19'" class="resume-container template19">
   <div class="header">
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
     <div class="info">
       <h1>{{ name }}</h1>
@@ -515,7 +705,28 @@
       <p><b>GitHub:</b> {{ github }}</p>
     </div>
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
@@ -528,9 +739,7 @@
       <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
     </div>
     <div class="template22-sidebar">
-      <div class="photo">
-        <img src="assets/mayuri.jpg" alt="Profile Photo">
-      </div>
+      <ng-container *ngTemplateOutlet="profilePhotoTemplate"></ng-container>
       <div class="info">
         <h1>{{ name }}</h1>
         <h2>{{ title }}</h2>
@@ -548,7 +757,28 @@
 <div *ngIf="selectedTemplate === 'template23'" class="resume-container template23">
   <div class="header">
     <div class="photo">
-      <img src="assets/mayuri.jpg" alt="Profile Photo">
+        <div *ngIf="!isEditMode">
+          <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+          <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="photo-edit-container">
+          <div class="photo-preview-resume">
+            <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+            <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+            <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+          <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+            <span class="upload-icon">📷</span>
+            {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+        </div>
     </div>
     <div class="info">
       <h1>{{ name }}</h1>
@@ -606,9 +836,7 @@
       <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
     </div>
     <div class="template26-sidebar">
-      <div class="photo">
-        <img src="assets/mayuri.jpg" alt="Profile Photo">
-      </div>
+      <ng-container *ngTemplateOutlet="profilePhotoTemplate"></ng-container>
       <div class="info">
         <h1>{{ name }}</h1>
         <h2>{{ title }}</h2>
@@ -629,9 +857,7 @@
       <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
     </div>
     <div class="template27-sidebar">
-      <div class="photo">
-        <img src="assets/mayuri.jpg" alt="Profile Photo">
-      </div>
+      <ng-container *ngTemplateOutlet="profilePhotoTemplate"></ng-container>
       <div class="info">
         <h1>{{ name }}</h1>
         <h2>{{ title }}</h2>
@@ -661,12 +887,51 @@
   <ng-container *ngTemplateOutlet="resumeDetails"></ng-container>
 </div>
 
+<!-- Profile Photo Template -->
+<ng-template #profilePhotoTemplate>
+  <div class="photo">
+    <div *ngIf="!isEditMode">
+      <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+      <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+        <span class="placeholder-icon">👤</span>
+        <span class="placeholder-text">Profile Photo</span>
+      </div>
+    </div>
+    <div *ngIf="isEditMode" class="photo-edit-container">
+      <div class="photo-preview-resume">
+        <img [src]="getPhotoUrl()" alt="Profile Photo" *ngIf="getPhotoUrl()">
+        <div *ngIf="!getPhotoUrl()" class="photo-placeholder-resume">
+          <span class="placeholder-icon">👤</span>
+          <span class="placeholder-text">Profile Photo</span>
+        </div>
+        <button class="remove-photo-btn-resume" *ngIf="getPhotoUrl()" (click)="removePhoto()" title="Remove photo">×</button>
+      </div>
+      <input type="file" [id]="'photo-input-' + selectedTemplate" accept="image/*" (change)="onPhotoSelected($event)" class="photo-input-resume">
+      <label [for]="'photo-input-' + selectedTemplate" class="photo-upload-btn-resume">
+        <span class="upload-icon">📷</span>
+        {{ getPhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+      </label>
+    </div>
+  </div>
+</ng-template>
+
 <ng-template #resumeDetails>
   <section>
     <h3>Education</h3>
     <ul>
-      <li *ngFor="let edu of education">
+      <li *ngFor="let edu of education; let i = index">
+        <div *ngIf="!isEditMode">
         <b>{{ edu.degree }}</b> - {{ edu.institute }} ({{ edu.year }})
+        </div>
+        <div *ngIf="isEditMode" class="editable-item">
+          <input type="text" [(ngModel)]="edu.degree" class="editable-input" placeholder="Degree">
+          <input type="text" [(ngModel)]="edu.institute" class="editable-input" placeholder="Institute">
+          <input type="text" [(ngModel)]="edu.year" class="editable-input-small" placeholder="Year">
+          <button class="remove-btn" (click)="removeEducation(i)">×</button>
+        </div>
+      </li>
+      <li *ngIf="isEditMode">
+        <button class="add-btn" (click)="addEducation()">+ Add Education</button>
       </li>
     </ul>
   </section>
@@ -674,16 +939,37 @@
   <section>
     <h3>Skills</h3>
     <ul>
-      <li *ngFor="let skill of skills">{{ skill }}</li>
+      <li *ngFor="let skill of skills; let i = index">
+        <span *ngIf="!isEditMode">{{ skill }}</span>
+        <div *ngIf="isEditMode" class="editable-item">
+          <input type="text" [(ngModel)]="skills[i]" class="editable-input" placeholder="Skill">
+          <button class="remove-btn" (click)="removeSkill(i)">×</button>
+        </div>
+      </li>
+      <li *ngIf="isEditMode">
+        <button class="add-btn" (click)="addSkill()">+ Add Skill</button>
+      </li>
     </ul>
   </section>
 
   <section>
     <h3>Experience</h3>
     <ul>
-      <li *ngFor="let exp of experience">
+      <li *ngFor="let exp of experience; let i = index">
+        <div *ngIf="!isEditMode">
         <b>{{ exp.role }}</b> at {{ exp.company }} ({{ exp.duration }})
         <p>{{ exp.description }}</p>
+        </div>
+        <div *ngIf="isEditMode" class="editable-item">
+          <input type="text" [(ngModel)]="exp.role" class="editable-input" placeholder="Role">
+          <input type="text" [(ngModel)]="exp.company" class="editable-input" placeholder="Company">
+          <input type="text" [(ngModel)]="exp.duration" class="editable-input-small" placeholder="Duration">
+          <textarea [(ngModel)]="exp.description" class="editable-textarea" placeholder="Description"></textarea>
+          <button class="remove-btn" (click)="removeExperience(i)">×</button>
+        </div>
+      </li>
+      <li *ngIf="isEditMode">
+        <button class="add-btn" (click)="addExperience()">+ Add Experience</button>
       </li>
     </ul>
   </section>
@@ -691,33 +977,96 @@
   <section>
     <h3>Highlights</h3>
     <ul>
-      <li *ngFor="let point of highlights">{{ point }}</li>
+      <li *ngFor="let point of highlights; let i = index">
+        <span *ngIf="!isEditMode">{{ point }}</span>
+        <div *ngIf="isEditMode" class="editable-item">
+          <input type="text" [(ngModel)]="highlights[i]" class="editable-input" placeholder="Highlight">
+          <button class="remove-btn" (click)="removeHighlight(i)">×</button>
+        </div>
+      </li>
+      <li *ngIf="isEditMode">
+        <button class="add-btn" (click)="addHighlight()">+ Add Highlight</button>
+      </li>
     </ul>
   </section>
 
   <section>
     <h3>Technical Skills</h3>
     <ul>
-      <li *ngFor="let tech of technicalSkills">{{ tech }}</li>
+      <li *ngFor="let tech of technicalSkills; let i = index">
+        <span *ngIf="!isEditMode">{{ tech }}</span>
+        <div *ngIf="isEditMode" class="editable-item">
+          <input type="text" [(ngModel)]="technicalSkills[i]" class="editable-input" placeholder="Technical Skill">
+          <button class="remove-btn" (click)="removeTechnicalSkill(i)">×</button>
+        </div>
+      </li>
+      <li *ngIf="isEditMode">
+        <button class="add-btn" (click)="addTechnicalSkill()">+ Add Technical Skill</button>
+      </li>
     </ul>
   </section>
 
   <section>
     <h3>Projects</h3>
     <ul>
-      <li *ngFor="let proj of projects">
+      <li *ngFor="let proj of projects; let i = index">
+        <div *ngIf="!isEditMode">
         <b>{{ proj.name }}</b> ({{ proj.technology }})
         <p>{{ proj.description }}</p>
+        </div>
+        <div *ngIf="isEditMode" class="editable-item">
+          <input type="text" [(ngModel)]="proj.name" class="editable-input" placeholder="Project Name">
+          <input type="text" [(ngModel)]="proj.technology" class="editable-input" placeholder="Technology">
+          <textarea [(ngModel)]="proj.description" class="editable-textarea" placeholder="Description"></textarea>
+          <input type="file" [id]="'project-file-' + i" accept="*/*" (change)="onProjectFileSelected($event, i)" class="file-input-resume">
+          <label [for]="'project-file-' + i" class="file-upload-btn-resume">
+            <span class="upload-icon">📎</span>
+            {{ proj.file ? proj.file.name : 'Attach Project File' }}
+          </label>
+          <button class="remove-btn" (click)="removeProject(i)">×</button>
+        </div>
+      </li>
+      <li *ngIf="isEditMode">
+        <button class="add-btn" (click)="addProject()">+ Add Project</button>
       </li>
     </ul>
   </section>
 
-  <section *ngIf="certifications.length > 0">
-    <h3>Certifications</h3>
-    <ul>
-      <li *ngFor="let cert of certifications">{{ cert }}</li>
+  <section *ngIf="certifications && certifications.length > 0 || isEditMode" class="section">
+    <h2>Certifications</h2>
+    <ul class="certifications">
+      <li *ngFor="let cert of certifications; let i = index">
+        <span *ngIf="!isEditMode">{{ getCertificationName(cert) }}</span>
+        <div *ngIf="isEditMode" class="editable-item">
+          <input type="text" [(ngModel)]="cert.name" class="editable-input" placeholder="Certification Name">
+          <input type="file" [id]="'certification-file-' + i" accept="*/*" (change)="onCertificationFileSelected($event, i)" class="file-input-resume">
+          <label [for]="'certification-file-' + i" class="file-upload-btn-resume">
+            <span class="upload-icon">📎</span>
+            {{ cert.file ? cert.file.name : 'Attach Certificate File' }}
+          </label>
+          <button class="remove-btn" (click)="removeCertification(i)">×</button>
+        </div>
+      </li>
+      <li *ngIf="isEditMode">
+        <button class="add-btn" (click)="addCertification()">+ Add Certification</button>
+      </li>
     </ul>
   </section>
 </ng-template>
 
-<app-footer></app-footer>
+<!-- PDF Viewer Modal -->
+<div *ngIf="showPdfViewer" class="pdf-viewer-modal">
+  <div class="pdf-viewer-content">
+    <div class="pdf-viewer-header">
+      <h3>PDF Preview</h3>
+      <div class="pdf-viewer-actions">
+        <button class="edit-pdf-btn" (click)="editImportedPdf()" type="button">✏️ Edit PDF Data</button>
+        <button class="edit-pdf-btn" (click)="quickEditPdf()" type="button">⚡ Quick Edit</button>
+        <button class="close-btn" (click)="closePdfViewer()">×</button>
+      </div>
+    </div>
+    <div class="pdf-viewer-body">
+      <iframe [src]="pdfUrl" width="100%" height="600px" frameborder="0"></iframe>
+    </div>
+  </div>
+</div>

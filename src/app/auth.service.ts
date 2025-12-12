@@ -42,7 +42,8 @@ export class AuthService {
     { email: 'user2', password: 'user2', name: 'User Two' },
     { email: 'john@example.com', password: 'john123', name: 'John Doe' },
     { email: 'jane@example.com', password: 'jane123', name: 'Jane Smith' },
-    { email: 'test@example.com', password: 'test123', name: 'Test User' }
+    { email: 'test@example.com', password: 'test123', name: 'Test User' },
+    { email: 'gulvemayuri63', password: 'mayuri123', name: 'Mayuri Gulve' }
   ];
 
   constructor() {
