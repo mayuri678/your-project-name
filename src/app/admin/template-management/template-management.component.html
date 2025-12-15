@@ -1,0 +1,130 @@
+<div class="template-management">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Resume Templates</h1>
+      <p>Manage resume templates and their availability</p>
+    </div>
+    <button class="create-btn" (click)="toggleCreateForm()">
+      {{ showCreateForm ? 'Cancel' : '+ Add Template' }}
+    </button>
+  </div>
+
+  <!-- Create Template Form -->
+  <div class="create-form" *ngIf="showCreateForm">
+    <h3>Create New Template</h3>
+    <form (ngSubmit)="createTemplate()" class="template-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Template Name</label>
+          <input type="text" [(ngModel)]="newTemplate.name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="newTemplate.category" name="category" required>
+            <option value="">Select Category</option>
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="newTemplate.description" name="description" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="newTemplate.isPremium" name="isPremium">
+            Premium Template
+          </label>
+        </div>
+        <div class="form-group" *ngIf="newTemplate.isPremium">
+          <label>Price ($)</label>
+          <input type="number" [(ngModel)]="newTemplate.price" name="price" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Create Template</button>
+        <button type="button" class="cancel-btn" (click)="toggleCreateForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input type="text" placeholder="Search templates..." [(ngModel)]="searchTerm" (input)="onSearchChange()">
+      <i class="search-icon">🔍</i>
+    </div>
+    <div class="filter-controls">
+      <select [(ngModel)]="selectedCategory" (change)="onCategoryFilterChange()">
+        <option value="">All Categories</option>
+        <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+      </select>
+      <select [(ngModel)]="selectedType" (change)="onTypeFilterChange()">
+        <option value="">All Types</option>
+        <option value="free">Free</option>
+        <option value="premium">Premium</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Templates Grid -->
+  <div class="templates-container">
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading templates...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredTemplates.length === 0" class="empty-state">
+      <div class="empty-icon">📄</div>
+      <h3>No templates found</h3>
+      <p>Try adjusting your search criteria or create a new template.</p>
+    </div>
+
+    <div class="templates-grid" *ngIf="!isLoading && filteredTemplates.length > 0">
+      <div *ngFor="let template of filteredTemplates" class="template-card">
+        <div class="template-header">
+          <h3>{{ template.name }}</h3>
+          <div class="template-badges">
+            <span class="category-badge">{{ template.category }}</span>
+            <span class="type-badge" [class.premium]="template.isPremium">
+              {{ template.isPremium ? 'Premium' : 'Free' }}
+            </span>
+          </div>
+        </div>
+        
+        <p class="template-description">{{ template.description }}</p>
+        
+        <div class="template-stats">
+          <div class="stat">
+            <span class="stat-label">Downloads:</span>
+            <span class="stat-value">{{ template.downloadCount }}</span>
+          </div>
+          <div class="stat" *ngIf="template.isPremium">
+            <span class="stat-label">Price:</span>
+            <span class="stat-value">${{ template.price }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Created:</span>
+            <span class="stat-value">{{ formatDate(template.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="template-status">
+          <span class="status-badge" [class.active]="template.isActive" [class.inactive]="!template.isActive">
+            {{ template.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <div class="template-actions">
+          <button class="action-btn edit" title="Edit Template">✏️</button>
+          <button class="action-btn toggle" (click)="toggleTemplateStatus(template.id)" 
+                  [title]="template.isActive ? 'Deactivate' : 'Activate'">
+            {{ template.isActive ? '🚫' : '✅' }}
+          </button>
+          <button class="action-btn delete" (click)="deleteTemplate(template.id)" title="Delete Template">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

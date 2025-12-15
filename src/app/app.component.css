@@ -9,12 +9,19 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .content-wrap {
   flex: 1;
   /* This will push the footer to the bottom */
   padding-bottom: 2rem; /* Add some space above the footer */
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Make sure the footer is at the bottom */

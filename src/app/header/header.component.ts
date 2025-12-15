@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
-import { CommonModule, NgIf, NgFor } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService, LoggedInUser } from '../auth.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, NgIf, NgFor, RouterModule],
+  imports: [CommonModule, NgIf, RouterModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
@@ -24,6 +24,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isTemplatesOpen: boolean = false;
   loggedInUsers: LoggedInUser[] = [];
   currentUserEmail: string = '';
+  isAdmin: boolean = false;
   private refreshInterval: any;
 
   templateList = [
@@ -45,9 +46,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadLoggedInUsers();
+    this.checkAdminStatus();
     // Refresh the list every 2 seconds to catch new logins
     this.refreshInterval = setInterval(() => {
       this.loadLoggedInUsers();
+      this.checkAdminStatus();
     }, 2000);
   }
 
@@ -159,5 +162,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
       queryParams: { template: template.id, edit: 'true' }
     });
     this.closeTemplates();
+  }
+
+  checkAdminStatus(): void {
+    if (this.loggedIn) {
+      const currentUser = this.authService.getCurrentUser();
+      this.isAdmin = currentUser?.email === 'admin';
+    } else {
+      this.isAdmin = false;
+    }
+  }
+
+  goToAdmin(): void {
+    this.router.navigate(['/admin']);
   }
 }

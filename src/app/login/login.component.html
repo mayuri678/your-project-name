@@ -81,28 +81,6 @@
       </button>
     </div>
 
-    <!-- Test Users Quick Login (only in login mode) -->
-    <div class="test-users-section" *ngIf="!isRegisterMode && testUsers.length > 0">
-      <div class="test-users-divider">
-        <span>Quick Login with Test Users</span>
-      </div>
-      <div class="test-users-list">
-        <button
-          type="button"
-          class="test-user-btn"
-          *ngFor="let user of testUsers"
-          (click)="quickLogin(user)"
-          [title]="'Login as ' + user.name + ' (' + user.email + ')'"
-        >
-          <span class="user-avatar-small">{{ user.name.charAt(0).toUpperCase() }}</span>
-          <span class="user-info-text">
-            <strong>{{ user.name }}</strong>
-            <small>{{ user.email }}</small>
-          </span>
-        </button>
-      </div>
-    </div>
-
     <!-- Cancel Button -->
     <button type="button" class="back-btn full" (click)="onClose()">BACK</button>
 

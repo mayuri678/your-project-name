@@ -1,0 +1,66 @@
+{
+  "name": "राहुल शर्मा",
+  "title": "Software Developer",
+  "email": "rahul.sharma@gmail.com",
+  "phone": "+91-9876543210",
+  "location": "पुणे, महाराष्ट्र, भारत",
+  "linkedIn": "linkedin.com/in/rahulsharma",
+  "github": "github.com/rahulsharma",
+  "profilePhoto": null,
+  "education": [
+    {
+      "degree": "B.Tech Computer Science",
+      "institute": "पुणे विद्यापीठ",
+      "year": "2023"
+    },
+    {
+      "degree": "12th HSC",
+      "institute": "फर्ग्युसन कॉलेज",
+      "year": "2019"
+    }
+  ],
+  "skills": [
+    "Angular",
+    "TypeScript", 
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Node.js",
+    "MongoDB",
+    "Express.js"
+  ],
+  "experience": [
+    {
+      "role": "Junior Software Developer",
+      "company": "टेक सोल्यूशन्स प्रा. लि.",
+      "duration": "2023 - आजपर्यंत",
+      "description": "वेब अॅप्लिकेशन डेव्हलपमेंट आणि मेंटेनन्स. Angular आणि Node.js वापरून प्रोजेक्ट्स बनवले."
+    }
+  ],
+  "highlights": [
+    "मजबूत तांत्रिक कौशल्ये",
+    "समस्या सोडवण्याची क्षमता", 
+    "टीम वर्कमध्ये चांगली कामगिरी"
+  ],
+  "technicalSkills": [
+    "Frontend: Angular, React, HTML5, CSS3",
+    "Backend: Node.js, Express.js, MongoDB",
+    "Languages: JavaScript, TypeScript, Java",
+    "Tools: Git, VS Code, Postman"
+  ],
+  "projects": [
+    {
+      "name": "Resume Builder Application",
+      "technology": "Angular, TypeScript, Node.js",
+      "description": "एक संपूर्ण resume builder अॅप्लिकेशन बनवले ज्यामध्ये multiple templates आणि PDF export functionality आहे."
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Angular - The Complete Guide"
+    },
+    {
+      "name": "JavaScript Algorithms and Data Structures"
+    }
+  ]
+}

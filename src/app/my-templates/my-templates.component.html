@@ -2,29 +2,77 @@
 
 <div class="my-templates-container">
   <div class="templates-header">
-    <h1>My Saved Templates</h1>
-    <p>View and edit your saved resume templates</p>
-  </div>
-
-  <div *ngIf="loading" class="loading">Loading templates...</div>
-
-  <div *ngIf="!loading && templates.length === 0" class="no-templates">
-    <h3>No templates saved yet</h3>
-    <p>Start creating and saving templates to see them here.</p>
-    <button class="create-btn" (click)="router.navigate(['/resume'])">Create New Template</button>
-  </div>
-
-  <div *ngIf="!loading && templates.length > 0" class="templates-grid">
-    <div *ngFor="let template of templates" class="template-card">
-      <div class="template-info">
-        <h3>{{ template.title }}</h3>
-        <p class="template-category">{{ template.category }}</p>
-        <p class="template-date">Saved: {{ template.created_at | date:'short' }}</p>
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">
+          <span class="title-icon">📄</span>
+          My Templates
+        </h1>
+        <p class="page-subtitle">Manage and organize your saved resume templates</p>
       </div>
-      <div class="template-actions">
-        <button class="view-btn" (click)="viewTemplate(template)">👁️ View</button>
-        <button class="edit-btn" (click)="editTemplate(template)">📝 Edit</button>
-        <button class="delete-btn" (click)="deleteTemplate(template)">🗑️ Delete</button>
+      <button class="create-new-btn" (click)="navigateToResume()">
+        <span class="btn-icon">➕</span>
+        <span class="btn-text">Create New</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="templates-content">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading your templates...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && templates.length === 0" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3 class="empty-title">No Templates Yet</h3>
+      <p class="empty-description">You haven't saved any templates yet. Start creating your first professional resume template!</p>
+      <button class="empty-action-btn" (click)="navigateToResume()">
+        <span class="btn-icon">✨</span>
+        Create Your First Template
+      </button>
+    </div>
+
+    <!-- Templates Grid -->
+    <div *ngIf="!loading && templates.length > 0" class="templates-grid">
+      <div *ngFor="let template of templates" class="template-card">
+        <div class="card-header">
+          <div class="template-icon-wrapper">
+            <span class="template-icon">📄</span>
+          </div>
+          <div class="template-badge">{{ template.category || 'Template' }}</div>
+        </div>
+        
+        <div class="card-body">
+          <h3 class="template-title">{{ getTemplateName(template) }}</h3>
+          <div class="template-meta">
+            <div class="meta-item">
+              <span class="meta-icon">📅</span>
+              <span class="meta-text">{{ template.created_at | date:'MMM d, y' }}</span>
+            </div>
+            <div class="meta-item" *ngIf="template.updated_at">
+              <span class="meta-icon">🔄</span>
+              <span class="meta-text">Updated {{ template.updated_at | date:'MMM d' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="action-btn view-btn" (click)="viewTemplate(template)" title="View Template">
+            <span class="action-icon">👁️</span>
+            <span class="action-text">View</span>
+          </button>
+          <button class="action-btn edit-btn" (click)="editTemplate(template)" title="Edit Template">
+            <span class="action-icon">✏️</span>
+            <span class="action-text">Edit</span>
+          </button>
+          <button class="action-btn delete-btn" (click)="deleteTemplate(template)" title="Delete Template">
+            <span class="action-icon">🗑️</span>
+            <span class="action-text">Delete</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

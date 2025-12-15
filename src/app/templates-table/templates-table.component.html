@@ -53,59 +53,57 @@
     <span class="success-text">{{ successMessage }}</span>
   </div>
 
-  <!-- Templates Table -->
-  <div class="table-container">
-    <table class="templates-table">
-      <thead>
-        <tr>
-          <th>Template Name</th>
-          <th>Category</th>
-          <th>Color</th>
-          <th>Layout</th>
-          <th>Features</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let template of filteredTemplates" class="template-row">
-          <td class="template-name">
-            <div class="name-cell">
-              <span class="template-title">{{ template.name }}</span>
-              <span class="template-id">ID: {{ template.id }}</span>
+  <!-- Templates Grid -->
+  <div class="templates-grid-container">
+    <div class="templates-grid">
+      <div *ngFor="let template of filteredTemplates" class="template-card">
+        <div class="card-header-section">
+          <div class="template-header-info">
+            <h3 class="template-card-title">{{ template.name }}</h3>
+            <span class="template-card-id">ID: {{ template.id }}</span>
+          </div>
+          <div class="template-status-badge" *ngIf="template.recommended">
+            <span class="status-star">⭐</span>
+            <span>Recommended</span>
+          </div>
+        </div>
+
+        <div class="card-body-section">
+          <div class="template-details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Category:</span>
+              <span class="category-badge-card">{{ template.category }}</span>
             </div>
-          </td>
-          <td class="template-category">
-            <span class="category-badge">{{ template.category }}</span>
-          </td>
-          <td class="template-color">
-            <div class="color-indicator" [ngClass]="getColorClass(template.color)"></div>
-            <span class="color-name">{{ template.color | titlecase }}</span>
-          </td>
-          <td class="template-layout">
-            <span class="columns-info">{{ template.columns }} Column{{ template.columns > 1 ? 's' : '' }}</span>
-          </td>
-          <td class="template-features">
-            <div class="features-list">
-              <span *ngIf="template.hasHeadshot" class="feature-tag photo">📷 Photo</span>
-              <span *ngIf="template.hasGraphics" class="feature-tag graphics">🎨 Graphics</span>
-              <span *ngIf="!template.hasHeadshot && !template.hasGraphics" class="feature-tag minimal">✨ Minimal</span>
+            <div class="detail-item">
+              <span class="detail-label">Color:</span>
+              <div class="color-info">
+                <div class="color-indicator-card" [ngClass]="getColorClass(template.color)"></div>
+                <span class="color-name-card">{{ template.color | titlecase }}</span>
+              </div>
             </div>
-          </td>
-          <td class="template-status">
-            <span *ngIf="template.recommended" class="status-badge recommended">⭐ Recommended</span>
-            <span *ngIf="!template.recommended" class="status-badge standard">Standard</span>
-          </td>
-          <td class="template-actions">
-            
-            <button class="action-btn edit-btn" (click)="editTemplate(template)" title="Edit Template">
-              ✏️ Edit
-            </button>
-            
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <div class="detail-item">
+              <span class="detail-label">Layout:</span>
+              <span class="layout-info">{{ template.columns }} Column{{ template.columns > 1 ? 's' : '' }}</span>
+            </div>
+            <div class="detail-item features-item">
+              <span class="detail-label">Features:</span>
+              <div class="features-list-card">
+                <span *ngIf="template.hasHeadshot" class="feature-tag-card photo">📷 Photo</span>
+                <span *ngIf="template.hasGraphics" class="feature-tag-card graphics">🎨 Graphics</span>
+                <span *ngIf="!template.hasHeadshot && !template.hasGraphics" class="feature-tag-card minimal">✨ Minimal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer-section">
+          <button class="action-button-card edit-btn-card" (click)="editTemplate(template)" title="Edit with this template">
+            <span class="btn-icon">✏️</span>
+            <span class="btn-text">Edit Template</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- No Results Message -->

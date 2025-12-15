@@ -1,0 +1,75 @@
+<div class="admin-layout">
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="header-left">
+      <h1>Admin Panel</h1>
+    </div>
+    <div class="header-right">
+      <div class="admin-info" *ngIf="currentAdmin">
+        <span class="admin-name">{{ currentAdmin.name }}</span>
+        <div class="admin-avatar">{{ currentAdmin.name.charAt(0) }}</div>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>Navigation</h2>
+    </div>
+
+    <ul class="nav-menu">
+      <li>
+        <a routerLink="/admin/dashboard" routerLinkActive="active">
+          <i class="icon">📊</i>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/users" routerLinkActive="active">
+          <i class="icon">👥</i>
+          Manage Users
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/templates" routerLinkActive="active">
+          <i class="icon">📄</i>
+          Resume Templates
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/subscriptions" routerLinkActive="active">
+          <i class="icon">💳</i>
+          Subscription Plans
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/analytics" routerLinkActive="active">
+          <i class="icon">📈</i>
+          Analytics
+        </a>
+      </li>
+
+    </ul>
+
+
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <footer class="admin-footer">
+    <div class="footer-content">
+      <p>&copy; 2024 Resume Builder Admin Panel. All rights reserved.</p>
+      <div class="footer-links">
+        <span>Version 1.0.0</span>
+        <span>|</span>
+        <span>Support: admin@resumebuilder.com</span>
+      </div>
+    </div>
+  </footer>
+</div>

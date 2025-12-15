@@ -82,4 +82,32 @@ export class MyTemplatesComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/logged-out']);
   }
+
+  navigateToResume() {
+    this.router.navigate(['/resume']);
+  }
+
+  getTemplateName(template: any): string {
+    try {
+      // Always try to get name from description first
+      const templateData = JSON.parse(template.description);
+      if (templateData.name && templateData.name.trim()) {
+        return templateData.name.trim();
+      }
+      
+      // If no name in description, check if title contains template format
+      if (template.title && template.title.includes(' - ')) {
+        // Extract name from "template1 - Name" format
+        const namePart = template.title.split(' - ')[1];
+        if (namePart && namePart.trim()) {
+          return namePart.trim();
+        }
+      }
+      
+      // Fallback to title or default
+      return template.title || 'Untitled Resume';
+    } catch (error) {
+      return template.title || 'Untitled Resume';
+    }
+  }
 }

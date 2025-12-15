@@ -1,0 +1,97 @@
+<div class="user-management">
+  <div class="page-header">
+    <h1>User Management</h1>
+    <p>Manage user accounts, roles, and permissions</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search users by name or email..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        class="search-input"
+      />
+      <i class="search-icon">🔍</i>
+    </div>
+
+    <div class="filter-controls">
+
+
+      <select [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()" class="filter-select">
+        <option *ngFor="let status of statuses" [value]="status.value">{{ status.label }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-container">
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading users...</p>
+    </div>
+
+    <table *ngIf="!isLoading" class="users-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Last Login</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers" class="user-row">
+          <td class="user-info">
+            <div class="user-avatar">{{ user.name.charAt(0) }}</div>
+            <div class="user-details">
+              <span class="user-name">{{ user.name }}</span>
+            </div>
+          </td>
+          <td class="user-email">{{ user.email }}</td>
+          <td class="user-status">
+            <span 
+              class="status-badge" 
+              [class.active]="user.isActive"
+              [class.inactive]="!user.isActive"
+            >
+              {{ user.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="last-login">
+            {{ user.lastLogin ? formatDate(user.lastLogin) : 'Never' }}
+          </td>
+          <td class="created-date">
+            {{ formatDate(user.createdAt) }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!isLoading && filteredUsers.length === 0" class="empty-state">
+      <div class="empty-icon">👥</div>
+      <h3>No users found</h3>
+      <p>Try adjusting your search criteria or filters.</p>
+    </div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="summary-stats">
+    <div class="stat-item">
+      <span class="stat-label">Total Users:</span>
+      <span class="stat-value">{{ users.length }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Active Users:</span>
+      <span class="stat-value">{{ getActiveUsersCount() }}</span>
+    </div>
+
+    <div class="stat-item">
+      <span class="stat-label">Filtered Results:</span>
+      <span class="stat-value">{{ filteredUsers.length }}</span>
+    </div>
+  </div>
+</div>

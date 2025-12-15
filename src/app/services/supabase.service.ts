@@ -386,7 +386,7 @@ export class SupabaseService {
       const userId = session?.user?.id || userEmail;
 
       const templatePayload = {
-        title: `${templateData.templateId} - ${templateData.content.name}`,
+        title: templateData.content.name || 'Untitled Resume',
         description: JSON.stringify(templateData.content),
         category: templateData.templateId,
         image_url: userEmail
@@ -451,6 +451,21 @@ export class SupabaseService {
       return { data, error };
     } catch (error: any) {
       console.error('Error fetching templates:', error);
+      return { data: null, error };
+    }
+  }
+
+  // 🔹 Get all templates (for admin)
+  async getAllTemplates() {
+    try {
+      const { data, error } = await this.supabase
+        .from('templates')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      return { data, error };
+    } catch (error: any) {
+      console.error('Error fetching all templates:', error);
       return { data: null, error };
     }
   }

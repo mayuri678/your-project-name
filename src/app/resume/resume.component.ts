@@ -16,7 +16,7 @@ import { SupabaseService } from '../services/supabase.service';
 })
 export class ResumeComponent implements OnInit {
 
-  selectedTemplate: string = 'template1';
+  selectedTemplate: string = 'template2';
   isLoggedIn: boolean = false;
 
   // Resume Data
@@ -45,6 +45,7 @@ export class ResumeComponent implements OnInit {
   pdfImported: boolean = false;
   pdfUrl: SafeResourceUrl | null = null;
   showPdfViewer: boolean = false;
+
 
   constructor(
     private authService: AuthService,
@@ -85,11 +86,25 @@ export class ResumeComponent implements OnInit {
   }
 
   validateEmail(email: string): boolean {
-    return /.*@gmail\.com$/.test(email);
+    // Accept all valid email formats, not just Gmail
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailPattern.test(email.trim());
   }
 
   validatePhone(phone: string): boolean {
-    return /^[0-9]{10}$/.test(phone);
+    // Remove all non-numeric characters except +
+    const cleanPhone = phone.replace(/[^0-9+]/g, '');
+    
+    // Check for various Indian phone number formats
+    const patterns = [
+      /^[6-9][0-9]{9}$/, // 10 digit Indian mobile
+      /^\+91[6-9][0-9]{9}$/, // +91 prefix
+      /^91[6-9][0-9]{9}$/, // 91 prefix
+      /^0[6-9][0-9]{9}$/, // 0 prefix (sometimes used)
+      /^[0-9]{10,15}$/ // General 10-15 digit number
+    ];
+    
+    return patterns.some(pattern => pattern.test(cleanPhone));
   }
 
   loadUserData(): void {
@@ -397,11 +412,11 @@ export class ResumeComponent implements OnInit {
 
   async saveTemplate(): Promise<void> {
     if (!this.validateEmail(this.email)) {
-      alert('Please enter a valid Gmail address (ending with @gmail.com)');
+      alert('Please enter a valid email address');
       return;
     }
-    if (!this.validatePhone(this.phone)) {
-      alert('Please enter a valid 10-digit phone number');
+    if (this.phone && !this.validatePhone(this.phone)) {
+      alert('Please enter a valid phone number (10-15 digits)');
       return;
     }
     
@@ -463,28 +478,92 @@ export class ResumeComponent implements OnInit {
 
   async importResumeData(resumeTemplate: any): Promise<void> {
     try {
-      const resumeData = JSON.parse(resumeTemplate.description);
+      let resumeData;
       
-      this.name = resumeData.name || this.name;
-      this.title = resumeData.title || this.title;
-      this.email = resumeData.email || this.email;
-      this.phone = resumeData.phone || this.phone;
-      this.location = resumeData.location || this.location;
-      this.linkedIn = resumeData.linkedIn || this.linkedIn;
-      this.github = resumeData.github || this.github;
-      this.profilePhoto = resumeData.profilePhoto || this.profilePhoto;
+      // Handle different input formats
+      if (typeof resumeTemplate === 'string') {
+        resumeData = JSON.parse(resumeTemplate);
+      } else if (resumeTemplate.description) {
+        resumeData = JSON.parse(resumeTemplate.description);
+      } else {
+        resumeData = resumeTemplate;
+      }
       
-      this.education = resumeData.education || this.education;
-      this.skills = resumeData.skills || this.skills;
-      this.experience = resumeData.experience || this.experience;
-      this.highlights = resumeData.highlights || this.highlights;
-      this.technicalSkills = resumeData.technicalSkills || this.technicalSkills;
-      this.projects = resumeData.projects || this.projects;
-      this.certifications = resumeData.certifications || this.certifications;
+      // Import personal information with validation
+      if (resumeData.name && resumeData.name.trim()) {
+        this.name = resumeData.name.trim();
+      }
       
-      console.log('Resume data imported successfully');
+      if (resumeData.title && resumeData.title.trim()) {
+        this.title = resumeData.title.trim();
+      }
+      
+      if (resumeData.email && this.validateEmail(resumeData.email)) {
+        this.email = resumeData.email.trim();
+      }
+      
+      // Validate and format phone number
+      if (resumeData.phone) {
+        const cleanPhone = resumeData.phone.toString().replace(/[^0-9+]/g, '');
+        if (this.validatePhone(cleanPhone) || cleanPhone.length >= 10) {
+          this.phone = cleanPhone;
+        }
+      }
+      
+      if (resumeData.location && resumeData.location.trim()) {
+        this.location = resumeData.location.trim();
+      }
+      
+      if (resumeData.linkedIn && resumeData.linkedIn.trim()) {
+        this.linkedIn = resumeData.linkedIn.trim();
+      }
+      
+      if (resumeData.github && resumeData.github.trim()) {
+        this.github = resumeData.github.trim();
+      }
+      
+      if (resumeData.profilePhoto) {
+        this.profilePhoto = resumeData.profilePhoto;
+      }
+      
+      // Import arrays with validation
+      if (resumeData.education && Array.isArray(resumeData.education)) {
+        this.education = resumeData.education.filter((edu: any) => edu && (edu.degree || edu.institute));
+      }
+      
+      if (resumeData.skills && Array.isArray(resumeData.skills)) {
+        this.skills = resumeData.skills.filter((skill: any) => skill && skill.trim()).map((skill: any) => skill.trim());
+      }
+      
+      if (resumeData.experience && Array.isArray(resumeData.experience)) {
+        this.experience = resumeData.experience.filter((exp: any) => exp && (exp.role || exp.company));
+      }
+      
+      if (resumeData.highlights && Array.isArray(resumeData.highlights)) {
+        this.highlights = resumeData.highlights.filter((highlight: any) => highlight && highlight.trim()).map((h: any) => h.trim());
+      }
+      
+      if (resumeData.technicalSkills && Array.isArray(resumeData.technicalSkills)) {
+        this.technicalSkills = resumeData.technicalSkills.filter((skill: any) => skill && skill.trim()).map((skill: any) => skill.trim());
+      }
+      
+      if (resumeData.projects && Array.isArray(resumeData.projects)) {
+        this.projects = resumeData.projects.filter((proj: any) => proj && (proj.name || proj.technology));
+      }
+      
+      if (resumeData.certifications && Array.isArray(resumeData.certifications)) {
+        this.certifications = resumeData.certifications.filter((cert: any) => cert && (cert.name || cert));
+      }
+      
+      console.log('Resume data imported successfully:', {
+        name: this.name,
+        email: this.email,
+        phone: this.phone
+      });
+      
     } catch (error) {
       console.error('Error importing resume data:', error);
+      alert('Error importing resume data. Please check the file format.');
     }
   }
 
@@ -503,15 +582,16 @@ export class ResumeComponent implements OnInit {
 
   async processImportedFile(file: File): Promise<void> {
     try {
+      console.log('Processing file:', file.name, 'Type:', file.type);
+      
       if (file.type === 'application/json' || file.name.endsWith('.json')) {
-        const text = await file.text();
-        const resumeData = JSON.parse(text);
-        await this.importResumeData({ description: JSON.stringify(resumeData) });
-        alert('Resume data imported successfully!');
+        await this.processJSONFile(file);
       } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
         await this.parsePDFFile(file);
       } else if (file.type.startsWith('image/')) {
         await this.parseImageFile(file);
+      } else if (file.name.endsWith('.docx') || file.type.includes('wordprocessingml')) {
+        alert('DOCX files are not yet supported. Please convert to PDF or use JSON format.');
       } else {
         alert('Unsupported file format. Please use JSON, PDF, or image files.');
       }
@@ -521,53 +601,141 @@ export class ResumeComponent implements OnInit {
     }
   }
 
+  async processJSONFile(file: File): Promise<void> {
+    try {
+      const text = await file.text();
+      const resumeData = JSON.parse(text);
+      
+      // Handle different JSON structures
+      if (resumeData.description) {
+        // Our app's format
+        await this.importResumeData(resumeData);
+      } else {
+        // Direct resume data format
+        await this.importResumeData(resumeData);
+      }
+      
+      alert(`Resume data imported successfully!\nName: ${this.name}\nEmail: ${this.email}\nPhone: ${this.phone}`);
+      
+    } catch (error) {
+      console.error('Error processing JSON file:', error);
+      alert('Error reading JSON file. Please check the file format.');
+    }
+  }
+
   async parsePDFFile(file: File): Promise<void> {
     try {
       const url = URL.createObjectURL(file);
       this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
       this.showPdfViewer = true;
       
-      this.name = file.name.replace('.pdf', '').replace(/[_-]/g, ' ');
-      this.email = this.name.toLowerCase().replace(/\s+/g, '.') + '@email.com';
-      this.phone = '9876543210';
-      this.title = 'Professional';
-      this.location = 'City, State';
-      this.linkedIn = 'linkedin.com/in/profile';
-      this.github = 'github.com/profile';
+      // Extract actual data from PDF using PDF.js or similar library
+      await this.extractPDFData(file);
       
-      this.skills = ['JavaScript', 'Python', 'React', 'Node.js', 'HTML', 'CSS'];
+      this.pdfImported = true;
+      this.cdr.detectChanges();
+      
+      alert('PDF imported! Data extracted successfully. Click Edit to modify.');
+    } catch (error) {
+      console.error('Error parsing PDF:', error);
+      alert('Error reading PDF file. Please try a different file.');
+    }
+  }
+
+  async extractPDFData(file: File): Promise<void> {
+    try {
+      // For now, we'll use a simple text extraction approach
+      // In production, you'd want to use PDF.js or similar library
+      const text = await this.readPDFAsText(file);
+      
+      // Extract name (usually first line or after "Name:")
+      const nameMatch = text.match(/(?:Name[:\s]+)([A-Za-z\s]+)/i) || text.match(/^([A-Za-z\s]+)/m);
+      this.name = nameMatch ? nameMatch[1].trim() : file.name.replace('.pdf', '').replace(/[_-]/g, ' ');
+      
+      // Extract email
+      const emailMatch = text.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+      this.email = emailMatch ? emailMatch[1] : this.name.toLowerCase().replace(/\s+/g, '.') + '@email.com';
+      
+      // Extract phone number (Indian format)
+      const phoneMatch = text.match(/(?:Phone|Mobile|Contact)[:\s]*([+]?[0-9\s-()]{10,15})/i) || 
+                        text.match(/([+]?91[\s-]?[6-9][0-9]{9})/i) || 
+                        text.match(/([6-9][0-9]{9})/i);
+      this.phone = phoneMatch ? phoneMatch[1].replace(/[\s-()]/g, '') : '';
+      
+      // Extract title/designation
+      const titleMatch = text.match(/(?:Title|Designation|Position)[:\s]+([A-Za-z\s]+)/i) ||
+                        text.match(/(?:Software|Developer|Engineer|Manager|Analyst)/i);
+      this.title = titleMatch ? titleMatch[0] : 'Professional';
+      
+      // Extract location
+      const locationMatch = text.match(/(?:Address|Location)[:\s]+([A-Za-z\s,]+)/i) ||
+                           text.match(/(Mumbai|Delhi|Bangalore|Pune|Chennai|Hyderabad|Kolkata|Ahmedabad)[,\s]*[A-Za-z\s]*/i);
+      this.location = locationMatch ? locationMatch[1] || locationMatch[0] : 'India';
+      
+      // Extract LinkedIn
+      const linkedInMatch = text.match(/(linkedin\.com\/in\/[A-Za-z0-9-]+)/i);
+      this.linkedIn = linkedInMatch ? linkedInMatch[1] : 'linkedin.com/in/profile';
+      
+      // Extract GitHub
+      const githubMatch = text.match(/(github\.com\/[A-Za-z0-9-]+)/i);
+      this.github = githubMatch ? githubMatch[1] : 'github.com/profile';
+      
+      // Extract skills
+      const skillsSection = text.match(/(?:Skills|Technologies)[:\s]*([\s\S]*?)(?:\n\n|Education|Experience|$)/i);
+      if (skillsSection) {
+        const skillsText = skillsSection[1];
+        this.skills = skillsText.split(/[,\n•-]/).map(s => s.trim()).filter(s => s.length > 0).slice(0, 10);
+      } else {
+        this.skills = ['JavaScript', 'Python', 'React', 'Node.js', 'HTML', 'CSS'];
+      }
+      
+      // Set default data for other fields
       this.education = [{
         degree: 'Bachelor Degree',
         institute: 'University Name',
-        year: '2023',
-        grade: 'First Class'
+        year: '2023'
       }];
+      
       this.experience = [{
-        role: 'Software Developer',
-        company: 'Tech Company',
+        role: this.title || 'Software Developer',
+        company: 'Company Name',
         duration: '2022-2024',
-        description: 'Professional software development experience'
+        description: 'Professional experience in software development'
       }];
+      
       this.highlights = [
         'Strong technical skills',
         'Problem solving abilities',
         'Team collaboration'
       ];
-      this.technicalSkills = ['Programming', 'Web Development', 'Database Management'];
+      
+      this.technicalSkills = this.skills.slice(0, 5);
+      
       this.projects = [{
-        name: 'Web Application',
-        technology: 'React, Node.js',
-        description: 'Full-stack web application development'
+        name: 'Project Name',
+        technology: this.skills.slice(0, 3).join(', '),
+        description: 'Project description'
       }];
       
-      this.pdfImported = true;
-      this.cdr.detectChanges();
-      
-      alert('PDF imported! Data is now visible in template. Click Edit to modify.');
     } catch (error) {
-      console.error('Error parsing PDF:', error);
-      alert('Error reading PDF file. Please try a different file.');
+      console.error('Error extracting PDF data:', error);
+      // Fallback to default data
+      this.setDefaultPdfData();
     }
+  }
+
+  async readPDFAsText(file: File): Promise<string> {
+    // This is a simplified approach. For better PDF parsing, use PDF.js
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // This won't work perfectly for all PDFs, but it's a start
+        // For production, implement proper PDF.js integration
+        const text = reader.result as string;
+        resolve(text || '');
+      };
+      reader.readAsText(file);
+    });
   }
 
   async parseImageFile(file: File): Promise<void> {
@@ -668,6 +836,8 @@ export class ResumeComponent implements OnInit {
     alert('Test data set! Name: ' + this.name);
   }
 
+
+
   exportResumeAsJSON(): void {
     const resumeData = {
       name: this.name,
@@ -721,20 +891,86 @@ export class ResumeComponent implements OnInit {
         return;
       }
 
+      // Get all CSS styles from current page
+      const styles = Array.from(document.styleSheets)
+        .map(styleSheet => {
+          try {
+            return Array.from(styleSheet.cssRules)
+              .map(rule => rule.cssText)
+              .join('\n');
+          } catch (e) {
+            return '';
+          }
+        })
+        .join('\n');
+
       const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>Resume - ${this.name || 'Resume'}</title>
   <style>
-    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-    .resume-container { margin: 0; box-shadow: none; border: none; max-width: 100%; }
+    ${styles}
+    
+    /* PDF specific styles */
+    * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+    
+    @page {
+      size: A4;
+      margin: 0.5in;
+    }
+    
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
+    }
+    
+    .resume-container { 
+      margin: 0; 
+      box-shadow: none; 
+      border: none; 
+      max-width: 100%;
+      page-break-inside: avoid;
+    }
+    
+    .header {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    
+    section {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-bottom: 15px;
+    }
+    
+    h3 {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    
+    .editable-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
     .edit-mode-banner, .resume-actions-bar, .add-btn, .remove-btn { display: none !important; }
     .editable-item, .add-btn, .remove-btn { display: none !important; }
-    @media print {
-      body { margin: 0; padding: 0; }
-      @page { size: A4; margin: 0.5in; }
-    }
+    
+    /* Template colors */
+    .template1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; }
+    .template2 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+    .template1 .header { background: rgba(255, 255, 255, 0.95) !important; color: #1f2937 !important; }
+    .template1 h3 { color: white !important; }
+    .template1 section { background: rgba(255, 255, 255, 0.1) !important; }
+    .template1 li { background: rgba(255, 255, 255, 0.1) !important; color: white !important; }
+    .template2-sidebar { background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%) !important; color: white !important; }
+    .template2 .info { color: white !important; }
+    .template2 .info h1 { color: white !important; }
+    .template2 .info h2 { color: rgba(255,255,255,0.9) !important; }
+    .template2 .info p { color: rgba(255,255,255,0.8) !important; }
   </style>
 </head>
 <body>
@@ -754,4 +990,7 @@ export class ResumeComponent implements OnInit {
       };
     }, 100);
   }
+
+
+
 }

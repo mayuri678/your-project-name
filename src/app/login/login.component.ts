@@ -21,7 +21,6 @@ export class LoginComponent {
   errorMessage: string = '';
   successMessage: string = '';
   isRegisterMode: boolean = false;
-  testUsers: Array<{ email: string; password: string; name: string }> = [];
 
   // 👉 popup बंद करण्यासाठी event emitter
   @Output() close = new EventEmitter<void>();
@@ -32,11 +31,6 @@ export class LoginComponent {
     private router: Router,
     private location: Location
   ) {
-    this.loadTestUsers();
-  }
-
-  loadTestUsers(): void {
-    this.testUsers = this.authService.getTestUsers();
   }
 
   // 🔹 Register new user - registers in both AuthService and Supabase
@@ -94,7 +88,6 @@ export class LoginComponent {
 
         // Also register in local AuthService for backward compatibility
         this.authService.register(emailTrimmed, passwordTrimmed, nameTrimmed);
-        this.loadTestUsers();
 
         // Check if email confirmation is required
         if (data.user && !data.session) {
@@ -190,7 +183,6 @@ export class LoginComponent {
                   this.errorMessage = '';
                   // Also register in local AuthService
                   this.authService.register(emailTrimmed, passwordTrimmed, nameFromEmail);
-                  this.loadTestUsers();
                   
                   // User is already created in users table by ensureUserInTable in signUp
                   
@@ -212,7 +204,6 @@ export class LoginComponent {
                     // Success! Auto-logged in
                     this.errorMessage = '';
                     this.authService.register(emailTrimmed, passwordTrimmed, nameFromEmail);
-                    this.loadTestUsers();
                     
                     this.close.emit();
                     this.router.navigate([{ outlets: { modal: null } }]).then(() => {
@@ -275,13 +266,6 @@ export class LoginComponent {
     } else {
       this.errorMessage = 'Please enter email and password';
     }
-  }
-
-  // 🔹 Quick login with test user
-  quickLogin(user: { email: string; password: string }): void {
-    this.email = user.email;
-    this.password = user.password;
-    this.onLogin();
   }
 
   // 🔹 Toggle between login and register modes

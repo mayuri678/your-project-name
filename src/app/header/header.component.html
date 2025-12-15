@@ -10,7 +10,7 @@
     <!-- Navigation Links -->
     <nav class="header-nav">
       <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
-      <a class="nav-link" [routerLink]="loggedIn ? ['/about'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">About</a>
+      <a class="nav-link" [routerLink]="loggedIn ? ['/dashboard'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">Dashboard</a>
       <a class="nav-link" [routerLink]="loggedIn ? ['/my-templates'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">My Templates</a>
       <a class="nav-link" [routerLink]="loggedIn ? ['/templates'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">Templates</a>
       
@@ -30,6 +30,14 @@
           {{ getUserInitial() }}
         </button>
         <div class="user-menu" *ngIf="isAccountOpen" (mouseleave)="closeAccount()">
+          <!-- Menu Header with Close Button -->
+          <div class="menu-header">
+            <h3 class="menu-title">Account</h3>
+            <button class="close-menu-btn" (click)="closeAccount()" aria-label="Close menu">
+              <span class="close-icon">✕</span>
+            </button>
+          </div>
+          
           <!-- Current User Info Section -->
           <div class="user-info current-user">
             <div class="user-avatar-large">{{ getUserInitial() }}</div>
@@ -40,28 +48,6 @@
             </div>
           </div>
 
-          <!-- All Logged-In Users Section -->
-          <div class="logged-in-users-section" *ngIf="loggedInUsers.length > 0">
-            <div class="section-header">
-              <span class="section-title">All Logged-In Users ({{ loggedInUsers.length }})</span>
-            </div>
-            <div class="users-list">
-              <div class="user-item" *ngFor="let user of loggedInUsers" [class.current-user-item]="user.email === currentUserEmail">
-                <div class="user-item-avatar">{{ getUserInitial(user) }}</div>
-                <div class="user-item-details">
-                  <div class="user-item-name">{{ user.name }}</div>
-                  <div class="user-item-email">{{ user.email }}</div>
-                  <div class="user-item-time">{{ formatLoginTime(user.loginTime) }}</div>
-                </div>
-                <button class="user-item-logout" (click)="logoutUser(user)" title="Logout this user">
-                  <span class="logout-icon">🚪</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="menu-divider" *ngIf="loggedInUsers.length > 0"></div>
-
           <!-- Menu Actions -->
           <div class="menu-actions">
             <button class="menu-item" (click)="goToProfile(); closeAccount()">
@@ -71,6 +57,10 @@
             <button class="menu-item" (click)="goToSettings(); closeAccount()">
               <span class="menu-icon">⚙️</span>
               Settings
+            </button>
+            <button *ngIf="isAdmin" class="menu-item admin" (click)="goToAdmin(); closeAccount()">
+              <span class="menu-icon">🔧</span>
+              Admin Panel
             </button>
             <div class="menu-divider"></div>
             <button class="menu-item logout" (click)="logout.emit(); closeAccount()">

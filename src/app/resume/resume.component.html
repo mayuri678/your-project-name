@@ -6,16 +6,14 @@
     <span class="edit-icon">✏️</span>
     <span class="edit-text">Editing Template: <strong>{{ templateName || selectedTemplate }}</strong></span>
     <div class="edit-actions">
-      <select [(ngModel)]="selectedTemplate" class="template-selector">
-        <option value="template1">Template 1</option>
-        <option value="template2">Template 2</option>
-        <option value="template3">Template 3</option>
-      </select>
+
       <button class="save-btn" (click)="saveTemplate()">💾 Save Template</button>
       <button class="download-btn" (click)="downloadPDF()">📥 Download PDF</button>
-      <button class="export-btn" (click)="exportResumeAsJSON()">📤 Export JSON</button>
+
       <button class="import-btn" (click)="importResumeFromFile()">📂 Import Resume</button>
       <button *ngIf="pdfUrl" class="view-pdf-btn" (click)="showPdfViewer = true">👁️ View PDF</button>
+
+
       <button class="close-edit-btn" (click)="exitEditMode()">Exit Edit Mode</button>
     </div>
   </div>
@@ -30,19 +28,14 @@
       <span class="resume-info">Resume: <strong>{{ name || 'Untitled' }}</strong></span>
     </div>
     <div class="actions-right">
-      <select [(ngModel)]="selectedTemplate" class="template-selector-view">
-        <option value="template1">Template 1</option>
-        <option value="template2">Template 2</option>
-        <option value="template3">Template 3</option>
-      </select>
+
       <button class="action-btn primary" (click)="downloadPDF()">📥 Download PDF</button>
-      <button class="action-btn secondary" (click)="exportResumeAsJSON()">📤 Export JSON</button>
+
       <button class="action-btn secondary" (click)="importResumeFromFile()">📂 Import Resume</button>
+
+
       <button class="action-btn edit" (click)="isEditMode = true">✏️ Edit</button>
-      <button *ngIf="pdfImported" class="action-btn primary" (click)="quickEditPdf()">⚡ Edit PDF</button>
-      <button class="action-btn secondary" (click)="forceEditMode()">🔧 Force Edit</button>
-      <button class="action-btn secondary" (click)="testDataSet()">🧪 Test Data</button>
-      <button class="action-btn primary" (click)="isEditMode = true; cdr.detectChanges()">✏️ Simple Edit</button>
+
     </div>
   </div>
 </div>
@@ -53,22 +46,22 @@
     <div class="info">
       <h1 *ngIf="!isEditMode">{{ name }}</h1>
       <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
-      
+
       <h2 *ngIf="!isEditMode">{{ title }}</h2>
       <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
-      
+
       <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
       <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
-      
+
       <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
       <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
-      
+
       <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
       <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
-      
+
       <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
       <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
-      
+
       <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
       <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
     </div>
@@ -114,22 +107,22 @@
       <div class="info">
         <h1 *ngIf="!isEditMode">{{ name }}</h1>
         <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
-        
+
         <h2 *ngIf="!isEditMode">{{ title }}</h2>
         <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
-        
+
         <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
         <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
-        
+
         <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
         <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
-        
+
         <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
         <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
-        
+
         <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
         <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
-        
+
         <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
         <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
       </div>
@@ -167,22 +160,22 @@
     <div class="info">
       <h1 *ngIf="!isEditMode">{{ name }}</h1>
       <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
-      
+
       <h2 *ngIf="!isEditMode">{{ title }}</h2>
       <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
-      
+
       <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
       <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
-      
+
       <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
       <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
-      
+
       <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
       <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
-      
+
       <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
       <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
-      
+
       <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
       <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
     </div>
@@ -196,22 +189,22 @@
     <div class="info">
       <h1 *ngIf="!isEditMode">{{ name }}</h1>
       <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
-      
+
       <h2 *ngIf="!isEditMode">{{ title }}</h2>
       <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
-      
+
       <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
       <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
-      
+
       <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
       <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
-      
+
       <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
       <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
-      
+
       <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
       <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
-      
+
       <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
       <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
     </div>
@@ -233,22 +226,22 @@
       <div class="info">
         <h1 *ngIf="!isEditMode">{{ name }}</h1>
         <input *ngIf="isEditMode" type="text" [(ngModel)]="name" class="editable-input" placeholder="Full Name">
-        
+
         <h2 *ngIf="!isEditMode">{{ title }}</h2>
         <input *ngIf="isEditMode" type="text" [(ngModel)]="title" class="editable-input" placeholder="Job Title">
-        
+
         <p *ngIf="!isEditMode"><b>Email:</b> {{ email }}</p>
         <p *ngIf="isEditMode"><b>Email:</b> <input type="email" [(ngModel)]="email" class="editable-input-small" placeholder="email@example.com"></p>
-        
+
         <p *ngIf="!isEditMode"><b>Phone:</b> {{ phone }}</p>
         <p *ngIf="isEditMode"><b>Phone:</b> <input type="tel" [(ngModel)]="phone" class="editable-input-small" placeholder="+1-234-567-8900"></p>
-        
+
         <p *ngIf="!isEditMode"><b>Location:</b> {{ location }}</p>
         <p *ngIf="isEditMode"><b>Location:</b> <input type="text" [(ngModel)]="location" class="editable-input-small" placeholder="City, State, Country"></p>
-        
+
         <p *ngIf="!isEditMode"><b>LinkedIn:</b> {{ linkedIn }}</p>
         <p *ngIf="isEditMode"><b>LinkedIn:</b> <input type="text" [(ngModel)]="linkedIn" class="editable-input-small" placeholder="linkedin.com/in/username"></p>
-        
+
         <p *ngIf="!isEditMode"><b>GitHub:</b> {{ github }}</p>
         <p *ngIf="isEditMode"><b>GitHub:</b> <input type="text" [(ngModel)]="github" class="editable-input-small" placeholder="github.com/username"></p>
       </div>
