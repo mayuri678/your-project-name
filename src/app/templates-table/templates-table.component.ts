@@ -3,6 +3,7 @@ import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
+import { SupabaseService } from '../services/supabase.service';
 
 @Component({
   selector: 'app-templates-table',
@@ -21,6 +22,8 @@ export class TemplatesTableComponent implements OnInit {
 
   // All available resume templates organized by category - matching resume component IDs
   allTemplates: any[] = [
+
+    
     // Blue templates
     { id: 'template1', name: 'Classic Blue', category: 'Professional', hasHeadshot: true, hasGraphics: false, columns: 1, color: 'blue', recommended: false },
     { id: 'template8', name: 'Tech Modern', category: 'Technology', hasHeadshot: false, hasGraphics: true, columns: 2, color: 'blue', recommended: false },
@@ -74,12 +77,12 @@ export class TemplatesTableComponent implements OnInit {
   showSuccessMessage: boolean = false;
   successMessage: string = '';
 
-  categories: string[] = ['All', 'Professional', 'Technology', 'Creative', 'Business', 'Executive', 'Minimalist', 'Corporate', 'Modern', 'Academic'];
+  categories: string[] = ['All', 'Professional', 'Technology', 'Creative', 'Business', 'Executive', 'Minimalist', 'Corporate', 'Modern', 'Academic', 'Student'];
   colors: string[] = ['All', 'blue', 'green', 'purple', 'black', 'navy', 'orange', 'gray', 'darkblue'];
   columns: string[] = ['All', '1', '2'];
   headshots: string[] = ['All', 'With Photo', 'Without Photo'];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private supabaseService: SupabaseService) {}
 
   private loadUserInfo(): void {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -101,8 +104,46 @@ export class TemplatesTableComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.filteredTemplates = [...this.allTemplates];
+    this.loadTemplatesFromDatabase();
     this.loadUserInfo();
+  }
+
+  private async loadTemplatesFromDatabase(): Promise<void> {
+    try {
+      console.log('Loading templates from database for website...');
+      const result = await this.supabaseService.getAllTemplates();
+      if (result.data && result.data.length > 0) {
+        console.log('Database templates loaded:', result.data);
+        const dbTemplates = result.data.map(template => {
+          let resumeData: any = {};
+          try {
+            if (template.description) {
+              resumeData = JSON.parse(template.description);
+            }
+          } catch (e) {
+            // If parsing fails, use defaults
+          }
+
+          return {
+            id: template.id,
+            name: template.title || 'Untitled Template',
+            category: template.category || 'Professional',
+            hasHeadshot: true,
+            hasGraphics: false,
+            columns: resumeData.templateLayout === '2 Column' ? 2 : 1,
+            color: (resumeData.templateColor || 'blue').toLowerCase(),
+            recommended: false
+          };
+        });
+        
+        console.log('Processed database templates:', dbTemplates);
+        this.allTemplates = [...dbTemplates, ...this.allTemplates];
+      }
+    } catch (error) {
+      console.error('Error loading templates from database:', error);
+    }
+    
+    this.filteredTemplates = [...this.allTemplates];
   }
 
   applyFilters(): void {
@@ -121,19 +162,36 @@ export class TemplatesTableComponent implements OnInit {
   selectTemplate(template: any, event?: Event): void {
     console.log('Selected template:', template);
     
-    // Navigate to resume component with template selection to show the modal
-    this.router.navigate(['/resume'], { 
-      queryParams: { 
-        template: template.id,
-        templateName: template.name,
-        fromTemplates: 'true',
-        openTemplates: 'true'
-      } 
-    }).then(() => {
-      console.log('Successfully navigated to resume with template selection modal:', template.name);
-    }).catch((error) => {
-      console.error('Navigation failed:', error);
-    });
+    // Check if it's user's own template
+    if (template.isUserTemplate) {
+      // Navigate to edit existing template
+      this.router.navigate(['/resume'], { 
+        queryParams: { 
+          template: template.id,
+          templateId: template.id,
+          templateName: template.name,
+          edit: 'true'
+        } 
+      }).then(() => {
+        console.log('Successfully navigated to edit user template:', template.name);
+      }).catch((error) => {
+        console.error('Navigation failed:', error);
+      });
+    } else {
+      // Navigate to create new template from default template
+      this.router.navigate(['/resume'], { 
+        queryParams: { 
+          template: template.id,
+          templateName: template.name,
+          fromTemplates: 'true',
+          forceLoad: 'true'
+        } 
+      }).then(() => {
+        console.log('Successfully navigated to create from template:', template.name);
+      }).catch((error) => {
+        console.error('Navigation failed:', error);
+      });
+    }
   }
 
   previewTemplate(template: any): void {

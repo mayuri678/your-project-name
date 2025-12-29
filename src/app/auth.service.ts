@@ -10,6 +10,7 @@ export interface UserAccount {
   email: string;
   password: string;
   name: string;
+  role?: 'admin' | 'user';
 }
 
 export interface UserProfile {
@@ -35,15 +36,17 @@ export class AuthService {
   private currentUser: { email: string; name: string } | null = null;
   private loggedInUsers: LoggedInUser[] = [];
   
-  // Default test users
+  // Default test users with roles
   private readonly defaultUsers: UserAccount[] = [
-    { email: 'admin', password: 'admin', name: 'Admin' },
-    { email: 'user1', password: 'user1', name: 'User One' },
-    { email: 'user2', password: 'user2', name: 'User Two' },
-    { email: 'john@example.com', password: 'john123', name: 'John Doe' },
-    { email: 'jane@example.com', password: 'jane123', name: 'Jane Smith' },
-    { email: 'test@example.com', password: 'test123', name: 'Test User' },
-    { email: 'gulvemayuri63', password: 'mayuri123', name: 'Mayuri Gulve' }
+    { email: 'admin', password: 'admin', name: 'Admin', role: 'admin' },
+    { email: 'user1', password: 'user1', name: 'User One', role: 'user' },
+    { email: 'user2', password: 'user2', name: 'User Two', role: 'user' },
+    { email: 'john@example.com', password: 'john123', name: 'John Doe', role: 'user' },
+    { email: 'jane@example.com', password: 'jane123', name: 'Jane Smith', role: 'user' },
+    { email: 'test@example.com', password: 'test123', name: 'Test User', role: 'user' },
+    { email: 'gulvemayuri63', password: 'mayuri123', name: 'Mayuri Gulve', role: 'user' },
+    { email: 'normaluser', password: 'user123', name: 'Normal User', role: 'user' },
+    { email: 'demo@test.com', password: 'demo123', name: 'Demo User', role: 'user' }
   ];
 
   constructor() {
@@ -57,13 +60,10 @@ export class AuthService {
   private initializeUsers(): void {
     if (!this.isBrowser()) return;
     
-    // Load registered users from localStorage
-    const storedUsers = this.getRegisteredUsers();
+    // Force refresh users to ensure admin role is properly set
+    this.saveRegisteredUsers(this.defaultUsers);
     
-    // If no users are stored, initialize with default users
-    if (storedUsers.length === 0) {
-      this.saveRegisteredUsers(this.defaultUsers);
-    }
+    console.log('Initialized users:', this.getRegisteredUsers());
   }
 
   private getRegisteredUsers(): UserAccount[] {
@@ -90,7 +90,7 @@ export class AuthService {
     }
   }
 
-  register(email: string, password: string, name?: string): boolean {
+  register(email: string, password: string, name?: string, role: 'admin' | 'user' = 'user'): boolean {
     if (!this.isBrowser()) return false;
     
     const registeredUsers = this.getRegisteredUsers();
@@ -105,7 +105,8 @@ export class AuthService {
     const newUser: UserAccount = {
       email,
       password,
-      name: userName
+      name: userName,
+      role
     };
     
     registeredUsers.push(newUser);
@@ -118,6 +119,9 @@ export class AuthService {
   }
 
   login(email: string, password: string): boolean {
+    // Clear previous user data before login
+    this.clearUserSession();
+    
     const registeredUsers = this.getRegisteredUsers();
     const user = registeredUsers.find(u => u.email === email && u.password === password);
     
@@ -129,6 +133,13 @@ export class AuthService {
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('currentUserEmail', user.email);
         localStorage.setItem('currentUserName', user.name);
+        localStorage.setItem('currentUserRole', user.role || 'user');
+        
+        console.log('Login Success:', {
+          email: user.email,
+          role: user.role,
+          savedRole: localStorage.getItem('currentUserRole')
+        });
         
         // Add user to logged-in users list
         this.addLoggedInUser(user.email, user.name);
@@ -198,11 +209,17 @@ export class AuthService {
 
   logout(): void {
     this.loggedIn = false;
+    this.currentUser = null;
+    
     if (this.isBrowser()) {
-      localStorage.removeItem('loggedIn');
-      localStorage.removeItem('isLoggedIn');
-      // Optionally remove current user from list, or keep them in the list
-      // this.removeLoggedInUser(this.currentUser?.email || '');
+      // Clear all user session data
+      this.clearUserSession();
+      
+      // Remove current user from logged-in users list
+      const currentEmail = localStorage.getItem('currentUserEmail');
+      if (currentEmail) {
+        this.removeLoggedInUser(currentEmail);
+      }
     }
   }
 
@@ -266,7 +283,89 @@ export class AuthService {
     return null;
   }
 
+  // Forgot password functionality
+  getPasswordHint(email: string): string | null {
+    const registeredUsers = this.getRegisteredUsers();
+    const user = registeredUsers.find(u => u.email === email);
+    
+    if (user) {
+      // Return password hint (first 2 characters + asterisks)
+      return user.password.substring(0, 2) + '*'.repeat(user.password.length - 2);
+    }
+    return null;
+  }
+
+  // Reset password (for demo purposes - shows actual password)
+  resetPassword(email: string): string | null {
+    const registeredUsers = this.getRegisteredUsers();
+    const user = registeredUsers.find(u => u.email === email);
+    
+    if (user) {
+      return user.password; // In real app, this would send email
+    }
+    return null;
+  }
+
+  // Check if current user is admin
+  isAdmin(): boolean {
+    if (!this.isBrowser()) return false;
+    
+    const userRole = localStorage.getItem('currentUserRole');
+    const userEmail = localStorage.getItem('currentUserEmail');
+    
+    console.log('Admin Check:', { userRole, userEmail, isAdmin: userRole === 'admin' });
+    
+    // Also check if user email is 'admin' as fallback
+    return userRole === 'admin' || userEmail === 'admin';
+  }
+
+  // Get current user role
+  getCurrentUserRole(): 'admin' | 'user' | null {
+    if (!this.isBrowser()) return null;
+    
+    const role = localStorage.getItem('currentUserRole');
+    return role as 'admin' | 'user' || null;
+  }
+
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && !!window.localStorage;
+  }
+
+  // Clear all user session data to prevent data leakage
+  clearUserSession(): void {
+    if (!this.isBrowser()) return;
+    
+    // Clear authentication data
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUserEmail');
+    localStorage.removeItem('currentUserName');
+    localStorage.removeItem('currentUserRole');
+    
+    // Clear user profile data for all users
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('userProfile_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Clear any other user-specific data
+    localStorage.removeItem('currentAdmin');
+    
+    // Reset service state
+    this.loggedIn = false;
+    this.currentUser = null;
+  }
+
+  // Force clear all user data (for complete reset)
+  clearAllUserData(): void {
+    if (!this.isBrowser()) return;
+    
+    this.clearUserSession();
+    
+    // Also clear logged-in users list if needed
+    localStorage.removeItem('loggedInUsers');
+    this.loggedInUsers = [];
   }
 }

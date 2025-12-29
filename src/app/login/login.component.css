@@ -157,10 +157,13 @@
   color: #059669;
   font-size: 0.9rem;
   text-align: center;
-  padding: 8px;
+  padding: 12px;
   background: #d1fae5;
   border-radius: 6px;
   margin-bottom: 12px;
+  border: 1px solid #a7f3d0;
+  white-space: pre-line;
+  line-height: 1.4;
 }
 
 /* Password Toggle */
@@ -207,6 +210,37 @@
 
 .link-button:hover {
   color: #4f46e5;
+}
+
+/* Forgot Password Section */
+.forgot-password {
+  text-align: center;
+  margin: 8px 0;
+}
+
+.forgot-password .link-button {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.forgot-password .link-button:hover {
+  color: #5b86e5;
+  text-decoration: underline;
+  background-color: #f8fafc;
+}
+
+.forgot-password .forgot-btn {
+  font-weight: 500;
+  color: #4f46e5;
+}
+
+.forgot-password .forgot-btn:hover {
+  color: #3730a3;
+  background-color: #eef2ff;
 }
 
 /* Test Users Section */

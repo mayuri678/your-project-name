@@ -4,23 +4,32 @@
       <h1>Resume Templates</h1>
       <p>Manage resume templates and their availability</p>
     </div>
-    <button class="create-btn" (click)="toggleCreateForm()">
-      {{ showCreateForm ? 'Cancel' : '+ Add Template' }}
-    </button>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="refreshTemplates()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">🔄 Refresh</span>
+        <span *ngIf="isLoading">⏳ Loading...</span>
+      </button>
+      <button class="refresh-btn primary" (click)="toggleCreateForm()" [disabled]="isLoading">
+        <span *ngIf="!showCreateForm">➕ Create Template</span>
+        <span *ngIf="showCreateForm">⬆ Close Form</span>
+      </button>
+    </div>
   </div>
 
   <!-- Create Template Form -->
   <div class="create-form" *ngIf="showCreateForm">
-    <h3>Create New Template</h3>
+    <h3>🎆 Create New Template</h3>
+    <div *ngIf="createError" class="alert alert-error">❌ {{ createError }}</div>
+    <div *ngIf="createSuccess" class="alert alert-success">✅ {{ createSuccess }}</div>
     <form (ngSubmit)="createTemplate()" class="template-form">
       <div class="form-row">
         <div class="form-group">
-          <label>Template Name</label>
-          <input type="text" [(ngModel)]="newTemplate.name" name="name" required>
+          <label>Template Name *</label>
+          <input type="text" [(ngModel)]="newTemplate.name" name="name" required [disabled]="isLoading" placeholder="Enter template name">
         </div>
         <div class="form-group">
-          <label>Category</label>
-          <select [(ngModel)]="newTemplate.category" name="category" required>
+          <label>Category *</label>
+          <select [(ngModel)]="newTemplate.category" name="category" required [disabled]="isLoading">
             <option value="">Select Category</option>
             <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
           </select>
@@ -28,25 +37,179 @@
       </div>
       <div class="form-group">
         <label>Description</label>
-        <textarea [(ngModel)]="newTemplate.description" name="description" rows="3"></textarea>
+        <textarea [(ngModel)]="newTemplate.description" name="description" rows="3" placeholder="Enter template description"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Color</label>
+          <select [(ngModel)]="newTemplate.color" name="color" [disabled]="isLoading">
+            <option *ngFor="let color of colors" [value]="color">{{ color }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Layout</label>
+          <select [(ngModel)]="newTemplate.layout" name="layout" [disabled]="isLoading">
+            <option *ngFor="let layout of layouts" [value]="layout">{{ layout }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>📷 Template Features (All Selected by Default)</label>
+        <div class="features-display-create">
+          <span class="feature-badge-create" *ngFor="let feature of newTemplate.templateFeatures">
+            📷 {{ feature }}
+          </span>
+        </div>
+        <small class="feature-note">All features are automatically enabled for new templates</small>
       </div>
       <div class="form-row">
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
-            <input type="checkbox" [(ngModel)]="newTemplate.isPremium" name="isPremium">
+            <input type="checkbox" [(ngModel)]="newTemplate.isPremium" name="isPremium" [disabled]="isLoading">
             Premium Template
           </label>
         </div>
         <div class="form-group" *ngIf="newTemplate.isPremium">
           <label>Price ($)</label>
-          <input type="number" [(ngModel)]="newTemplate.price" name="price" min="0" step="0.01">
+          <input type="number" [(ngModel)]="newTemplate.price" name="price" min="0" step="0.01" [disabled]="isLoading">
         </div>
       </div>
       <div class="form-actions">
-        <button type="submit" class="submit-btn">Create Template</button>
-        <button type="button" class="cancel-btn" (click)="toggleCreateForm()">Cancel</button>
+        <button type="submit" class="submit-btn" [disabled]="isLoading || !newTemplate.name?.trim() || !newTemplate.category">
+          <span *ngIf="!isLoading">✨ Create Template</span>
+          <span *ngIf="isLoading">⏳ Creating...</span>
+        </button>
+        <button type="button" class="cancel-btn" (click)="toggleCreateForm()" [disabled]="isLoading">Cancel</button>
       </div>
     </form>
+  </div>
+
+  <!-- Edit Template Form -->
+  <div class="create-form" *ngIf="showEditForm && editingTemplate">
+    <h3>Edit Template - {{ editingTemplate.name }}</h3>
+    <form (ngSubmit)="updateTemplate()" class="template-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Template Name *</label>
+          <input type="text" 
+                 [(ngModel)]="editingTemplate.name" 
+                 name="editName" 
+                 required 
+                 [disabled]="isLoading"
+                 placeholder="Enter template name">
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select [(ngModel)]="editingTemplate.category" 
+                  name="editCategory" 
+                  required
+                  [disabled]="isLoading">
+            <option value="">Select Category</option>
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Color</label>
+          <select [(ngModel)]="editingTemplate.color" 
+                  name="editColor"
+                  [disabled]="isLoading">
+            <option *ngFor="let color of colors" [value]="color">{{ color }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Layout</label>
+          <select [(ngModel)]="editingTemplate.layout" 
+                  name="editLayout"
+                  [disabled]="isLoading">
+            <option *ngFor="let layout of layouts" [value]="layout">{{ layout }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="editingTemplate.description" 
+                  name="editDescription" 
+                  rows="3"
+                  [disabled]="isLoading"
+                  placeholder="Enter template description"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label>Features</label>
+        <div class="features-checkboxes">
+          <label class="feature-checkbox" *ngFor="let feature of features">
+            <input type="checkbox" 
+                   [checked]="editingTemplate.templateFeatures?.includes(feature)"
+                   (change)="toggleFeature(feature)"
+                   [disabled]="isLoading">
+            <span>{{ feature }}</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" 
+                   [(ngModel)]="editingTemplate.isPremium" 
+                   name="editIsPremium"
+                   [disabled]="isLoading">
+            Premium Template
+          </label>
+        </div>
+        <div class="form-group" *ngIf="editingTemplate.isPremium">
+          <label>Price ($)</label>
+          <input type="number" 
+                 [(ngModel)]="editingTemplate.price" 
+                 name="editPrice" 
+                 min="0" 
+                 step="0.01"
+                 [disabled]="isLoading">
+        </div>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" 
+                 [(ngModel)]="editingTemplate.isActive" 
+                 name="editIsActive"
+                 [disabled]="isLoading">
+          Template Active
+        </label>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" 
+                class="submit-btn" 
+                [disabled]="isLoading || !editingTemplate.name?.trim() || !editingTemplate.category">
+          <span *ngIf="isLoading">Updating...</span>
+          <span *ngIf="!isLoading">✅ Update Template</span>
+        </button>
+        <button type="button" 
+                class="cancel-btn" 
+                (click)="cancelEdit()"
+                [disabled]="isLoading">
+          ❌ Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Bulk Actions -->
+  <div class="bulk-actions" *ngIf="selectedTemplates.length > 0">
+    <div class="bulk-info">
+      <span>{{ selectedTemplates.length }} templates selected</span>
+    </div>
+    <div class="bulk-buttons">
+      <button class="bulk-btn activate" (click)="bulkActivate()">✅ Activate All</button>
+      <button class="bulk-btn deactivate" (click)="bulkDeactivate()">🚫 Deactivate All</button>
+      <button class="bulk-btn delete" (click)="bulkDelete()">🗑️ Delete All</button>
+      <button class="bulk-btn clear" (click)="clearSelection()">❌ Clear Selection</button>
+    </div>
   </div>
 
   <!-- Filters -->
@@ -82,47 +245,64 @@
     </div>
 
     <div class="templates-grid" *ngIf="!isLoading && filteredTemplates.length > 0">
-      <div *ngFor="let template of filteredTemplates" class="template-card">
-        <div class="template-header">
-          <h3>{{ template.name }}</h3>
-          <div class="template-badges">
-            <span class="category-badge">{{ template.category }}</span>
-            <span class="type-badge" [class.premium]="template.isPremium">
-              {{ template.isPremium ? 'Premium' : 'Free' }}
+      <div *ngFor="let template of filteredTemplates" class="template-card" [class.selected]="isSelected(template.id)" [ngClass]="'color-' + (template.color?.toLowerCase() || 'blue')">
+        <div class="template-checkbox">
+          <input type="checkbox" 
+                 [checked]="isSelected(template.id)"
+                 (change)="toggleSelection(template.id)">
+        </div>
+        
+        <div class="card-header">
+          <div class="template-info">
+            <h3 class="template-name">{{ template.name }}</h3>
+            <div class="template-id">ID: {{ template.id }}</div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="template-details">
+            <div class="detail-item">
+              <span class="detail-label">Category:</span>
+              <span class="category-badge">{{ template.category }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">Color:</span>
+              <div class="color-indicator">
+                <div class="color-circle" [ngClass]="template.color?.toLowerCase() || 'blue'"></div>
+                <span>{{ template.color || 'Blue' }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">Layout:</span>
+              <span class="layout-text">{{ template.layout || '1 Column' }}</span>
+            </div>
+            
+            <div class="detail-item" *ngIf="template.templateFeatures && template.templateFeatures.length > 0">
+              <span class="detail-label">Features:</span>
+              <div class="features-display">
+                <span class="feature-badge" *ngFor="let feature of template.templateFeatures">
+                  📷 {{ feature }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="template-status">
+            <span class="status-badge" [class.active]="template.isActive" [class.inactive]="!template.isActive">
+              {{ template.isActive ? 'Active' : 'Inactive' }}
             </span>
           </div>
         </div>
-        
-        <p class="template-description">{{ template.description }}</p>
-        
-        <div class="template-stats">
-          <div class="stat">
-            <span class="stat-label">Downloads:</span>
-            <span class="stat-value">{{ template.downloadCount }}</span>
-          </div>
-          <div class="stat" *ngIf="template.isPremium">
-            <span class="stat-label">Price:</span>
-            <span class="stat-value">${{ template.price }}</span>
-          </div>
-          <div class="stat">
-            <span class="stat-label">Created:</span>
-            <span class="stat-value">{{ formatDate(template.createdAt) }}</span>
-          </div>
-        </div>
 
-        <div class="template-status">
-          <span class="status-badge" [class.active]="template.isActive" [class.inactive]="!template.isActive">
-            {{ template.isActive ? 'Active' : 'Inactive' }}
-          </span>
-        </div>
-
-        <div class="template-actions">
-          <button class="action-btn edit" title="Edit Template">✏️</button>
-          <button class="action-btn toggle" (click)="toggleTemplateStatus(template.id)" 
-                  [title]="template.isActive ? 'Deactivate' : 'Activate'">
-            {{ template.isActive ? '🚫' : '✅' }}
+        <div class="card-footer">
+          <button class="edit-template-btn" (click)="openTemplateEditor(template.id)">
+            ✏️ Edit Template
           </button>
-          <button class="action-btn delete" (click)="deleteTemplate(template.id)" title="Delete Template">🗑️</button>
+          <button class="open-editor-btn" (click)="openTemplateEditor(template.id)">
+            📝 Open Editor
+          </button>
         </div>
       </div>
     </div>

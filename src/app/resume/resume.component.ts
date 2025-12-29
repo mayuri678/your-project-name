@@ -6,6 +6,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HeaderComponent } from '../header/header.component';
 import { AuthService } from '../auth.service';
 import { SupabaseService } from '../services/supabase.service';
+import { UserDataService } from '../services/user-data.service';
 
 @Component({
   selector: 'app-resume',
@@ -49,6 +50,7 @@ export class ResumeComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private userDataService: UserDataService,
     private router: Router,
     private route: ActivatedRoute,
     private supabaseService: SupabaseService,
@@ -58,6 +60,9 @@ export class ResumeComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
+    
+    // Clear previous user data first
+    this.clearPreviousUserData();
     
     this.name = 'Test User';
     this.email = 'test@example.com';
@@ -77,6 +82,10 @@ export class ResumeComponent implements OnInit {
       }
       if (params['templateName']) {
         this.templateName = params['templateName'];
+      }
+      if (params['loadData']) {
+        // Load template data from My Templates page
+        await this.loadTemplateFromMyTemplates(params['loadData']);
       }
       if (params['templateId']) {
         this.editingTemplateId = params['templateId'];
@@ -116,9 +125,10 @@ export class ResumeComponent implements OnInit {
       return;
     }
 
-    const userProfile = this.authService.getUserProfile();
-    if (userProfile && userProfile.photo) {
-      this.profilePhoto = userProfile.photo;
+    // Load user photo using UserDataService
+    const userPhoto = this.userDataService.getUserPhoto();
+    if (userPhoto) {
+      this.profilePhoto = userPhoto;
       this.photoPreview = null;
     } else {
       this.profilePhoto = null;
@@ -180,6 +190,7 @@ export class ResumeComponent implements OnInit {
         { name: 'JavaScript Algorithms and Data Structures - freeCodeCamp', file: null }
       ];
     } else {
+      const userProfile = this.userDataService.getUserData('profile');
       if (userProfile) {
         this.name = userProfile.username || currentUser.name;
         this.email = userProfile.email || currentUser.email;
@@ -220,6 +231,107 @@ export class ResumeComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error loading template data:', error);
+    }
+  }
+
+  async loadTemplateFromMyTemplates(templateId: string): Promise<void> {
+    try {
+      const result = await this.supabaseService.getTemplateById(templateId);
+      if (result.data) {
+        const templateData = JSON.parse(result.data.description || '{}');
+        
+        // Set the template type - ensure it matches available templates
+        const templateCategory = result.data.category;
+        if (templateCategory && templateCategory.startsWith('template')) {
+          this.selectedTemplate = templateCategory;
+        } else {
+          // Map category names to template IDs
+          const categoryMap: {[key: string]: string} = {
+            'Professional': 'template1',
+            'Creative': 'template2', 
+            'Modern': 'template3',
+            'Classic': 'template4',
+            'Technical': 'template5'
+          };
+          this.selectedTemplate = categoryMap[templateCategory] || 'template1';
+        }
+        
+        // Check if this is an admin-created template or user template
+        if (templateData.templateName || templateData.templateColor) {
+          // Admin template - load with sample data
+          this.name = templateData.name || templateData.templateName || 'John Doe';
+          this.title = 'Software Developer';
+          this.email = 'john.doe@example.com';
+          this.phone = '+1 (555) 123-4567';
+          this.location = 'New York, NY, USA';
+          this.linkedIn = 'linkedin.com/in/johndoe';
+          this.github = 'github.com/johndoe';
+          
+          this.education = [{
+            degree: 'Bachelor of Science in Computer Science',
+            institute: 'University of Technology',
+            year: '2021',
+            grade: '3.8 GPA'
+          }];
+          
+          this.skills = ['JavaScript', 'TypeScript', 'Angular', 'Node.js', 'Python'];
+          
+          this.experience = [{
+            role: 'Senior Software Developer',
+            company: 'Tech Solutions Inc.',
+            duration: '2022 - Present',
+            description: 'Led development of web applications using modern frameworks. Collaborated with cross-functional teams to deliver high-quality software solutions.'
+          }];
+          
+          this.highlights = [
+            'Experienced professional with expertise in various technologies',
+            'Strong problem-solving skills and attention to detail',
+            'Excellent team collaboration and communication abilities'
+          ];
+          
+          this.technicalSkills = ['Frontend: Angular, React, Vue.js', 'Backend: Node.js, Express.js', 'Database: MongoDB, PostgreSQL'];
+          
+          this.projects = [{
+            name: 'E-commerce Platform',
+            technology: 'Angular, Node.js, MongoDB',
+            description: 'Built a full-stack e-commerce platform with user authentication, payment integration, and admin dashboard.'
+          }];
+          
+          this.certifications = [
+            { name: 'AWS Certified Developer', file: null },
+            { name: 'Angular Certification', file: null }
+          ];
+        } else {
+          // User template - load actual data
+          this.name = templateData.name || '';
+          this.title = templateData.title || '';
+          this.email = templateData.email || '';
+          this.phone = templateData.phone || '';
+          this.location = templateData.location || '';
+          this.linkedIn = templateData.linkedIn || '';
+          this.github = templateData.github || '';
+          this.education = templateData.education || [];
+          this.skills = templateData.skills || [];
+          this.experience = templateData.experience || [];
+          this.highlights = templateData.highlights || [];
+          this.technicalSkills = templateData.technicalSkills || [];
+          this.projects = templateData.projects || [];
+          this.certifications = templateData.certifications || [];
+          this.profilePhoto = templateData.profilePhoto || null;
+        }
+        
+        this.editingTemplateId = templateId;
+        this.isEditMode = true;
+        
+        console.log('Template loaded:', {
+          selectedTemplate: this.selectedTemplate,
+          name: this.name,
+          isEditMode: this.isEditMode
+        });
+      }
+    } catch (error) {
+      console.error('Error loading template from My Templates:', error);
+      alert('Error loading template. Please try again.');
     }
   }
 
@@ -348,25 +460,8 @@ export class ResumeComponent implements OnInit {
           this.photoPreview = e.target.result as string;
           this.profilePhoto = this.photoPreview;
           
-          const userProfile = this.authService.getUserProfile();
-          const currentUser = this.authService.getCurrentUser();
-          if (currentUser) {
-            const updatedProfile = {
-              username: userProfile?.username || currentUser.name,
-              email: userProfile?.email || currentUser.email,
-              contactNo: userProfile?.contactNo || '',
-              notification: userProfile?.notification !== undefined ? userProfile.notification : true,
-              address: userProfile?.address || '',
-              street: userProfile?.street || '',
-              city: userProfile?.city || '',
-              state: userProfile?.state || '',
-              country: userProfile?.country || '',
-              pincode: userProfile?.pincode || '',
-              location: userProfile?.location || '',
-              photo: this.photoPreview
-            };
-            this.authService.saveUserProfile(updatedProfile);
-          }
+          // Save photo using UserDataService
+          this.userDataService.saveUserPhoto(this.photoPreview);
         }
       };
       
@@ -382,15 +477,8 @@ export class ResumeComponent implements OnInit {
     this.profilePhoto = null;
     this.photoPreview = null;
     
-    const userProfile = this.authService.getUserProfile();
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser && userProfile) {
-      const updatedProfile = {
-        ...userProfile,
-        photo: ''
-      };
-      this.authService.saveUserProfile(updatedProfile);
-    }
+    // Remove photo using UserDataService
+    this.userDataService.removeUserData('photo');
   }
 
   getPhotoUrl(): string | null {
@@ -891,7 +979,6 @@ export class ResumeComponent implements OnInit {
         return;
       }
 
-      // Get all CSS styles from current page
       const styles = Array.from(document.styleSheets)
         .map(styleSheet => {
           try {
@@ -912,9 +999,6 @@ export class ResumeComponent implements OnInit {
   <style>
     ${styles}
     
-    /* PDF specific styles */
-    * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
-    
     @page {
       size: A4;
       margin: 0.5in;
@@ -932,45 +1016,14 @@ export class ResumeComponent implements OnInit {
       box-shadow: none; 
       border: none; 
       max-width: 100%;
-      page-break-inside: avoid;
-    }
-    
-    .header {
-      page-break-after: avoid;
-      page-break-inside: avoid;
+      min-height: 100vh;
     }
     
     section {
-      page-break-inside: avoid;
-      break-inside: avoid;
       margin-bottom: 15px;
     }
     
-    h3 {
-      page-break-after: avoid;
-      break-after: avoid;
-    }
-    
-    .editable-item {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    .edit-mode-banner, .resume-actions-bar, .add-btn, .remove-btn { display: none !important; }
-    .editable-item, .add-btn, .remove-btn { display: none !important; }
-    
-    /* Template colors */
-    .template1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; }
-    .template2 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
-    .template1 .header { background: rgba(255, 255, 255, 0.95) !important; color: #1f2937 !important; }
-    .template1 h3 { color: white !important; }
-    .template1 section { background: rgba(255, 255, 255, 0.1) !important; }
-    .template1 li { background: rgba(255, 255, 255, 0.1) !important; color: white !important; }
-    .template2-sidebar { background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%) !important; color: white !important; }
-    .template2 .info { color: white !important; }
-    .template2 .info h1 { color: white !important; }
-    .template2 .info h2 { color: rgba(255,255,255,0.9) !important; }
-    .template2 .info p { color: rgba(255,255,255,0.8) !important; }
+    .edit-mode-banner, .resume-actions-bar, .add-btn, .remove-btn, .editable-item { display: none !important; }
   </style>
 </head>
 <body>
@@ -984,13 +1037,40 @@ export class ResumeComponent implements OnInit {
       printWindow.onload = () => {
         setTimeout(() => {
           printWindow.print();
-          printWindow.close();
-          this.isEditMode = wasInEditMode;
-        }, 500);
+          setTimeout(() => {
+            printWindow.close();
+            this.isEditMode = wasInEditMode;
+          }, 1000);
+        }, 1000);
       };
     }, 100);
   }
 
-
+  private clearPreviousUserData(): void {
+    // Reset component state to prevent data leakage
+    this.profilePhoto = null;
+    this.photoPreview = null;
+    this.pdfImported = false;
+    this.pdfUrl = null;
+    this.showPdfViewer = false;
+    this.isEditMode = false;
+    this.editingTemplateId = null;
+    
+    // Reset form data
+    this.name = '';
+    this.title = '';
+    this.email = '';
+    this.phone = '';
+    this.location = '';
+    this.linkedIn = '';
+    this.github = '';
+    this.education = [];
+    this.skills = [];
+    this.experience = [];
+    this.highlights = [];
+    this.technicalSkills = [];
+    this.projects = [];
+    this.certifications = [];
+  }
 
 }

@@ -10,7 +10,41 @@
   --radius: 12px;
   --shadow-lg: 0 10px 20px rgba(0,0,0,.25), 0 6px 6px rgba(0,0,0,.2);
   --container: 1200px;
+  
+  /* Template Colors */
+  --template-blue: #3b82f6;
+  --template-green: #10b981;
+  --template-red: #ef4444;
+  --template-purple: #8b5cf6;
+  --template-orange: #f97316;
+  --template-black: #1f2937;
+  --template-gray: #6b7280;
 }
+
+/* Template Color Utilities */
+.template-color-blue { color: var(--template-blue) !important; }
+.template-color-green { color: var(--template-green) !important; }
+.template-color-red { color: var(--template-red) !important; }
+.template-color-purple { color: var(--template-purple) !important; }
+.template-color-orange { color: var(--template-orange) !important; }
+.template-color-black { color: var(--template-black) !important; }
+.template-color-gray { color: var(--template-gray) !important; }
+
+.template-bg-blue { background-color: var(--template-blue) !important; }
+.template-bg-green { background-color: var(--template-green) !important; }
+.template-bg-red { background-color: var(--template-red) !important; }
+.template-bg-purple { background-color: var(--template-purple) !important; }
+.template-bg-orange { background-color: var(--template-orange) !important; }
+.template-bg-black { background-color: var(--template-black) !important; }
+.template-bg-gray { background-color: var(--template-gray) !important; }
+
+.template-border-blue { border-color: var(--template-blue) !important; }
+.template-border-green { border-color: var(--template-green) !important; }
+.template-border-red { border-color: var(--template-red) !important; }
+.template-border-purple { border-color: var(--template-purple) !important; }
+.template-border-orange { border-color: var(--template-orange) !important; }
+.template-border-black { border-color: var(--template-black) !important; }
+.template-border-gray { border-color: var(--template-gray) !important; }
 
 * {
   box-sizing: border-box;
@@ -88,3 +122,6 @@ h3 { font-size: 20px; }
     font-size: 14px;
   }
 }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

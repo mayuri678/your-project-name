@@ -64,26 +64,32 @@ import { SubscriptionPlan } from '../../models/admin.models';
   styles: [`
     .subscription-management { padding: 24px; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-    .page-header h1 { font-size: 28px; margin: 0; }
+    .page-header h1 { font-size: 28px; margin: 0; color: #1a202c; font-weight: 700; }
+    .header-content p { color: #2d3748; font-weight: 500; margin: 4px 0 0 0; }
     .create-btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; }
-    .create-form { background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; }
+    .create-form { background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .create-form h3 { color: #1a202c; font-weight: 600; margin: 0 0 16px 0; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .form-row input, textarea { padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px; }
+    .form-row input, textarea { padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px; color: #1a202c; font-weight: 500; }
+    .form-row input::placeholder, textarea::placeholder { color: #4a5568; }
     .form-actions { display: flex; gap: 12px; margin-top: 16px; }
     .submit-btn { background: #38a169; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-    .cancel-btn { background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+    .cancel-btn { background: #e2e8f0; color: #2d3748; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; }
     .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
     .plan-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; }
+    .plan-card h3 { color: #1a202c; font-weight: 600; margin: 0; }
+    .plan-description { color: #2d3748; font-weight: 500; margin: 12px 0; }
     .plan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .plan-price { font-size: 24px; font-weight: 600; color: #667eea; }
     .plan-features { list-style: none; padding: 0; margin: 16px 0; }
-    .plan-features li { padding: 4px 0; color: #4a5568; }
+    .plan-features li { padding: 4px 0; color: #2d3748; font-weight: 500; }
     .plan-features li:before { content: "✓ "; color: #38a169; font-weight: bold; }
-    .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; }
+    .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .status-badge:not(.active) { background: #fed7d7; color: #c53030; }
     .status-badge.active { background: #c6f6d5; color: #22543d; }
     .plan-actions { display: flex; gap: 12px; margin-top: 16px; }
-    .toggle-btn { background: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-    .delete-btn { background: #e53e3e; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    .toggle-btn { background: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .delete-btn { background: #e53e3e; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
   `]
 })
 export class SubscriptionManagementComponent implements OnInit {

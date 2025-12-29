@@ -58,6 +58,13 @@
       </button>
     </div>
 
+    <!-- Forgot Password Link (only for login) -->
+    <div class="forgot-password" *ngIf="!isRegisterMode">
+      <button type="button" class="link-button forgot-btn" (click)="onForgotPassword()">
+        🔑 Forgot Password?
+      </button>
+    </div>
+
     <!-- Submit Button -->
     <button type="submit" class="accept-btn full">
       {{ isRegisterMode ? 'REGISTER' : 'LOGIN' }}

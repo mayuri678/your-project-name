@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,6 +9,5 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./footer.component.css']
 })
 export class FooterComponent {
-  @Output() about = new EventEmitter<void>();
-  @Output() resume = new EventEmitter<void>();
+  currentYear = new Date().getFullYear();
 }

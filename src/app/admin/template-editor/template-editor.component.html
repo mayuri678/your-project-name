@@ -1,0 +1,373 @@
+<div class="template-editor">
+  <div class="editor-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="goBack()">← Back</button>
+      <h1>{{ template?.name || 'Template Editor' }}</h1>
+    </div>
+    <div class="header-actions">
+      <button class="test-btn" (click)="testSave()" [disabled]="isSaving">
+        🧪 Test Save
+      </button>
+      <button class="save-btn" (click)="saveTemplate()" [disabled]="isSaving">
+        {{ isSaving ? '💾 Saving...' : '💾 Save Changes' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Resume Template Preview -->
+  <div class="template-preview">
+    <div class="resume-template">
+      <!-- Profile Header Section -->
+      <div class="profile-header">
+        <div class="profile-info">
+          <div class="form-group">
+            <input type="text" [(ngModel)]="resumeData.name" placeholder="Demo User" class="name-input">
+          </div>
+          <div class="form-group">
+            <input type="text" placeholder="Job Title" class="job-input">
+          </div>
+          
+          <div class="contact-details">
+            <div class="contact-row">
+              <label>Email:</label>
+              <input type="email" [(ngModel)]="resumeData.email" placeholder="demo@test.com">
+            </div>
+            <div class="contact-row">
+              <label>Phone:</label>
+              <input type="tel" [(ngModel)]="resumeData.phone" placeholder="+1-234-567-8900">
+            </div>
+            <div class="contact-row">
+              <label>Location:</label>
+              <input type="text" [(ngModel)]="resumeData.address" placeholder="City, State, Country">
+            </div>
+            <div class="contact-row">
+              <label>LinkedIn:</label>
+              <input type="text" placeholder="linkedin.com/in/username">
+            </div>
+            <div class="contact-row">
+              <label>GitHub:</label>
+              <input type="text" placeholder="github.com/username">
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-photo-section">
+          <div class="profile-photo-circle">
+            <div class="photo-placeholder" *ngIf="!resumeData?.profilePhoto">
+              <div class="avatar-icon">👤</div>
+              <span>Profile Photo</span>
+            </div>
+            <img *ngIf="resumeData.profilePhoto" [src]="resumeData.profilePhoto" alt="Profile Photo">
+          </div>
+          <button class="upload-photo-btn" (click)="onPhotoSelect($event)">
+            📷 Upload Photo
+          </button>
+        </div>
+      </div>
+
+      <!-- Experience Section -->
+      <div class="section experience-section">
+        <h2>Work Experience</h2>
+        <div class="section-content">
+          <div class="experience-item" *ngFor="let exp of resumeData.experience; let i = index">
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" [(ngModel)]="exp.position" placeholder="Job Title">
+              </div>
+              <div class="form-group">
+                <input type="text" [(ngModel)]="exp.company" placeholder="Company Name">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" [(ngModel)]="exp.startDate" placeholder="Start Date">
+              </div>
+              <div class="form-group">
+                <input type="text" [(ngModel)]="exp.endDate" placeholder="End Date">
+              </div>
+              <button class="remove-btn" (click)="removeExperience(i)" *ngIf="resumeData.experience.length > 1">❌</button>
+            </div>
+            <div class="form-group">
+              <textarea [(ngModel)]="exp.description" placeholder="Job description and responsibilities..." rows="3"></textarea>
+            </div>
+          </div>
+          <button class="add-btn" (click)="addExperience()">+ Add Experience</button>
+        </div>
+      </div>
+
+      <!-- Education Section -->
+      <div class="section education-section">
+        <h2>Education</h2>
+        <div class="section-content">
+          <div class="education-item" *ngFor="let edu of resumeData.education; let i = index">
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" [(ngModel)]="edu.degree" placeholder="Degree">
+              </div>
+              <div class="form-group">
+                <input type="text" [(ngModel)]="edu.institution" placeholder="Institution">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" [(ngModel)]="edu.year" placeholder="Year">
+              </div>
+              <div class="form-group">
+                <input type="text" [(ngModel)]="edu.grade" placeholder="Grade/GPA">
+              </div>
+              <button class="remove-btn" (click)="removeEducation(i)" *ngIf="resumeData.education.length > 1">❌</button>
+            </div>
+          </div>
+          <button class="add-btn" (click)="addEducation()">+ Add Education</button>
+        </div>
+      </div>
+
+  <!-- Resume Template Preview -->
+  <div class="template-preview" [ngClass]="'color-' + (template?.color?.toLowerCase() || 'blue')">
+    <h3>📄 Template Preview</h3>
+    
+    <!-- Template 1 Preview -->
+    <div *ngIf="selectedTemplate === 'template1'" class="resume-container template1">
+      <div class="header">
+        <div class="info">
+          <h1>{{ resumeData.name }}</h1>
+          <h2>{{ resumeData.title || 'Software Developer' }}</h2>
+          <p><b>Email:</b> {{ resumeData.email }}</p>
+          <p><b>Phone:</b> {{ resumeData.phone }}</p>
+          <p><b>Location:</b> {{ resumeData.address }}</p>
+        </div>
+        <div class="photo" *ngIf="hasFeature('Photo')">
+          <img [src]="resumeData.profilePhoto" alt="Profile Photo" *ngIf="resumeData.profilePhoto">
+          <div *ngIf="!resumeData.profilePhoto" class="photo-placeholder">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+      </div>
+      <ng-container *ngTemplateOutlet="resumeDetailsTemplate"></ng-container>
+    </div>
+    
+    <!-- Template 2 Preview -->
+    <div *ngIf="selectedTemplate === 'template2'" class="resume-container template2">
+      <div class="template2-main">
+        <div class="template2-details">
+          <ng-container *ngTemplateOutlet="resumeDetailsTemplate"></ng-container>
+        </div>
+        <div class="template2-sidebar">
+          <div class="photo" *ngIf="hasFeature('Photo')">
+            <img [src]="resumeData.profilePhoto" alt="Profile Photo" *ngIf="resumeData.profilePhoto">
+            <div *ngIf="!resumeData.profilePhoto" class="photo-placeholder">
+              <span class="placeholder-icon">👤</span>
+              <span class="placeholder-text">Profile Photo</span>
+            </div>
+          </div>
+          <div class="info">
+            <h1>{{ resumeData.name }}</h1>
+            <h2>{{ resumeData.title || 'Software Developer' }}</h2>
+            <p><b>Email:</b> {{ resumeData.email }}</p>
+            <p><b>Phone:</b> {{ resumeData.phone }}</p>
+            <p><b>Location:</b> {{ resumeData.address }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Default Template Preview -->
+    <div *ngIf="!['template1', 'template2'].includes(selectedTemplate)" class="resume-container template1">
+      <div class="header">
+        <div class="info">
+          <h1>{{ resumeData.name }}</h1>
+          <h2>{{ resumeData.title || 'Software Developer' }}</h2>
+          <p><b>Email:</b> {{ resumeData.email }}</p>
+          <p><b>Phone:</b> {{ resumeData.phone }}</p>
+          <p><b>Location:</b> {{ resumeData.address }}</p>
+        </div>
+        <div class="photo" *ngIf="hasFeature('Photo')">
+          <img [src]="resumeData.profilePhoto" alt="Profile Photo" *ngIf="resumeData.profilePhoto">
+          <div *ngIf="!resumeData.profilePhoto" class="photo-placeholder">
+            <span class="placeholder-icon">👤</span>
+            <span class="placeholder-text">Profile Photo</span>
+          </div>
+        </div>
+      </div>
+      <ng-container *ngTemplateOutlet="resumeDetailsTemplate"></ng-container>
+    </div>
+  </div>
+
+  <!-- Resume Details Template -->
+  <ng-template #resumeDetailsTemplate>
+    <section>
+      <h3>Education</h3>
+      <ul>
+        <li *ngFor="let edu of resumeData.education">
+          <b>{{ edu.degree }}</b> - {{ edu.institution }} ({{ edu.year }})
+        </li>
+      </ul>
+    </section>
+    
+    <section *ngIf="hasFeature('Skills Bar')">
+      <h3>Skills</h3>
+      <ul>
+        <li *ngFor="let skill of resumeData.skills">{{ skill }}</li>
+      </ul>
+    </section>
+    
+    <section>
+      <h3>Experience</h3>
+      <ul>
+        <li *ngFor="let exp of resumeData.experience">
+          <b>{{ exp.position }}</b> at {{ exp.company }} ({{ exp.startDate }} - {{ exp.endDate }})
+          <p>{{ exp.description }}</p>
+        </li>
+      </ul>
+    </section>
+  </ng-template>
+
+  <div class="editor-content" *ngIf="!isLoading && template">
+    <div class="edit-form">
+      <!-- Template Card Info -->
+      <div class="form-section">
+        <h3>📝 Template Information</h3>
+        
+        <div class="form-group">
+          <label>Template Name</label>
+          <input type="text" [(ngModel)]="template.name" placeholder="Classic Blue">
+        </div>
+
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="template.category">
+            <option value="Professional">Professional</option>
+            <option value="Creative">Creative</option>
+            <option value="Modern">Modern</option>
+            <option value="Classic">Classic</option>
+            <option value="Technical">Technical</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Color</label>
+          <select [(ngModel)]="template.color" (change)="onColorChange()">
+            <option value="Blue">Blue</option>
+            <option value="Red">Red</option>
+            <option value="Green">Green</option>
+            <option value="Purple">Purple</option>
+            <option value="Orange">Orange</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Layout</label>
+          <select [(ngModel)]="template.layout">
+            <option value="1 Column">1 Column</option>
+            <option value="2 Column">2 Column</option>
+            <option value="3 Column">3 Column</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>📷 Template Features</label>
+          <div class="features-checkboxes">
+            <label class="feature-checkbox">
+              <input type="checkbox" [checked]="hasFeature('Photo')" (change)="toggleFeature('Photo')">
+              <span>📷 Photo</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" [checked]="hasFeature('Skills Bar')" (change)="toggleFeature('Skills Bar')">
+              <span>📊 Skills Bar</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" [checked]="hasFeature('Charts')" (change)="toggleFeature('Charts')">
+              <span>📈 Charts</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" [checked]="hasFeature('Icons')" (change)="toggleFeature('Icons')">
+              <span>🎨 Icons</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" [checked]="hasFeature('Timeline')" (change)="toggleFeature('Timeline')">
+              <span>⏰ Timeline</span>
+            </label>
+            <label class="feature-checkbox">
+              <input type="checkbox" [checked]="hasFeature('Portfolio')" (change)="toggleFeature('Portfolio')">
+              <span>💼 Portfolio</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select [(ngModel)]="template.isActive">
+            <option [ngValue]="true">Active</option>
+            <option [ngValue]="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sample Content Section -->
+      <div class="form-section" *ngIf="resumeData">
+        <h3>📄 Sample Resume Content</h3>
+        
+        <!-- Photo Upload -->
+        <div class="form-group" *ngIf="hasFeature('Photo')">
+          <label>📷 Profile Photo</label>
+          <div class="photo-upload">
+            <div class="photo-preview" *ngIf="resumeData.profilePhoto">
+              <img [src]="resumeData.profilePhoto" alt="Profile Photo">
+              <button type="button" class="remove-photo" (click)="removePhoto()">❌</button>
+            </div>
+            <div class="photo-placeholder" *ngIf="!resumeData.profilePhoto">
+              <span>📷 No Photo</span>
+            </div>
+            <input type="file" #photoInput (change)="onPhotoSelect($event)" accept="image/*" style="display: none;">
+            <button type="button" class="upload-btn" (click)="photoInput.click()">
+              {{ resumeData.profilePhoto ? '🔄 Change Photo' : '📷 Upload Photo' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Basic Info -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" [(ngModel)]="resumeData.name" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="resumeData.email" placeholder="john@example.com">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" [(ngModel)]="resumeData.phone" placeholder="+91 9876543210">
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" [(ngModel)]="resumeData.address" placeholder="City, State">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Professional Summary</label>
+          <textarea [(ngModel)]="resumeData.summary" rows="3" placeholder="Brief professional summary..."></textarea>
+        </div>
+
+        <!-- Skills -->
+        <div class="form-group" *ngIf="hasFeature('Skills Bar')">
+          <label>📊 Skills (comma separated)</label>
+          <input type="text" [(ngModel)]="skillsText" (blur)="updateSkills()" placeholder="JavaScript, Angular, Node.js">
+          <div class="skills-preview">
+            <span class="skill-tag" *ngFor="let skill of resumeData.skills">{{ skill }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading template...</p>
+  </div>
+</div>

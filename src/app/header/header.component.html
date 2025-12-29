@@ -10,14 +10,16 @@
     <!-- Navigation Links -->
     <nav class="header-nav">
       <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
-      <a class="nav-link" [routerLink]="loggedIn ? ['/dashboard'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">Dashboard</a>
-      <a class="nav-link" [routerLink]="loggedIn ? ['/my-templates'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">My Templates</a>
-      <a class="nav-link" [routerLink]="loggedIn ? ['/templates'] : [{ outlets: { modal: ['login'] } }]" routerLinkActive="active">Templates</a>
-      
+      <a class="nav-link" routerLink="/about" routerLinkActive="active">About</a>
+      <a class="nav-link" routerLink="/my-templates" routerLinkActive="active">My Templates</a>
+      <a class="nav-link" (click)="onTemplatesClick()">Templates</a>
     </nav>
 
     <!-- Right: Contact and Account -->
     <div class="contact-info">
+      <!-- Help Button -->
+      <button class="help-btn" (click)="showResumeGuide()" title="Resume मध्ये photo आणि information कसे add करावे">📋 HELP</button>
+      
       <!-- Contact Button -->
       <a href="https://wa.me/918080156065" target="_blank" class="contact-btn" aria-label="Contact us on WhatsApp">💬 CONTACT</a>
 

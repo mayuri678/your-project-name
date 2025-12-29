@@ -36,8 +36,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit() {
-    this.loggedIn = this.authService.isLoggedIn();
+    this.updateLoginStatus();
     this.beginTypingAnimation();
+    
+    // Listen for login status changes
+    setInterval(() => {
+      this.updateLoginStatus();
+    }, 1000);
+  }
+
+  updateLoginStatus(): void {
+    this.loggedIn = this.authService.isLoggedIn();
   }
 
   ngOnDestroy(): void {
@@ -116,7 +125,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
-    this.loggedIn = false;
+    this.updateLoginStatus();
     this.router.navigate(['/logged-out']);
   }
 

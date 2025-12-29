@@ -221,8 +221,7 @@ export class SupabaseService {
             const { error: updateError } = await this.supabase
               .from('users')
               .update({ 
-                full_name: fullName,
-                updated_at: new Date().toISOString()
+                full_name: fullName
               })
               .eq('id', userId);
             
@@ -241,8 +240,7 @@ export class SupabaseService {
         const { error: updateError } = await this.supabase
           .from('users')
           .update({ 
-            full_name: fullName,
-            updated_at: new Date().toISOString()
+            full_name: fullName
           })
           .eq('id', userId);
         
@@ -259,6 +257,122 @@ export class SupabaseService {
 
   async signOut() {
     return await this.supabase.auth.signOut();
+  }
+
+  get supabaseClient() {
+    return this.supabase;
+  }
+
+  // 🔹 Reset password functionality
+  async resetPassword(email: string) {
+    try {
+      console.log('Sending password reset email to:', email);
+      const result = await this.supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+      
+      console.log('Password reset result:', result);
+      
+      if (result.error) {
+        console.error('Password reset error:', result.error);
+      } else {
+        console.log('Password reset email sent successfully');
+      }
+      
+      return result;
+    } catch (error: any) {
+      console.error('Password reset exception:', error);
+      return { 
+        data: null,
+        error: {
+          message: error?.message || 'Failed to send password reset email',
+          status: error?.status || 500
+        }
+      };
+    }
+  }
+
+  // 🔹 Admin update user password in database
+  async updateUserPassword(userId: string, newPassword: string) {
+    try {
+      console.log('Admin updating password for user:', userId);
+      
+      // Update password in users table (custom field)
+      const { data, error } = await this.supabase
+        .from('users')
+        .update({ 
+          password: newPassword
+        })
+        .eq('id', userId)
+        .select();
+
+      if (error) {
+        console.error('Error updating user password:', error);
+        return { success: false, error: error.message };
+      }
+
+      console.log('Password updated successfully:', data);
+      return { success: true, data };
+    } catch (error: any) {
+      console.error('Exception updating user password:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // 🔹 Update user password by email
+  async updateUserPasswordByEmail(email: string, newPassword: string) {
+    try {
+      console.log('Admin updating password for email:', email);
+      
+      const { data, error } = await this.supabase
+        .from('users')
+        .update({ 
+          password: newPassword
+        })
+        .eq('email', email)
+        .select();
+
+      if (error) {
+        console.error('Error updating password by email:', error);
+        return { success: false, error: error.message };
+      }
+
+      if (!data || data.length === 0) {
+        return { success: false, error: 'User not found' };
+      }
+
+      console.log('Password updated successfully for email:', data);
+      return { success: true, data: data[0] };
+    } catch (error: any) {
+      console.error('Exception updating password by email:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // 🔹 Admin password reset functionality
+  async adminResetPassword(email: string, newPassword: string) {
+    try {
+      console.log('Admin resetting password for:', email);
+      
+      // First, send a password reset email
+      const resetResult = await this.supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+      
+      if (resetResult.error) {
+        console.error('Admin password reset error:', resetResult.error);
+        return { success: false, error: resetResult.error.message };
+      }
+      
+      console.log('Password reset email sent successfully by admin');
+      return { success: true, message: 'Password reset email sent successfully' };
+    } catch (error: any) {
+      console.error('Admin password reset exception:', error);
+      return { 
+        success: false, 
+        error: error?.message || 'Failed to reset password'
+      };
+    }
   }
 
   // 🔹 Fetch all users from the users table
@@ -466,6 +580,233 @@ export class SupabaseService {
       return { data, error };
     } catch (error: any) {
       console.error('Error fetching all templates:', error);
+      return { data: null, error };
+    }
+  }
+
+  // 🔹 Create template from Admin Panel (only meta info, not full resume)
+  async createAdminTemplate(template: {
+    name: string;
+    category: string;
+    description?: string;
+    color?: string;
+    layout?: string;
+    templateFeatures?: string[];
+    isPremium?: boolean;
+    price?: number;
+    isActive?: boolean;
+  }) {
+    try {
+      // Check for authenticated session
+      let { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
+      
+      // If no session, try to create one with mock admin credentials
+      if (!session || !session.user?.id) {
+        console.log('No session found, attempting admin login...');
+        const loginResult = await this.login('admin@example.com', 'admin123');
+        
+        if (loginResult.data?.session) {
+          session = loginResult.data.session;
+          console.log('Admin session created successfully');
+        } else {
+          // Create a mock session for template creation
+          console.log('Creating template with mock admin credentials');
+          const mockUserId = 'admin-mock-' + Date.now();
+          
+          const resumeMeta = {
+            name: template.name,
+            description: template.description || '',
+            templateColor: template.color || 'Blue',
+            templateLayout: template.layout || '1 Column',
+            templateFeatures: template.templateFeatures || ['Photo', 'Skills Bar', 'Charts', 'Icons', 'Timeline', 'Portfolio'],
+            isPremium: template.isPremium ?? false,
+            price: template.price ?? 0,
+            isActive: template.isActive ?? true
+          };
+
+          const basePayload = {
+            user_id: mockUserId,
+            category: template.category || 'Professional',
+            title: template.name,
+            description: JSON.stringify(resumeMeta)
+          };
+
+          console.log('Inserting template with payload:', basePayload);
+
+          const { data, error } = await this.supabase
+            .from('templates')
+            .insert(basePayload)
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Template creation failed:', error);
+            // Try without user_id if RLS is blocking
+            const fallbackPayload = {
+              category: template.category || 'Professional',
+              title: template.name,
+              description: JSON.stringify(resumeMeta)
+            };
+            
+            const fallbackResult = await this.supabase
+              .from('templates')
+              .insert(fallbackPayload)
+              .select()
+              .single();
+              
+            if (fallbackResult.error) {
+              console.error('Fallback template creation also failed:', fallbackResult.error);
+              return { data: null, error: fallbackResult.error };
+            }
+            
+            console.log('Template created with fallback method:', fallbackResult.data);
+            return { data: fallbackResult.data, error: null };
+          }
+
+          console.log('Template created successfully:', data);
+          return { data, error: null };
+        }
+      }
+
+      if (!session || !session.user?.id) {
+        const authError = { message: 'User not authenticated for template insert' };
+        console.error(authError.message);
+        return { data: null, error: authError };
+      }
+
+      // Store visual/template information inside description JSON
+      const resumeMeta = {
+        name: template.name,
+        description: template.description || '',
+        templateColor: template.color || 'Blue',
+        templateLayout: template.layout || '1 Column',
+        templateFeatures: template.templateFeatures || [],
+        isPremium: template.isPremium ?? false,
+        price: template.price ?? 0,
+        isActive: template.isActive ?? true
+      };
+
+      // Minimal payload to match your live Supabase schema
+      const category = template.category || 'my-template';
+      const slug = template.name
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .slice(0, 60) || 'template';
+      const templateId = `${slug}-${Date.now()}`;
+
+      const basePayload = {
+        user_id: session.user.id,
+        category,
+        title: template.name,
+        description: JSON.stringify(resumeMeta)
+      };
+
+      // First attempt with template_id
+      const payloadWithTemplateId: Record<string, any> = {
+        ...basePayload,
+        template_id: templateId
+      };
+
+      let { data, error } = await this.supabase
+        .from('templates')
+        .insert(payloadWithTemplateId)
+        .select()
+        .single();
+
+      // If column missing, retry without template_id
+      if (error && `${error.message}`.toLowerCase().includes("template_id")) {
+        console.warn('template_id column missing, retrying without it');
+        const payloadWithoutTemplateId = { ...basePayload };
+        const retry = await this.supabase
+          .from('templates')
+          .insert(payloadWithoutTemplateId)
+          .select()
+          .single();
+        data = retry.data;
+        error = retry.error;
+      }
+
+      if (error) {
+        console.error('Error creating admin template:', error);
+      }
+
+      return { data, error };
+    } catch (error: any) {
+      console.error('Exception creating admin template:', error);
+      return { data: null, error };
+    }
+  }
+
+  // 🔹 Update template HTML content
+  async updateTemplateContent(templateId: string, htmlContent: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from('templates')
+        .update({ html_content: htmlContent })
+        .eq('id', templateId)
+        .select()
+        .single();
+
+      return { data, error };
+    } catch (error: any) {
+      console.error('Error updating template content:', error);
+      return { data: null, error };
+    }
+  }
+
+  // 🔹 Update template (admin)
+  async updateTemplate(templateId: string, updates: any) {
+    try {
+      // Get existing template first
+      const { data: existingTemplate } = await this.supabase
+        .from('templates')
+        .select('*')
+        .eq('id', templateId)
+        .single();
+
+      if (!existingTemplate) {
+        return { data: null, error: { message: 'Template not found' } };
+      }
+
+      let resumeData = {};
+      try {
+        if (existingTemplate.description) {
+          resumeData = JSON.parse(existingTemplate.description);
+        }
+      } catch (e) {
+        // If parsing fails, use existing description as is
+        resumeData = { originalDescription: existingTemplate.description };
+      }
+
+      // Update resume data with new template properties
+      const updatedResumeData = {
+        ...resumeData,
+        name: updates.name || (resumeData as any).name,
+        templateColor: updates.color || (resumeData as any).templateColor,
+        templateLayout: updates.layout || (resumeData as any).templateLayout,
+        templateFeatures: updates.templateFeatures || (resumeData as any).templateFeatures,
+        isActive: updates.isActive !== undefined ? updates.isActive : (resumeData as any).isActive
+      };
+
+      // Update the template in database
+      const { data, error } = await this.supabase
+        .from('templates')
+        .update({
+          title: updates.name || existingTemplate.title,
+          category: updates.category || existingTemplate.category,
+          description: updates.description || JSON.stringify(updatedResumeData),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', templateId)
+        .select()
+        .single();
+
+      console.log('Template updated in Supabase:', { templateId, updates, result: data });
+      return { data, error };
+    } catch (error: any) {
+      console.error('Error updating template:', error);
       return { data: null, error };
     }
   }

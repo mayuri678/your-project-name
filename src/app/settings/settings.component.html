@@ -1,674 +1,225 @@
-<app-header [loggedIn]="isLoggedIn" (logout)="router.navigate(['/logged-out'])"></app-header>
+<!-- Header -->
+<app-header 
+  [loggedIn]="isLoggedIn" 
+  (logout)="onLogout()"
+  (login)="onLogin()"
+  (about)="onAbout()"
+  (resume)="onResume()"
+  (templates)="onTemplates()">
+</app-header>
 
 <div class="settings-container">
-  <div class="settings-card">
-    <div class="settings-header">
-      <h2>Settings</h2>
-      <button class="edit-btn" (click)="toggleEdit()" *ngIf="!isEditing">
-        <span class="edit-icon">✏️</span> Edit Settings
-      </button>
-      <div class="action-buttons" *ngIf="isEditing">
-        <button class="save-btn" (click)="saveSettings()">Save Changes</button>
-        <button class="cancel-btn" (click)="toggleEdit()">Cancel</button>
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    ✅ {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    ❌ {{ errorMessage }}
+  </div>
+
+  <div class="settings-header">
+    <h1>⚙️ {{ getTranslation('settings') }}</h1>
+    <p>Manage your account preferences and privacy settings</p>
+  </div>
+
+  <div class="settings-content">
+    <!-- Account Overview -->
+    <div class="settings-section account-overview">
+      <h2>📊 {{ getTranslation('accountOverview') }}</h2>
+      <div class="account-stats">
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-info">
+            <div class="stat-label">{{ getTranslation('memberSince') }}</div>
+            <div class="stat-value">{{ accountInfo.memberSince }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🕑</div>
+          <div class="stat-info">
+            <div class="stat-label">{{ getTranslation('lastLogin') }}</div>
+            <div class="stat-value">{{ accountInfo.lastLogin }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-info">
+            <div class="stat-label">{{ getTranslation('totalResumes') }}</div>
+            <div class="stat-value">{{ accountInfo.totalResumes }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-info">
+            <div class="stat-label">{{ getTranslation('accountType') }}</div>
+            <div class="stat-value">{{ accountInfo.accountType }}</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Success Message -->
-    <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
-
-    <!-- Error Message -->
-    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
-
-    <div class="settings-content">
-      <!-- Notifications Section -->
-      <div class="settings-section">
-        <h3 class="section-title">🔔 Notifications</h3>
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Enable Notifications</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.notifications"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Receive notifications about important updates and activities</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Email Notifications</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.emailNotifications"
-                [disabled]="!isEditing || !settings.notifications"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Receive email notifications for important updates</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Resume Updates</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.resumeUpdates"
-                [disabled]="!isEditing || !settings.notifications"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Get notified when your resume templates are updated</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Template Recommendations</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.templateRecommendations"
-                [disabled]="!isEditing || !settings.notifications"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Receive suggestions for new resume templates</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Weekly Digest</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.weeklyDigest"
-                [disabled]="!isEditing || !settings.notifications"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Receive a weekly summary of your activity</p>
-        </div>
+    <!-- Profile Settings -->
+    <div class="settings-section">
+      <h2>👤 {{ getTranslation('profileInfo') }}</h2>
+      <div class="form-group">
+        <label for="name">{{ getTranslation('fullName') }}</label>
+        <input type="text" id="name" [(ngModel)]="userProfile.name" class="form-control">
       </div>
-
-      <!-- Appearance Section -->
-      <div class="settings-section">
-        <h3 class="section-title">🎨 Appearance</h3>
-        <div class="field-group">
-          <label for="theme" class="field-label">Theme</label>
-          <select
-            id="theme"
-            name="theme"
-            [(ngModel)]="settings.theme"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="auto">Auto (System)</option>
-          </select>
-          <p class="field-hint">Choose your preferred color theme</p>
-        </div>
-
-        <div class="field-group">
-          <label for="fontSize" class="field-label">Font Size</label>
-          <select
-            id="fontSize"
-            name="fontSize"
-            [(ngModel)]="settings.fontSize"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
-          </select>
-          <p class="field-hint">Adjust the font size for better readability</p>
-        </div>
-
-        <div class="field-group">
-          <label for="fontFamily" class="field-label">Font Family</label>
-          <select
-            id="fontFamily"
-            name="fontFamily"
-            [(ngModel)]="settings.fontFamily"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="default">Default</option>
-            <option value="arial">Arial</option>
-            <option value="times">Times New Roman</option>
-            <option value="helvetica">Helvetica</option>
-            <option value="roboto">Roboto</option>
-            <option value="opensans">Open Sans</option>
-          </select>
-          <p class="field-hint">Choose your preferred font family</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Compact Mode</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.compactMode"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Use a more compact layout to see more content</p>
-        </div>
+      
+      <div class="form-group">
+        <label for="email">{{ getTranslation('emailAddress') }}</label>
+        <input type="email" id="email" [(ngModel)]="userProfile.email" class="form-control" readonly>
+        <small class="form-text">Email cannot be changed</small>
       </div>
-
-      <!-- Language & Region Section -->
-      <div class="settings-section">
-        <h3 class="section-title">🌍 Language & Region</h3>
-        <div class="field-group">
-          <label for="language" class="field-label">Language</label>
-          <select
-            id="language"
-            name="language"
-            [(ngModel)]="settings.language"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-            <option value="hi">Hindi</option>
-            <option value="zh">Chinese</option>
-            <option value="ja">Japanese</option>
-            <option value="pt">Portuguese</option>
-          </select>
-          <p class="field-hint">Select your preferred language</p>
-        </div>
-
-        <div class="field-group">
-          <label for="dateFormat" class="field-label">Date Format</label>
-          <select
-            id="dateFormat"
-            name="dateFormat"
-            [(ngModel)]="settings.dateFormat"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-            <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-            <option value="DD MMM YYYY">DD MMM YYYY</option>
-          </select>
-          <p class="field-hint">Choose your preferred date format</p>
-        </div>
-
-        <div class="field-group">
-          <label for="timezone" class="field-label">Timezone</label>
-          <select
-            id="timezone"
-            name="timezone"
-            [(ngModel)]="settings.timezone"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="UTC">UTC</option>
-            <option value="America/New_York">Eastern Time (ET)</option>
-            <option value="America/Chicago">Central Time (CT)</option>
-            <option value="America/Denver">Mountain Time (MT)</option>
-            <option value="America/Los_Angeles">Pacific Time (PT)</option>
-            <option value="Europe/London">London (GMT)</option>
-            <option value="Europe/Paris">Paris (CET)</option>
-            <option value="Asia/Tokyo">Tokyo (JST)</option>
-            <option value="Asia/Dubai">Dubai (GST)</option>
-            <option value="Asia/Kolkata">Mumbai (IST)</option>
-          </select>
-          <p class="field-hint">Set your timezone for accurate timestamps</p>
-        </div>
-
-        <div class="field-group">
-          <label for="currency" class="field-label">Currency</label>
-          <select
-            id="currency"
-            name="currency"
-            [(ngModel)]="settings.currency"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="GBP">GBP (£)</option>
-            <option value="JPY">JPY (¥)</option>
-            <option value="INR">INR (₹)</option>
-            <option value="CAD">CAD (C$)</option>
-            <option value="AUD">AUD (A$)</option>
-          </select>
-          <p class="field-hint">Select your preferred currency</p>
-        </div>
+      
+      <div class="form-group">
+        <label for="phone">{{ getTranslation('phoneNumber') }}</label>
+        <input type="tel" id="phone" [(ngModel)]="userProfile.phone" class="form-control" placeholder="+91 98765 43210">
       </div>
-
-      <!-- Resume Builder Section -->
-      <div class="settings-section">
-        <h3 class="section-title">📝 Resume Builder</h3>
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Auto Save</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.autoSave"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Automatically save your work as you type</p>
-        </div>
-
-        <div class="field-group" *ngIf="settings.autoSave">
-          <label for="autoSaveInterval" class="field-label">Auto Save Interval (seconds)</label>
-          <input
-            type="number"
-            id="autoSaveInterval"
-            name="autoSaveInterval"
-            [(ngModel)]="settings.autoSaveInterval"
-            [disabled]="!isEditing"
-            class="field-input"
-            min="5"
-            max="300"
-            step="5"
-          />
-          <p class="field-hint">How often to auto-save your work (5-300 seconds)</p>
-        </div>
-
-        <div class="field-group">
-          <label for="defaultTemplate" class="field-label">Default Template</label>
-          <select
-            id="defaultTemplate"
-            name="defaultTemplate"
-            [(ngModel)]="settings.defaultTemplate"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="modern">Modern</option>
-            <option value="classic">Classic</option>
-            <option value="creative">Creative</option>
-            <option value="professional">Professional</option>
-            <option value="minimal">Minimal</option>
-          </select>
-          <p class="field-hint">Choose the default template for new resumes</p>
-        </div>
-
-        <div class="field-group">
-          <label for="defaultFormat" class="field-label">Default Export Format</label>
-          <select
-            id="defaultFormat"
-            name="defaultFormat"
-            [(ngModel)]="settings.defaultFormat"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="pdf">PDF</option>
-            <option value="docx">Word (DOCX)</option>
-            <option value="html">HTML</option>
-          </select>
-          <p class="field-hint">Default format when exporting your resume</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Show Tips</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.showTips"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Display helpful tips while building your resume</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Spell Check</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.spellCheck"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Enable automatic spell checking</p>
-        </div>
+      
+      <div class="form-group">
+        <label for="address">{{ getTranslation('address') }}</label>
+        <textarea id="address" [(ngModel)]="userProfile.address" class="form-control" rows="3" placeholder="Your address"></textarea>
       </div>
-
-      <!-- Privacy Section -->
-      <div class="settings-section">
-        <h3 class="section-title">🔒 Privacy</h3>
-        <div class="field-group">
-          <label for="profileVisibility" class="field-label">Profile Visibility</label>
-          <select
-            id="profileVisibility"
-            name="profileVisibility"
-            [(ngModel)]="settings.profileVisibility"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="public">Public</option>
-            <option value="contacts">Contacts Only</option>
-            <option value="private">Private</option>
-          </select>
-          <p class="field-hint">Control who can see your profile</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Show Email Publicly</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.showEmailPublicly"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Allow your email to be visible on your public profile</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Share Analytics</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.shareAnalytics"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Help improve our service by sharing anonymous usage data</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Allow Data Collection</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.allowDataCollection"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Allow collection of data for service improvement</p>
-        </div>
+      
+      <div class="form-group">
+        <label for="bio">{{ getTranslation('bio') }}</label>
+        <textarea id="bio" [(ngModel)]="userProfile.bio" class="form-control" rows="4" placeholder="Tell us about yourself"></textarea>
       </div>
-
-      <!-- Export & Download Section -->
-      <div class="settings-section">
-        <h3 class="section-title">💾 Export & Download</h3>
-        <div class="field-group">
-          <label for="exportQuality" class="field-label">Export Quality</label>
-          <select
-            id="exportQuality"
-            name="exportQuality"
-            [(ngModel)]="settings.exportQuality"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="standard">Standard</option>
-            <option value="high">High</option>
-            <option value="premium">Premium</option>
-          </select>
-          <p class="field-hint">Quality level for exported resumes</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Include Watermark</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.includeWatermark"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Add a watermark to exported resumes</p>
-        </div>
-
-        <div class="field-group">
-          <label for="defaultFileName" class="field-label">Default File Name</label>
-          <input
-            type="text"
-            id="defaultFileName"
-            name="defaultFileName"
-            [(ngModel)]="settings.defaultFileName"
-            [disabled]="!isEditing"
-            class="field-input"
-            placeholder="resume"
-          />
-          <p class="field-hint">Default name for exported files</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Compress Exports</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.compressExports"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Compress exported files to reduce file size</p>
-        </div>
+      
+      <div class="form-group">
+        <label for="website">{{ getTranslation('website') }}</label>
+        <input type="url" id="website" [(ngModel)]="userProfile.website" class="form-control" placeholder="https://yourwebsite.com">
       </div>
-
-      <!-- Accessibility Section -->
-      <div class="settings-section">
-        <h3 class="section-title">♿ Accessibility</h3>
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">High Contrast</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.highContrast"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Increase contrast for better visibility</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Screen Reader Support</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.screenReader"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Enable enhanced screen reader support</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Keyboard Shortcuts</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.keyboardShortcuts"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Enable keyboard shortcuts for faster navigation</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Reduce Animations</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.reduceAnimations"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Reduce motion and animations for better accessibility</p>
-        </div>
+      
+      <div class="form-group">
+        <label for="linkedin">{{ getTranslation('linkedin') }}</label>
+        <input type="url" id="linkedin" [(ngModel)]="userProfile.linkedin" class="form-control" placeholder="https://linkedin.com/in/yourprofile">
       </div>
-
-      <!-- Performance Section -->
-      <div class="settings-section">
-        <h3 class="section-title">⚡ Performance</h3>
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Enable Cache</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.cacheEnabled"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Cache data for faster loading</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Offline Mode</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.offlineMode"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Enable offline functionality</p>
-        </div>
-
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Image Optimization</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.imageOptimization"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Optimize images for faster loading</p>
-        </div>
+      
+      <div class="form-group">
+        <label for="github">{{ getTranslation('github') }}</label>
+        <input type="url" id="github" [(ngModel)]="userProfile.github" class="form-control" placeholder="https://github.com/yourusername">
       </div>
+    </div>
 
-      <!-- Data Management Section -->
-      <div class="settings-section">
-        <h3 class="section-title">🗄️ Data Management</h3>
-        <div class="field-group">
-          <div class="toggle-container">
-            <label class="toggle-label">Auto Backup</label>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settings.autoBackup"
-                [disabled]="!isEditing"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <p class="field-hint">Automatically backup your data</p>
-        </div>
-
-        <div class="field-group" *ngIf="settings.autoBackup">
-          <label for="backupFrequency" class="field-label">Backup Frequency</label>
-          <select
-            id="backupFrequency"
-            name="backupFrequency"
-            [(ngModel)]="settings.backupFrequency"
-            [disabled]="!isEditing"
-            class="field-select"
-          >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-          <p class="field-hint">How often to create automatic backups</p>
-        </div>
-
-        <div class="field-group">
-          <label for="dataRetention" class="field-label">Data Retention (days)</label>
-          <input
-            type="number"
-            id="dataRetention"
-            name="dataRetention"
-            [(ngModel)]="settings.dataRetention"
-            [disabled]="!isEditing"
-            class="field-input"
-            min="30"
-            max="3650"
-          />
-          <p class="field-hint">How long to keep your data (30-3650 days)</p>
-        </div>
-
-        <div class="field-group">
-          <div class="action-buttons-horizontal">
-            <button class="action-btn secondary" (click)="clearCache()" [disabled]="!isEditing">
-              Clear Cache
-            </button>
-            <button class="action-btn secondary" (click)="exportSettings()" [disabled]="!isEditing">
-              Export Settings
-            </button>
-            <label class="action-btn secondary" [class.disabled]="!isEditing">
-              Import Settings
-              <input
-                type="file"
-                accept=".json"
-                (change)="importSettings($event)"
-                [disabled]="!isEditing"
-                style="display: none;"
-              />
-            </label>
-            <button class="action-btn danger" (click)="resetToDefaults()" [disabled]="!isEditing">
-              Reset to Defaults
-            </button>
-          </div>
-        </div>
+    <!-- Preferences -->
+    <div class="settings-section">
+      <h2>⚙️ {{ getTranslation('preferences') }}</h2>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="preferences.notifications">
+          <span class="checkmark"></span>
+          {{ getTranslation('notifications') }}
+        </label>
+        <small class="form-text">Receive notifications about your resume updates</small>
       </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="preferences.emailUpdates">
+          <span class="checkmark"></span>
+          {{ getTranslation('emailUpdates') }}
+        </label>
+        <small class="form-text">Get email updates about new templates and features</small>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="preferences.darkMode">
+          <span class="checkmark"></span>
+          {{ getTranslation('darkMode') }}
+        </label>
+        <small class="form-text">Switch to dark theme</small>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="preferences.autoSave">
+          <span class="checkmark"></span>
+          {{ getTranslation('autoSave') }}
+        </label>
+        <small class="form-text">Automatically save your work while editing</small>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="preferences.templatePreview">
+          <span class="checkmark"></span>
+          {{ getTranslation('templatePreview') }}
+        </label>
+        <small class="form-text">Show template previews in selection</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="language">{{ getTranslation('language') }}</label>
+        <select id="language" [(ngModel)]="preferences.language" (change)="onLanguageChange()" class="form-control">
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Privacy Settings -->
+    <div class="settings-section">
+      <h2>🔒 {{ getTranslation('privacy') }}</h2>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="privacy.profileVisible">
+          <span class="checkmark"></span>
+          {{ getTranslation('profileVisible') }}
+        </label>
+        <small class="form-text">Allow others to view your profile</small>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="privacy.showEmail">
+          <span class="checkmark"></span>
+          {{ getTranslation('showEmail') }}
+        </label>
+        <small class="form-text">Display email on public profile</small>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="privacy.showPhone">
+          <span class="checkmark"></span>
+          {{ getTranslation('showPhone') }}
+        </label>
+        <small class="form-text">Display phone number on public profile</small>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="privacy.allowDownloads">
+          <span class="checkmark"></span>
+          {{ getTranslation('allowDownloads') }}
+        </label>
+        <small class="form-text">Allow others to download your resume</small>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="privacy.shareAnalytics">
+          <span class="checkmark"></span>
+          {{ getTranslation('shareAnalytics') }}
+        </label>
+        <small class="form-text">Help improve our service by sharing usage data</small>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="settings-actions">
+      <button class="btn btn-primary" (click)="saveSettings()">
+        💾 {{ getTranslation('saveChanges') }}
+      </button>
+      <button class="btn btn-danger" (click)="deleteAccount()">
+        🗑️ {{ getTranslation('deleteAccount') }}
+      </button>
     </div>
   </div>
 </div>
-

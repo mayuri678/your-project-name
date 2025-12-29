@@ -1,0 +1,87 @@
+<div class="resume-template">
+  <!-- Profile Header Section -->
+  <div class="profile-header">
+    <div class="profile-info">
+      <div class="form-group">
+        <input type="text" [(ngModel)]="profileData.name" placeholder="Demo User" class="name-input">
+      </div>
+      <div class="form-group">
+        <input type="text" [(ngModel)]="profileData.jobTitle" placeholder="Job Title" class="job-input">
+      </div>
+      
+      <div class="contact-details">
+        <div class="contact-row">
+          <label>Email:</label>
+          <input type="email" [(ngModel)]="profileData.email" placeholder="demo@test.com">
+        </div>
+        <div class="contact-row">
+          <label>Phone:</label>
+          <input type="tel" [(ngModel)]="profileData.phone" placeholder="+1-234-567-8900">
+        </div>
+        <div class="contact-row">
+          <label>Location:</label>
+          <input type="text" [(ngModel)]="profileData.location" placeholder="City, State, Country">
+        </div>
+        <div class="contact-row">
+          <label>LinkedIn:</label>
+          <input type="text" [(ngModel)]="profileData.linkedin" placeholder="linkedin.com/in/username">
+        </div>
+        <div class="contact-row">
+          <label>GitHub:</label>
+          <input type="text" [(ngModel)]="profileData.github" placeholder="github.com/username">
+        </div>
+      </div>
+    </div>
+    
+    <div class="profile-photo-section">
+      <div class="profile-photo-circle">
+        <div class="photo-placeholder" *ngIf="!profileData.photo">
+          <div class="avatar-icon">👤</div>
+          <span>Profile Photo</span>
+        </div>
+        <img *ngIf="profileData.photo" [src]="profileData.photo" alt="Profile Photo">
+      </div>
+      <button class="upload-photo-btn" (click)="uploadPhoto()">
+        📷 Upload Photo
+      </button>
+    </div>
+  </div>
+
+  <!-- Education Section -->
+  <div class="section education-section">
+    <h2>Education</h2>
+    <div class="section-content">
+      <div *ngIf="profileData.education.length === 0" class="empty-section">
+        <button class="add-btn" (click)="addEducation()">+ Add Education</button>
+      </div>
+      <div *ngFor="let edu of profileData.education; let i = index" class="education-item">
+        <input type="text" [(ngModel)]="edu.degree" placeholder="Degree">
+        <input type="text" [(ngModel)]="edu.school" placeholder="School/University">
+        <input type="text" [(ngModel)]="edu.year" placeholder="Year">
+        <button class="remove-btn" (click)="removeEducation(i)">×</button>
+      </div>
+      <button *ngIf="profileData.education.length > 0" class="add-btn" (click)="addEducation()">+ Add Education</button>
+    </div>
+  </div>
+
+  <!-- Skills Section -->
+  <div class="section skills-section">
+    <h2>Skills</h2>
+    <div class="section-content">
+      <div *ngIf="profileData.skills.length === 0" class="empty-section">
+        <button class="add-btn" (click)="addSkill()">+ Add Skills</button>
+      </div>
+      <div *ngFor="let skill of profileData.skills; let i = index" class="skill-item">
+        <input type="text" [(ngModel)]="skill.name" placeholder="Skill Name">
+        <select [(ngModel)]="skill.level">
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+          <option value="Expert">Expert</option>
+        </select>
+        <button class="remove-btn" (click)="removeSkill(i)">×</button>
+      </div>
+      <button *ngIf="profileData.skills.length > 0" class="add-btn" (click)="addSkill()">+ Add Skills</button>
+    </div>
+  </div>
+</div>

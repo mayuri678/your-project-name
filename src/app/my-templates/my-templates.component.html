@@ -1,6 +1,57 @@
 <app-header [loggedIn]="isLoggedIn" (logout)="onLogout()"></app-header>
 
 <div class="my-templates-container">
+  <!-- Edit Template Form -->
+  <div class="edit-form" *ngIf="showEditForm && editingTemplate">
+    <h3>Edit Template - {{ editingTemplate.name }}</h3>
+    <form (ngSubmit)="updateTemplate()" class="template-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Template Name *</label>
+          <input type="text" [(ngModel)]="editingTemplate.name" name="editName" required>
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select [(ngModel)]="editingTemplate.category" name="editCategory" required>
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Color</label>
+          <select [(ngModel)]="editingTemplate.color" name="editColor">
+            <option *ngFor="let color of colors" [value]="color">{{ color }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Layout</label>
+          <select [(ngModel)]="editingTemplate.layout" name="editLayout">
+            <option *ngFor="let layout of layouts" [value]="layout">{{ layout }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Features</label>
+        <div class="features-checkboxes">
+          <label class="feature-checkbox" *ngFor="let feature of features">
+            <input type="checkbox" 
+                   [checked]="editingTemplate.templateFeatures?.includes(feature)"
+                   (change)="toggleFeature(feature)">
+            <span>{{ feature }}</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">✅ Update Template</button>
+        <button type="button" class="cancel-btn" (click)="cancelEdit()">❌ Cancel</button>
+      </div>
+    </form>
+  </div>
+
   <div class="templates-header">
     <div class="header-content">
       <div class="header-text">

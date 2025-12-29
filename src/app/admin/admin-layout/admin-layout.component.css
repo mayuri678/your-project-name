@@ -89,6 +89,8 @@
 
 .footer-content p {
   margin: 0;
+  color: #e2e8f0;
+  font-weight: 500;
 }
 
 .footer-links {
@@ -98,7 +100,8 @@
 }
 
 .footer-links span {
-  color: #a0aec0;
+  color: #cbd5e0;
+  font-weight: 500;
 }
 
 /* Sidebar Styles */
@@ -139,10 +142,11 @@
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  color: #cbd5e0;
+  color: #e2e8f0;
   text-decoration: none;
   transition: all 0.2s ease;
   border-left: 3px solid transparent;
+  font-weight: 500;
 }
 
 .nav-menu a:hover {

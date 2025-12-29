@@ -21,6 +21,7 @@ export class LoginComponent {
   errorMessage: string = '';
   successMessage: string = '';
   isRegisterMode: boolean = false;
+  isForgotPasswordMode: boolean = false;
 
   // 👉 popup बंद करण्यासाठी event emitter
   @Output() close = new EventEmitter<void>();
@@ -132,6 +133,9 @@ export class LoginComponent {
     if (this.email.trim() && this.password.trim()) {
       const emailTrimmed = this.email.trim();
       const passwordTrimmed = this.password.trim();
+
+      // Clear any previous user data before login
+      this.authService.clearUserSession();
 
       // Try simple AuthService first (for registered users)
       const simpleAuthSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
@@ -281,11 +285,60 @@ export class LoginComponent {
   // 👉 Close the modal
   onClose(): void {
     this.close.emit();
-    this.router.navigate([{ outlets: { modal: null } }]);
+    // Clear modal outlet and navigate to home
+    this.router.navigate([{ outlets: { modal: null } }]).then(() => {
+      this.router.navigate(['/home']);
+    });
   }
 
   // 👉 Toggle password visibility
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
+  }
+
+  // 🔹 Forgot Password functionality
+  async onForgotPassword(): Promise<void> {
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    if (!this.email.trim()) {
+      this.errorMessage = 'Please enter your email address first';
+      return;
+    }
+
+    const emailTrimmed = this.email.trim();
+    
+    try {
+      // First try Supabase password reset
+      console.log('Attempting Supabase password reset for:', emailTrimmed);
+      const result = await this.supabaseService.resetPassword(emailTrimmed);
+      
+      if (!result.error) {
+        this.successMessage = 'Password reset email sent! Check your inbox and spam folder.';
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 10000);
+        return;
+      } else {
+        console.log('Supabase reset error:', result.error);
+      }
+    } catch (err) {
+      console.log('Supabase reset failed:', err);
+    }
+    
+    // Fallback to local AuthService
+    console.log('Trying local auth password reset for:', emailTrimmed);
+    const password = this.authService.resetPassword(emailTrimmed);
+    
+    if (password) {
+      this.successMessage = `Your password is: ${password}\n\nNote: This is for demo purposes only. In production, a reset link would be sent to your email.`;
+      
+      // Clear the message after 15 seconds
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 15000);
+    } else {
+      this.errorMessage = 'No account found with this email address. Please check your email or register a new account.';
+    }
   }
 }

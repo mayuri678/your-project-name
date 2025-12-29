@@ -1,0 +1,132 @@
+.word-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f3f2f1;
+  height: 100vh;
+}
+
+.ribbon {
+  background: white;
+  border-bottom: 1px solid #d1d1d1;
+}
+
+.ribbon-tabs {
+  display: flex;
+  background: #f3f2f1;
+  padding: 0 10px;
+}
+
+.tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tab.active {
+  background: white;
+  border-bottom: 2px solid #0078d4;
+}
+
+.toolbar {
+  display: flex;
+  padding: 10px;
+  background: white;
+  gap: 20px;
+}
+
+.toolbar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.toolbar-group label {
+  font-size: 11px;
+  color: #666;
+}
+
+.font-select, .size-select {
+  padding: 4px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+}
+
+.btn-bold, .btn-italic, .btn-underline {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-bold:hover, .btn-italic:hover, .btn-underline:hover {
+  background: #e1e1e1;
+}
+
+.document-area {
+  padding: 20px;
+  background: #f3f2f1;
+  height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.page {
+  width: 8.5in;
+  min-height: 11in;
+  margin: 0 auto;
+  background: white;
+  padding: 1in;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  font-family: Calibri, sans-serif;
+  font-size: 11pt;
+  line-height: 1.15;
+}
+
+.resume-header {
+  text-align: center;
+  border-bottom: 2px solid #333;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.resume-header h1 {
+  margin: 0;
+  font-size: 24pt;
+  font-weight: bold;
+}
+
+.contact-info {
+  margin-top: 10px;
+  font-size: 10pt;
+}
+
+.section {
+  margin: 15px 0;
+}
+
+.section h2 {
+  font-size: 12pt;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 2px;
+  margin-bottom: 8px;
+}
+
+.section h3 {
+  font-size: 11pt;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.section p, .section li {
+  margin: 5px 0;
+  font-size: 11pt;
+}
+
+.section ul {
+  margin: 5px 0;
+  padding-left: 20px;
+}

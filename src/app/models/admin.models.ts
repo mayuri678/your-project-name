@@ -21,6 +21,12 @@ export interface ResumeTemplate {
   downloadCount: number;
   createdAt: Date;
   updatedAt: Date;
+  htmlContent?: string;
+  cssContent?: string;
+  color?: string;
+  layout?: string;
+  templateFeatures?: string[];
+  hasPhoto?: boolean;
 }
 
 export interface SubscriptionPlan {

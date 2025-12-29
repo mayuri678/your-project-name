@@ -2,15 +2,68 @@
   <div class="template-manager" (click)="$event.stopPropagation()">
     <div class="template-header">
       <h2>Resume Templates</h2>
-      <button class="close-btn" (click)="closeManager()" aria-label="Close">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
+      <div class="header-actions">
+        <button class="view-created-btn" (click)="viewCreatedTemplates()">
+          My Templates
+        </button>
+        <button class="add-template-btn" (click)="addTemplate()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Create Template
+        </button>
+        <button class="quick-add-btn" (click)="addQuickTemplate()">
+          Quick Add
+        </button>
+        <button class="close-btn" (click)="closeManager()" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
     </div>
     
-    <div class="template-filters">
+    <!-- Created Templates View -->
+    <div *ngIf="showCreatedTemplates" class="created-templates">
+      <div class="created-header">
+        <h3>My Created Templates</h3>
+        <button (click)="cancelAdd()" class="back-btn">← Back</button>
+      </div>
+      
+      <div class="created-list" *ngIf="createdTemplates.length > 0">
+        <div *ngFor="let template of createdTemplates" class="created-item">
+          <div class="template-info">
+            <h4>{{template.name || 'Untitled Template'}}</h4>
+            <p>Created: {{template.createdAt | date:'short'}}</p>
+            <p>Sections: {{template.sections?.length || 0}}</p>
+          </div>
+          <div class="template-actions">
+            <button (click)="viewTemplate(template); $event.stopPropagation()" class="view-btn">View</button>
+            <button (click)="editCreatedTemplate(template); $event.stopPropagation()" class="edit-btn">Edit</button>
+            <button (click)="deleteCreatedTemplate(template.id); $event.stopPropagation()" class="delete-btn">Delete</button>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="createdTemplates.length === 0" class="no-templates">
+        <p>No templates created yet. Create your first template!</p>
+        <button (click)="addTemplate()" class="create-first-btn">Create Template</button>
+      </div>
+    </div>
+    
+    <!-- Template Viewer -->
+    <div *ngIf="showTemplateViewer" class="builder-overlay">
+      <app-template-viewer [template]="selectedTemplate" (close)="cancelAdd()" (edit)="editCreatedTemplate($event)"></app-template-viewer>
+    </div>
+    
+    <!-- Template Builder -->
+    <div *ngIf="showTemplateBuilder" class="builder-overlay">
+      <app-template-builder [editTemplateData]="editTemplateData" (close)="cancelAdd()" (templateSaved)="loadCreatedTemplates()"></app-template-builder>
+    </div>
+    
+    <div class="template-filters" *ngIf="!showTemplateBuilder && !showCreatedTemplates && !showTemplateViewer">
       <div class="search-box">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
@@ -35,7 +88,24 @@
       </div>
     </div>
     
-    <div class="template-grid">
+    <div class="template-grid" *ngIf="!showTemplateBuilder && !showCreatedTemplates && !showTemplateViewer">
+      <!-- Add Template Form -->
+      <div class="add-template-form" *ngIf="showAddForm">
+        <h3>Create New Template</h3>
+        <input type="text" [(ngModel)]="newTemplateName" placeholder="Template Name">
+        <select [(ngModel)]="newTemplateCategory">
+          <option value="Professional">Professional</option>
+          <option value="Creative">Creative</option>
+          <option value="Simple">Simple</option>
+          <option value="Academic">Academic</option>
+        </select>
+        <input type="url" [(ngModel)]="newTemplateThumbnail" placeholder="Thumbnail URL">
+        <div class="form-buttons">
+          <button (click)="createTemplate()">Create</button>
+          <button (click)="cancelAdd()">Cancel</button>
+        </div>
+      </div>
+      
       <div class="template-card" *ngFor="let template of filteredTemplates" (click)="editTemplate(template)">
         <div class="template-thumbnail">
           <img [src]="template.thumbnail" [alt]="template.name + ' template preview'">
@@ -65,7 +135,7 @@
       </div>
     </div>
     
-    <div class="template-footer">
+    <div class="template-footer" *ngIf="!showTemplateBuilder && !showCreatedTemplates && !showTemplateViewer">
       <p>Can't find what you're looking for? <a href="#" (click)="$event.preventDefault()">Request a template</a></p>
     </div>
   </div>

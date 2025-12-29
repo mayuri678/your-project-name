@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, UserProfile } from '../auth.service';
 import { SupabaseService } from '../services/supabase.service';
+import { UserDataService } from '../services/user-data.service';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -43,6 +44,7 @@ export class ProfileComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private supabaseService: SupabaseService,
+    private userDataService: UserDataService,
     public router: Router
   ) {}
 
@@ -52,7 +54,18 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    // Clear any previous user's data first
+    this.clearPreviousUserData();
     this.loadProfile();
+  }
+
+  private clearPreviousUserData(): void {
+    // Reset component state
+    this.photoPreview = null;
+    this.selectedFile = null;
+    this.successMessage = '';
+    this.errorMessage = '';
+    this.isEditing = false;
   }
 
   async loadProfile(): Promise<void> {
@@ -103,9 +116,9 @@ export class ProfileComponent implements OnInit {
       }
     }
 
-    // Load saved profile data from localStorage (skip for gulvemayuri63)
+    // Load saved profile data using UserDataService (skip for gulvemayuri63)
     if (currentUser && currentUser.email !== 'gulvemayuri63') {
-      const savedProfile = this.authService.getUserProfile();
+      const savedProfile = this.userDataService.getUserData('profile');
       if (savedProfile) {
         // Merge saved profile with default values to ensure all fields exist
         this.profile = {
@@ -199,8 +212,8 @@ export class ProfileComponent implements OnInit {
       }
     }
 
-    // Save profile to localStorage
-    const success = this.authService.saveUserProfile(this.profile);
+    // Save profile using UserDataService for proper user isolation
+    const success = this.userDataService.saveUserData('profile', this.profile);
     
     if (success) {
       this.successMessage = 'Profile updated successfully!';
@@ -240,6 +253,8 @@ export class ProfileComponent implements OnInit {
         if (e.target?.result) {
           this.photoPreview = e.target.result as string;
           this.errorMessage = '';
+          // Save photo immediately for current user
+          this.userDataService.saveUserPhoto(this.photoPreview);
         }
       };
       
@@ -255,6 +270,8 @@ export class ProfileComponent implements OnInit {
     this.photoPreview = null;
     this.profile.photo = '';
     this.selectedFile = null;
+    // Remove photo from user data
+    this.userDataService.removeUserData('photo');
     const input = document.getElementById('photo-input') as HTMLInputElement;
     if (input) {
       input.value = '';

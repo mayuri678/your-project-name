@@ -1,0 +1,151 @@
+<div class="user-data-tracking">
+  <div class="header">
+    <h2>📊 User Data Tracking</h2>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-info">
+        <h3>{{ totalUsers }}</h3>
+        <p>Total Users</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📄</div>
+      <div class="stat-info">
+        <h3>{{ totalResumes }}</h3>
+        <p>Resumes Created</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-info">
+        <h3>{{ mostUsedTemplate }}</h3>
+        <p>Most Used Template</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📈</div>
+      <div class="stat-info">
+        <h3>{{ todayActivity }}</h3>
+        <p>Today's Activity</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="applyFilters()"
+        placeholder="Search by user email or name..."
+        class="search-input">
+    </div>
+    <div class="filter-group">
+      <select [(ngModel)]="selectedAction" (change)="applyFilters()" class="filter-select">
+        <option value="">All Actions</option>
+        <option value="created">Created</option>
+        <option value="updated">Updated</option>
+        <option value="downloaded">Downloaded</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <select [(ngModel)]="selectedTemplate" (change)="applyFilters()" class="filter-select">
+        <option value="">All Templates</option>
+        <option *ngFor="let template of uniqueTemplates" [value]="template">{{ template }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Activity Table -->
+  <div class="activity-section">
+    <div class="loading" *ngIf="isLoading">Loading...</div>
+    
+    <table *ngIf="!isLoading" class="activity-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Template</th>
+          <th>Action</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let activity of paginatedActivity">
+          <td>
+            <div class="user-info">
+              <div class="user-avatar">{{ getUserInitial(activity.userName) }}</div>
+              <div class="user-details">
+                <div class="user-name">{{ activity.userName }}</div>
+                <div class="user-email">{{ activity.userEmail }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="template-info">
+              <div class="template-name">{{ activity.templateName }}</div>
+              <div class="template-category">{{ activity.templateCategory }}</div>
+            </div>
+          </td>
+          <td>
+            <span class="action-badge" [class]="activity.action">
+              {{ getActionIcon(activity.action) }} {{ activity.action | titlecase }}
+            </span>
+          </td>
+          <td>{{ formatDate(activity.timestamp) }}</td>
+          <td>{{ formatTime(activity.timestamp) }}</td>
+          <td class="actions">
+            <button 
+              class="btn-view" 
+              (click)="viewResumeData(activity)"
+              title="View Resume Data">
+              👁️
+            </button>
+            <button 
+              class="btn-download" 
+              (click)="downloadResume(activity)"
+              title="Download Resume Data">
+              📥
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="page-btn" 
+        (click)="previousPage()" 
+        [disabled]="currentPage === 1">
+        Previous
+      </button>
+      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button 
+        class="page-btn" 
+        (click)="nextPage()" 
+        [disabled]="currentPage === totalPages">
+        Next
+      </button>
+    </div>
+  </div>
+
+  <!-- Resume Data Modal -->
+  <div class="modal-overlay" *ngIf="showResumeModal" (click)="closeResumeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Resume Data - {{ selectedActivity?.userName }}</h3>
+        <button class="close-btn" (click)="closeResumeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <pre class="resume-data">{{ formatResumeData(selectedActivity?.resumeData) }}</pre>
+      </div>
+    </div>
+  </div>
+</div>

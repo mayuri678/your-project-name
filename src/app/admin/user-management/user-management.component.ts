@@ -90,5 +90,33 @@ export class UserManagementComponent implements OnInit {
     return this.users.filter(u => u.isActive).length;
   }
 
+  toggleUserStatus(userId: string): void {
+    const user = this.users.find(u => u.id === userId);
+    if (user) {
+      const action = user.isActive ? 'deactivate' : 'activate';
+      const confirmMessage = user.isActive 
+        ? `Are you sure you want to deactivate ${user.name}?`
+        : `Are you sure you want to activate ${user.name}?`;
+      
+      if (confirm(confirmMessage)) {
+        this.adminService.toggleUserStatus(userId).subscribe({
+          next: (success) => {
+            if (success) {
+              user.isActive = !user.isActive;
+              this.applyFilters();
+              alert(`User ${action}d successfully!`);
+            } else {
+              alert(`Failed to ${action} user`);
+            }
+          },
+          error: (error) => {
+            console.error(`Error ${action}ing user:`, error);
+            alert(`Error ${action}ing user`);
+          }
+        });
+      }
+    }
+  }
+
 
 }

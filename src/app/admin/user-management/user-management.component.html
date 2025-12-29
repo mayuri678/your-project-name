@@ -41,6 +41,7 @@
           <th>Status</th>
           <th>Last Login</th>
           <th>Created</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -66,6 +67,16 @@
           </td>
           <td class="created-date">
             {{ formatDate(user.createdAt) }}
+          </td>
+          <td class="user-actions">
+            <button 
+              class="action-btn" 
+              [class.deactivate]="user.isActive"
+              [class.activate]="!user.isActive"
+              (click)="toggleUserStatus(user.id)"
+              [title]="user.isActive ? 'Deactivate User' : 'Activate User'">
+              {{ user.isActive ? '🚫' : '✅' }}
+            </button>
           </td>
         </tr>
       </tbody>

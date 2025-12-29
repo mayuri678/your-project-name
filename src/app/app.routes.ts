@@ -22,11 +22,17 @@ import { SubscriptionManagementComponent } from './admin/subscription-management
 import { AnalyticsComponent } from './admin/analytics/analytics.component';
 import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
 import { DashboardOverviewComponent } from './admin/dashboard-overview/dashboard-overview.component';
+import { HelpComponent } from './help/help.component';
+import { TemplateEditorComponent } from './admin/template-editor/template-editor.component';
+
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { PasswordManagementComponent } from './admin/password-management/password-management.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
-  { path: 'about', component: AboutComponent, canActivate: [authGuard] },
+  { path: 'about', component: AboutComponent },
   // Primary outlet login route (fallback)
   { path: 'login', component: LoginComponent },
   // Auxiliary route for modal outlet
@@ -40,6 +46,9 @@ export const routes: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'my-templates', component: MyTemplatesComponent, canActivate: [authGuard] },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'help', component: HelpComponent },
   // Admin routes
   { path: 'admin/login', component: AdminLoginComponent },
   {
@@ -49,9 +58,15 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardOverviewComponent },
       { path: 'users', component: UserManagementComponent },
+      { path: 'user-management', component: UserManagementComponent },
+
+      { path: 'password-management', component: PasswordManagementComponent },
       { path: 'templates', component: TemplateManagementComponent },
+      { path: 'template-management', component: TemplateManagementComponent },
+      { path: 'template-editor/:id', component: TemplateEditorComponent },
       { path: 'subscriptions', component: SubscriptionManagementComponent },
       { path: 'analytics', component: AnalyticsComponent },
+      { path: 'feedback', component: FeedbackManagementComponent },
 
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
