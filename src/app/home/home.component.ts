@@ -186,6 +186,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.closeResumeOptions();
   }
 
+  openMsWordEditor(): void {
+    this.router.navigate(['/ms-word-editor']);
+    this.closeResumeOptions();
+  }
+
   goToLogin(): void {
     this.router.navigate([{ outlets: { modal: ['login'] } }]);
   }

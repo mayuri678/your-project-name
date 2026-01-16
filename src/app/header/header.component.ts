@@ -202,6 +202,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/help']);
   }
 
+  goToHelp(): void {
+    this.router.navigate(['/help']);
+  }
+
   async loadAdminTemplates(): Promise<void> {
     try {
       this.isLoadingTemplates = true;

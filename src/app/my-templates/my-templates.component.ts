@@ -239,3 +239,10 @@ export class MyTemplatesComponent implements OnInit {
     this.loading = true;
   }
 }
+
+
+
+
+
+
+

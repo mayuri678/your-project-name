@@ -153,6 +153,33 @@
         </div>
       </div>
 
+      <!-- Password Change Section -->
+      <div class="profile-section" *ngIf="isEditing">
+        <h3 class="section-title">Change Password</h3>
+        <div class="field-group">
+          <label for="newPassword" class="field-label">New Password</label>
+          <input
+            type="password"
+            id="newPassword"
+            name="newPassword"
+            [(ngModel)]="newPassword"
+            class="field-input"
+            placeholder="Enter new password"
+          />
+        </div>
+        <div class="field-group">
+          <label for="confirmPassword" class="field-label">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            class="field-input"
+            placeholder="Confirm new password"
+          />
+        </div>
+      </div>
+
 
 
       <!-- Address Section -->

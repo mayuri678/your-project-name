@@ -24,13 +24,17 @@ import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.componen
 import { DashboardOverviewComponent } from './admin/dashboard-overview/dashboard-overview.component';
 import { HelpComponent } from './help/help.component';
 import { TemplateEditorComponent } from './admin/template-editor/template-editor.component';
+import { WordEditorComponent } from './word-editor/word-editor.component';
 
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { PasswordManagementComponent } from './admin/password-management/password-management.component';
 
+import { MsWordEditorComponent } from './ms-word-editor/ms-word-editor.component';
+
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
+  { path: 'ms-word-editor', component: MsWordEditorComponent },
   { path: 'home', component: HomeComponent },
   { path: 'about', component: AboutComponent },
   // Primary outlet login route (fallback)
@@ -49,6 +53,7 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'help', component: HelpComponent },
+  { path: 'word-editor', component: WordEditorComponent },
   // Admin routes
   { path: 'admin/login', component: AdminLoginComponent },
   {

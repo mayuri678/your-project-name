@@ -1,0 +1,72 @@
+<div class="word-app">
+  <div class="title-bar">
+    <span class="doc-name">Document1 - Word</span>
+    <div class="window-controls">
+      <button>−</button><button>□</button><button>×</button>
+    </div>
+  </div>
+  
+  <div class="ribbon">
+    <div class="tabs">
+      <div class="file-tab">File</div>
+      <div class="tab active">Home</div>
+      <div class="tab">Insert</div>
+      <div class="tab">Layout</div>
+      <div class="tab">View</div>
+    </div>
+    
+    <div class="toolbar">
+      <div class="group">
+        <button class="paste-btn">📋<br>Paste</button>
+        <div class="small-btns">
+          <button>✂️ Cut</button>
+          <button>📄 Copy</button>
+        </div>
+      </div>
+      
+      <div class="group">
+        <select class="font-select">
+          <option>Calibri (Body)</option>
+          <option>Arial</option>
+          <option>Times New Roman</option>
+        </select>
+        <select class="size-select">
+          <option>11</option>
+          <option>12</option>
+          <option>14</option>
+        </select>
+        <div class="format-btns">
+          <button (click)="execCmd('bold')"><b>B</b></button>
+          <button (click)="execCmd('italic')"><i>I</i></button>
+          <button (click)="execCmd('underline')"><u>U</u></button>
+        </div>
+      </div>
+      
+      <div class="group">
+        <div class="styles">
+          <div class="style-item" *ngFor="let style of styles" (click)="applyStyle(style)">
+            <span [ngStyle]="style.css">{{style.name}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="document-area">
+    <div class="ruler"></div>
+    <div class="page-container">
+      <div class="page" contenteditable="true">
+        <p>Type your document here...</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="status-bar">
+    <span>Page 1 of 1</span>
+    <div class="zoom">
+      <button (click)="zoom(-10)">−</button>
+      <span>{{zoomLevel}}%</span>
+      <button (click)="zoom(10)">+</button>
+    </div>
+  </div>
+</div>

@@ -1,43 +1,124 @@
 <div class="word-container">
   <div class="ribbon">
     <div class="ribbon-tabs">
-      <button class="tab active">Home</button>
-      <button class="tab">Insert</button>
-      <button class="tab">Layout</button>
-      <button class="tab">View</button>
+      <button class="tab" [class.active]="activeTab === 'home'" (click)="switchTab('home')">Home</button>
+      <button class="tab" [class.active]="activeTab === 'insert'" (click)="switchTab('insert')">Insert</button>
+      <button class="tab" [class.active]="activeTab === 'layout'" (click)="switchTab('layout')">Layout</button>
+      <button class="tab" [class.active]="activeTab === 'view'" (click)="switchTab('view')">View</button>
     </div>
     
-    <div class="toolbar">
+    <div class="toolbar" *ngIf="activeTab === 'home'">
+      <div class="toolbar-group">
+        <label>File</label>
+        <button class="save-btn" (click)="saveResume()">💾 Save</button>
+        <button class="download-btn" (click)="downloadResume()">📄 Download</button>
+      </div>
       <div class="toolbar-group">
         <label>Font</label>
-        <select class="font-select">
-          <option>Calibri</option>
-          <option>Arial</option>
+        <select class="font-select" (change)="changeFont($event)">
+          <option value="Calibri">Calibri</option>
+          <option value="Arial">Arial</option>
+          <option value="Times New Roman">Times New Roman</option>
         </select>
-        <select class="size-select">
-          <option>11</option>
-          <option>12</option>
+        <select class="size-select" (change)="changeFontSize($event)">
+          <option value="10">10</option>
+          <option value="11" selected>11</option>
+          <option value="12">12</option>
+          <option value="14">14</option>
+          <option value="16">16</option>
+          <option value="18">18</option>
         </select>
-        <button class="btn-bold"><b>B</b></button>
-        <button class="btn-italic"><i>I</i></button>
-        <button class="btn-underline"><u>U</u></button>
+        <button class="btn-bold" (click)="toggleBold()"><b>B</b></button>
+        <button class="btn-italic" (click)="toggleItalic()"><i>I</i></button>
+        <button class="btn-underline" (click)="toggleUnderline()"><u>U</u></button>
+        <input type="color" class="color-picker" (change)="changeTextColor($event)" title="Text Color">
+        <input type="color" class="bg-color-picker" (change)="changeBackgroundColor($event)" value="#ffffff" title="Background Color">
+      </div>
+      <div class="toolbar-group">
+        <label>Styles</label>
+        <select class="style-select" (change)="applyStyle($event)">
+          <option *ngFor="let style of textStyles" [value]="style.name">{{ style.name }}</option>
+        </select>
+      </div>
+      <div class="toolbar-group">
+        <label>Add Section</label>
+        <button class="add-section-btn" (click)="addSection()">+ Add Section</button>
+      </div>
+    </div>
+
+    <div class="toolbar" *ngIf="activeTab === 'insert'">
+      <div class="toolbar-group">
+        <label>Insert</label>
+        <button class="insert-btn" (click)="showTableSelector()">📊 Table</button>
+        <button class="insert-btn" (click)="insertImage()">🖼️ Image</button>
+        <button class="insert-btn" (click)="insertLine()">➖ Line</button>
+      </div>
+      <div class="table-selector" *ngIf="showTableGrid">
+        <div class="table-grid">
+          <div *ngFor="let row of tableGrid; let i = index" class="grid-row">
+            <div *ngFor="let cell of row; let j = index" 
+                 class="grid-cell" 
+                 [class.highlighted]="cell.highlighted"
+                 (mouseenter)="highlightCells(i, j)"
+                 (click)="insertTableWithSize(i + 1, j + 1)">
+            </div>
+          </div>
+        </div>
+        <div class="table-info">{{selectedRows}} x {{selectedCols}} Table</div>
+      </div>
+    </div>
+
+    <div class="toolbar" *ngIf="activeTab === 'layout'">
+      <div class="toolbar-group">
+        <label>Page Setup</label>
+        <button class="layout-btn" (click)="changeOrientation()">📄 Orientation</button>
+        <button class="layout-btn" (click)="changeMargins()">📏 Margins</button>
+      </div>
+    </div>
+
+    <div class="toolbar" *ngIf="activeTab === 'view'">
+      <div class="toolbar-group">
+        <label>Zoom</label>
+        <button class="view-btn" (click)="zoomIn()">🔍+ Zoom In</button>
+        <button class="view-btn" (click)="zoomOut()">🔍- Zoom Out</button>
+        <button class="view-btn" (click)="resetZoom()">↻ Reset</button>
       </div>
     </div>
   </div>
 
-  <div class="document-area">
+  <div class="document-area" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
     <div class="page" contenteditable="true">
       <div class="resume-header">
-        <h1 contenteditable="true">[तुमचे नाव]</h1>
-        <div class="contact-info">
-          <span contenteditable="true">📧 [email]</span> |
-          <span contenteditable="true">📱 [phone]</span>
+        <div class="photo-section">
+          <div class="photo-placeholder" 
+               (click)="triggerFileInput()" 
+               draggable="true"
+               (dragstart)="onDragStart($event)"
+               (dragend)="onDragEnd($event)"
+               [style.position]="'absolute'"
+               [style.left.px]="photoPosition.x"
+               [style.top.px]="photoPosition.y"
+               [style.z-index]="'10'">
+            <img *ngIf="photoUrl" [src]="photoUrl" alt="Profile Photo" class="profile-photo">
+            <div *ngIf="!photoUrl" class="photo-upload-text">
+              📷 Click to add photo
+            </div>
+            <button *ngIf="photoUrl" class="delete-photo-btn" (click)="deletePhoto($event)" title="Delete Photo">×</button>
+          </div>
+          <input #fileInput type="file" accept="image/*" (change)="onPhotoSelect($event)" style="display: none;">
+        </div>
+        <div class="header-text">
+          <h1 contenteditable="true">[Your Name]</h1>
+          <div class="contact-info">
+            <span contenteditable="true">📧 [email]</span> |
+            <span contenteditable="true">📱 [phone]</span>
+          </div>
         </div>
       </div>
 
       <div class="section">
         <h2>OBJECTIVE</h2>
-        <p contenteditable="true">[तुमचे career objective]</p>
+        <p contenteditable="true">[Your career objective]</p>
       </div>
 
       <div class="section">
@@ -56,8 +137,10 @@
       <div class="section">
         <h2>PROJECTS</h2>
         <h3 contenteditable="true">YourProjectName</h3>
-        <p contenteditable="true">Angular CLI वापरून web application developed केली</p>
+        <p contenteditable="true">Developed a web application using Angular CLI</p>
       </div>
+
+      <div id="dynamic-sections"></div>
     </div>
   </div>
 </div>

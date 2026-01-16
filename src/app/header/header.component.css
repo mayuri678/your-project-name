@@ -529,6 +529,126 @@
   flex-shrink: 0;
 }
 
+/* Color Selection Section */
+.color-selection {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f8f9fa;
+}
+
+.color-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.color-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-option.selected {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px #667eea, 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: scale(1.1);
+}
+
+/* Text Style Selection */
+.style-selection {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f8f9fa;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.style-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.style-preview {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.style-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.style-option {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.style-option:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.style-option.selected {
+  background: #e6f3ff;
+  border-color: #667eea;
+  box-shadow: 0 0 0 1px #667eea;
+}
+
+.style-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.style-options::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.style-options::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.style-options::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
 .user-details {
   flex: 1;
   min-width: 0;
@@ -906,6 +1026,32 @@
     width: 45px;
     height: 45px;
     font-size: 18px;
+  }
+
+  .color-selection {
+    padding: 12px 16px;
+  }
+
+  .color-options {
+    gap: 6px;
+  }
+
+  .color-option {
+    width: 28px;
+    height: 28px;
+  }
+
+  .style-selection {
+    padding: 12px 16px;
+  }
+
+  .style-options {
+    max-height: 150px;
+  }
+
+  .style-option {
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .user-name {

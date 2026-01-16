@@ -1,0 +1,53 @@
+<div class="resume-container">
+  <div class="resume-card">
+    <h1>Resume Builder</h1>
+    
+    <!-- Photo Section -->
+    <div class="photo-section">
+      <div class="photo-upload" *ngIf="!profilePhoto">
+        <input type="file" id="photo" accept="image/*" (change)="onPhotoSelected($event)" hidden>
+        <label for="photo" class="upload-btn">
+          <i class="photo-icon">📷</i>
+          <span>Add Photo</span>
+        </label>
+      </div>
+      
+      <div class="photo-preview" *ngIf="profilePhoto">
+        <img [src]="profilePhoto" alt="Profile Photo">
+        <button class="remove-btn" (click)="removePhoto()">×</button>
+      </div>
+    </div>
+
+    <!-- Personal Information -->
+    <div class="info-section">
+      <h2>Personal Information</h2>
+      
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="personalInfo.name" placeholder="Enter your name">
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="personalInfo.email" placeholder="Enter your email">
+      </div>
+
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" [(ngModel)]="personalInfo.phone" placeholder="Enter your phone">
+      </div>
+
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" [(ngModel)]="personalInfo.address" placeholder="Enter your address">
+      </div>
+
+      <div class="form-group">
+        <label>Summary</label>
+        <textarea [(ngModel)]="personalInfo.summary" placeholder="Brief summary about yourself" rows="4"></textarea>
+      </div>
+
+      <button class="save-btn" (click)="saveResume()">Save Resume</button>
+    </div>
+  </div>
+</div>

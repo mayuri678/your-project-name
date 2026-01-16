@@ -2,8 +2,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: #f8fafc;
+  background: var(--color-bg);
   min-height: 100vh;
+  color: var(--color-text);
 }
 
 .help-header {
@@ -20,8 +21,29 @@
 
 .help-header h1 {
   margin: 0;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.editor-toggle-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.editor-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .close-btn {
@@ -48,24 +70,26 @@
 }
 
 .help-section {
-  background: white;
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .help-section h2 {
-  color: #1a202c;
-  font-size: 24px;
+  color: var(--color-text);
+  font-size: 20px;
   margin-bottom: 1.5rem;
   font-weight: 600;
 }
 
 .help-card {
-  background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%);
+  background: rgba(124, 58, 237, 0.1);
   padding: 1.5rem;
   border-radius: 12px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--color-primary);
+  border: 1px solid rgba(124, 58, 237, 0.2);
 }
 
 .help-card ul {
@@ -75,8 +99,8 @@
 
 .help-card li {
   margin-bottom: 0.8rem;
-  font-size: 16px;
-  color: #2d3748;
+  font-size: 14px;
+  color: var(--color-text);
   line-height: 1.5;
 }
 
@@ -87,27 +111,28 @@
 }
 
 .info-card {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: rgba(255,255,255,0.04);
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(255,255,255,0.06);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .info-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
 }
 
 .info-card h3 {
-  color: #1a202c;
-  font-size: 20px;
+  color: var(--color-text);
+  font-size: 18px;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
 .info-card p {
-  color: #4a5568;
+  color: var(--color-muted);
   margin: 0;
   line-height: 1.5;
 }
@@ -121,12 +146,13 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: rgba(34, 197, 94, 0.1);
   padding: 1rem 1.5rem;
   border-radius: 10px;
-  border-left: 4px solid #48bb78;
-  font-size: 16px;
-  color: #2d3748;
+  border-left: 4px solid var(--color-accent);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  font-size: 14px;
+  color: var(--color-text);
 }
 
 .tip-icon {
@@ -141,11 +167,11 @@
   margin-top: 2rem;
 }
 
-.create-resume-btn, .templates-btn {
+.create-resume-btn, .templates-btn, .word-editor-btn {
   padding: 1rem 2rem;
   border: none;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -153,23 +179,296 @@
 }
 
 .create-resume-btn {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  background: var(--color-accent);
   color: white;
 }
 
 .create-resume-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.1);
 }
 
 .templates-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   color: white;
 }
 
 .templates-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-primary-600);
+}
+
+.word-editor-btn {
+  background: var(--template-orange);
+  color: white;
+}
+
+.word-editor-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.1);
+}
+
+/* Editor Styles */
+.editor-container {
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* Menu Tabs */
+.editor-menu-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #d0d0d0;
+  padding: 0 1rem;
+}
+
+.menu-tab {
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.menu-tab:hover {
+  background: #f0f0f0;
+}
+
+.menu-tab.active {
+  color: #0078d4;
+  border-bottom-color: #0078d4;
+  font-weight: 600;
+}
+
+/* Toolbar */
+.editor-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8f8f8;
+  border-bottom: 1px solid #d0d0d0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.toolbar-section {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.toolbar-label {
+  font-size: 11px;
+  color: #666;
+  margin-right: 0.25rem;
+  font-weight: 500;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 30px;
+  background: #d0d0d0;
+  margin: 0 0.5rem;
+}
+
+.toolbar-btn {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #d0d0d0;
+  background: white;
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.toolbar-btn:hover {
+  background: #e8e8e8;
+  border-color: #b0b0b0;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.save-btn:hover {
+  background: #218838;
+}
+
+.download-btn {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.download-btn:hover {
+  background: #0056b3;
+}
+
+.add-section-btn {
+  background: #0078d4;
+  color: white;
+  border-color: #0078d4;
+}
+
+.add-section-btn:hover {
+  background: #005a9e;
+}
+
+.font-select, .size-select, .style-select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.font-select {
+  min-width: 120px;
+}
+
+.size-select {
+  width: 60px;
+}
+
+.style-select {
+  min-width: 140px;
+}
+
+.editor-content {
+  display: flex;
+  min-height: 600px;
+  background: #e8e8e8;
+}
+
+.editor-main {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.document-editor {
+  min-height: 800px;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 3rem 2.5rem;
+  background: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  font-family: Calibri, sans-serif;
+  font-size: 11pt;
+  line-height: 1.6;
+  color: #000;
+  outline: none;
+  cursor: text;
+}
+
+.document-editor:empty:before {
+  content: 'Click here to start typing...';
+  color: #999;
+  font-style: italic;
+}
+
+.document-editor:focus {
+  box-shadow: 0 0 15px rgba(0,120,212,0.3);
+}
+
+.document-editor h1 {
+  font-size: 18pt;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #000;
+}
+
+.document-editor p {
+  margin-bottom: 0.5rem;
+}
+
+.saved-docs {
+  width: 280px;
+  background: white;
+  padding: 1rem;
+  border-left: 1px solid #d0d0d0;
+  overflow-y: auto;
+}
+
+.saved-docs h3 {
+  margin: 0 0 1rem 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.doc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.doc-item:hover {
+  background: #e8f4ff;
+  border-color: #0078d4;
+}
+
+.doc-info h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.doc-info small {
+  font-size: 11px;
+  color: #666;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.load-btn, .delete-btn {
+  padding: 0.4rem;
+  border: 1px solid #d0d0d0;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.load-btn:hover {
+  background: #0078d4;
+  border-color: #0078d4;
+}
+
+.delete-btn:hover {
+  background: #dc3545;
+  border-color: #dc3545;
 }
 
 @media (max-width: 768px) {
@@ -179,6 +478,8 @@
 
   .help-header {
     padding: 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   .help-header h1 {
@@ -198,8 +499,26 @@
     align-items: center;
   }
 
-  .create-resume-btn, .templates-btn {
+  .create-resume-btn, .templates-btn, .word-editor-btn {
     width: 100%;
     max-width: 300px;
+  }
+
+  .editor-content {
+    flex-direction: column;
+  }
+
+  .saved-docs {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .editor-toolbar {
+    justify-content: center;
+  }
+
+  .document-editor {
+    padding: 1rem;
   }
 }

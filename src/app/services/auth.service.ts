@@ -29,7 +29,7 @@ export class AuthService {
     console.log('Insert result:', { data, error });
 
     return await this.supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'http://localhost:4200/reset-password'
+      redirectTo: `${window.location.origin}/reset-password`
     });
   }
 
@@ -40,9 +40,41 @@ export class AuthService {
       .order('requested_at', { ascending: false });
   }
 
-  async resetPassword(newPassword: string) {
-    return await this.supabase.auth.updateUser({
-      password: newPassword
+  async setSession(accessToken: string, refreshToken: string) {
+    const { data, error } = await this.supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
     });
+    
+    if (error) {
+      console.error('Error setting session:', error);
+    }
+    
+    return { data, error };
+  }
+
+  async resetPassword(newPassword: string) {
+    try {
+      // Check if user is authenticated and has a valid session
+      const { data: { user }, error: userError } = await this.supabase.auth.getUser();
+      
+      if (userError || !user) {
+        return { error: { message: 'No active session found. Please request a new password reset link.' } };
+      }
+
+      const { data, error } = await this.supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error('Password reset error:', error);
+        return { error };
+      }
+
+      return { data, error: null };
+    } catch (err) {
+      console.error('Unexpected error during password reset:', err);
+      return { error: { message: 'An unexpected error occurred. Please try again.' } };
+    }
   }
 }

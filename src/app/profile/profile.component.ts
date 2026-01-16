@@ -41,6 +41,10 @@ export class ProfileComponent implements OnInit {
   supabaseUser: any = null;
   loading: boolean = false;
 
+  // Password change fields
+  newPassword: string = '';
+  confirmPassword: string = '';
+
   constructor(
     private authService: AuthService,
     private supabaseService: SupabaseService,
@@ -153,6 +157,9 @@ export class ProfileComponent implements OnInit {
       this.successMessage = '';
       this.errorMessage = '';
       this.selectedFile = null;
+      // Clear password fields
+      this.newPassword = '';
+      this.confirmPassword = '';
       // Reset photo preview to saved photo
       this.photoPreview = this.profile.photo || null;
     }
@@ -184,18 +191,47 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    // Validate password change if provided
+    if (this.newPassword || this.confirmPassword) {
+      if (this.newPassword !== this.confirmPassword) {
+        this.errorMessage = 'Passwords do not match.';
+        return;
+      }
+      if (this.newPassword.length < 6) {
+        this.errorMessage = 'Password must be at least 6 characters long.';
+        return;
+      }
+    }
+
     // Update photo if a new file was selected
     if (this.photoPreview && this.photoPreview !== this.profile.photo) {
       this.profile.photo = this.photoPreview;
     }
 
+    // Handle password change and log it
+    if (this.newPassword) {
+      try {
+        await this.supabaseService.logPasswordChange(this.profile.email, this.profile.username);
+        console.log('Password change logged successfully');
+      } catch (err) {
+        console.error('Failed to log password change:', err);
+      }
+    }
+
     // Save to Supabase users table if user exists
     if (this.supabaseUser && this.supabaseUser.id) {
       try {
-        const { data, error } = await this.supabaseService.updateUser(this.supabaseUser.id, {
+        const updates: any = {
           full_name: this.profile.username,
           email: this.profile.email
-        });
+        };
+        
+        // Add password to updates if changed
+        if (this.newPassword) {
+          updates.password = this.newPassword;
+        }
+
+        const { data, error } = await this.supabaseService.updateUser(this.supabaseUser.id, updates);
 
         if (error) {
           console.error('Error updating user in Supabase:', error);
@@ -217,8 +253,15 @@ export class ProfileComponent implements OnInit {
     
     if (success) {
       this.successMessage = 'Profile updated successfully!';
+      if (this.newPassword) {
+        this.successMessage += ' Password changed successfully!';
+      }
       this.errorMessage = '';
       this.isEditing = false;
+      
+      // Clear password fields
+      this.newPassword = '';
+      this.confirmPassword = '';
       
       // Clear success message after 3 seconds
       setTimeout(() => {

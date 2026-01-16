@@ -147,6 +147,23 @@
         </button>
       </div>
 
+      <!-- MS Word Editor Card -->
+      <div class="resume-option-card" (click)="openMsWordEditor()">
+        <div class="option-icon">📝</div>
+        <h3>MS Word Editor</h3>
+        <p>Minimal Microsoft Word-like editor with authentic styling and A4 layout</p>
+
+        <div class="option-features">
+          <span class="feature-badge">✓ Word Interface</span>
+          <span class="feature-badge">✓ A4 Layout</span>
+          <span class="feature-badge">✓ Rich Text</span>
+        </div>
+
+        <button class="option-btn primary-option" (click)="openMsWordEditor(); $event.stopPropagation()">
+          🚀 Open MS Editor
+        </button>
+      </div>
+
     </div>
   </div>
 </div>

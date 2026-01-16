@@ -826,4 +826,38 @@ export class SupabaseService {
       return { data: null, error };
     }
   }
+
+  // 🔹 Fetch password reset requests
+  async getPasswordResetRequests() {
+    try {
+      const { data, error } = await this.supabase
+        .from('password_reset_requests')
+        .select('*')
+        .order('requested_at', { ascending: false });
+
+      return { data, error };
+    } catch (error: any) {
+      console.error('Error fetching password reset requests:', error);
+      return { data: null, error };
+    }
+  }
+
+  // 🔹 Log password change request
+  async logPasswordChange(email: string, username?: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from('password_reset_requests')
+        .insert([{
+          email,
+          username: username || null
+        }])
+        .select()
+        .single();
+
+      return { data, error };
+    } catch (error: any) {
+      console.error('Error logging password change:', error);
+      return { data: null, error };
+    }
+  }
 }
