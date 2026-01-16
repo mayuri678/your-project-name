@@ -44,36 +44,41 @@ export class MyTemplatesComponent implements OnInit {
 
   async loadTemplates() {
     try {
-      // Load user's own templates
+      // Load from localStorage (downloaded templates)
+      const localTemplates = JSON.parse(localStorage.getItem('myTemplates') || '[]');
+      
+      // Load user's own templates from Supabase
       const userResult = await this.supabaseService.getUserTemplates();
       let userTemplates = userResult.data || [];
       
-      // Also load admin-created templates (available to all users in My Templates)
+      // Also load admin-created templates
       const adminResult = await this.supabaseService.getAllTemplates();
       let adminTemplates = adminResult.data || [];
       
-      // Combine both arrays
-      const allTemplates = [...userTemplates, ...adminTemplates];
+      // Combine all arrays
+      const allTemplates = [...localTemplates, ...userTemplates, ...adminTemplates];
       const uniqueTemplates = allTemplates.filter((template, index, self) => 
         index === self.findIndex(t => t.id === template.id)
       );
       
-      // Process all templates to make them viewable
+      // Process all templates
       const processedTemplates = uniqueTemplates.map(template => {
         try {
-          const data = JSON.parse(template.description || '{}');
+          const data = template.content ? { content: template.content } : JSON.parse(template.description || '{}');
           return {
             ...template,
             parsedData: data,
-            displayName: data.name || data.templateName || template.title || 'Untitled Resume',
-            isAdminTemplate: !!(data.templateColor || data.templateLayout || data.templateFeatures)
+            displayName: template.name || data.name || data.templateName || template.title || 'Untitled Resume',
+            isAdminTemplate: !!(data.templateColor || data.templateLayout || data.templateFeatures),
+            isLocalTemplate: !!template.content
           };
         } catch {
           return {
             ...template,
             parsedData: {},
-            displayName: template.title || 'Untitled Resume',
-            isAdminTemplate: false
+            displayName: template.name || template.title || 'Untitled Resume',
+            isAdminTemplate: false,
+            isLocalTemplate: !!template.content
           };
         }
       });

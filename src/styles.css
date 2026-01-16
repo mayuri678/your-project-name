@@ -47,21 +47,28 @@
 .template-border-gray { border-color: var(--template-gray) !important; }
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
 html, body {
   height: 100%;
+  width: 100%;
   overflow-x: hidden;
-}
-body {
-  margin: 0;
   background: linear-gradient(180deg, var(--color-bg), #0b1220);
+}
+
+body {
   color: var(--color-text);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   line-height: 1.5;
-  width: 100%;
-  max-width: 100vw;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--color-bg), #0b1220);
 }
 
 .container {
@@ -123,5 +130,4 @@ h3 { font-size: 20px; }
   }
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+

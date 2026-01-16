@@ -1,0 +1,11 @@
+.word-container { display: flex; flex-direction: column; height: 100vh; background: #f0f0f0; }
+.ribbon { background: white; border-bottom: 1px solid #ddd; padding: 10px; }
+.toolbar { display: flex; gap: 20px; }
+.toolbar-group { display: flex; gap: 5px; align-items: center; }
+.toolbar-group label { font-size: 12px; margin-right: 5px; }
+.font-select, .size-select { padding: 5px; border: 1px solid #ccc; border-radius: 3px; }
+.btn-bold, .btn-italic, .btn-underline { padding: 5px 10px; border: 1px solid #ccc; background: white; cursor: pointer; }
+.btn-bold:hover, .btn-italic:hover, .btn-underline:hover { background: #e0e0e0; }
+.color-picker { width: 30px; height: 30px; border: none; cursor: pointer; }
+.document-area { flex: 1; overflow: auto; padding: 20px; display: flex; justify-content: center; }
+.page { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-shadow: 0 0 10px rgba(0,0,0,0.1); }

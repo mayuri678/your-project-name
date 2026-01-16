@@ -8,11 +8,36 @@
   
   <div class="ribbon">
     <div class="tabs">
-      <div class="file-tab">File</div>
+      <div class="file-tab" (click)="toggleFileMenu()">File</div>
       <div class="tab active">Home</div>
       <div class="tab">Insert</div>
       <div class="tab">Layout</div>
       <div class="tab">View</div>
+    </div>
+    
+    <!-- File Menu Dropdown -->
+    <div class="file-menu" *ngIf="showFileMenu">
+      <div class="file-menu-item" (click)="showTemplates()">
+        <span class="icon">📋</span>
+        <div>
+          <div class="menu-title">Templates</div>
+          <div class="menu-desc">Choose from resume templates</div>
+        </div>
+      </div>
+      <div class="file-menu-item">
+        <span class="icon">💾</span>
+        <div>
+          <div class="menu-title">Save</div>
+          <div class="menu-desc">Save your document</div>
+        </div>
+      </div>
+      <div class="file-menu-item">
+        <span class="icon">📥</span>
+        <div>
+          <div class="menu-title">Download</div>
+          <div class="menu-desc">Download as PDF or Word</div>
+        </div>
+      </div>
     </div>
     
     <div class="toolbar">
@@ -53,6 +78,53 @@
   </div>
   
   <div class="document-area">
+    <!-- Template Modal -->
+    <div class="template-modal" *ngIf="showTemplateModal">
+      <div class="modal-overlay" (click)="closeTemplates()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Choose a Resume Template</h2>
+          <button class="close-btn" (click)="closeTemplates()">×</button>
+        </div>
+        <div class="template-grid">
+          <div class="template-card" (click)="selectTemplate('professional')">
+            <div class="template-preview professional">
+              <div class="preview-name">YOUR NAME</div>
+              <div class="preview-line"></div>
+              <div class="preview-text"></div>
+              <div class="preview-text"></div>
+            </div>
+            <p>Professional</p>
+          </div>
+          <div class="template-card" (click)="selectTemplate('modern')">
+            <div class="template-preview modern">
+              <div class="sidebar"></div>
+              <div class="content">
+                <div class="preview-text"></div>
+                <div class="preview-text"></div>
+              </div>
+            </div>
+            <p>Modern</p>
+          </div>
+          <div class="template-card" (click)="selectTemplate('creative')">
+            <div class="template-preview creative">
+              <div class="circle"></div>
+              <div class="preview-name">NAME</div>
+              <div class="preview-text"></div>
+            </div>
+            <p>Creative</p>
+          </div>
+          <div class="template-card" (click)="selectTemplate('minimal')">
+            <div class="template-preview minimal">
+              <div class="preview-name">Name</div>
+              <div class="thin-line"></div>
+              <div class="preview-text"></div>
+            </div>
+            <p>Minimal</p>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="ruler"></div>
     <div class="page-container">
       <div class="page" contenteditable="true">

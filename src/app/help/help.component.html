@@ -136,6 +136,217 @@
       </div>
     </div>
 
+    <div class="help-section">
+      <h2>🔧 Microsoft Word Troubleshooting</h2>
+      
+      <div class="help-card">
+        <h3>Issue 1: Limited Ribbon Options</h3>
+        <p><strong>Problem:</strong> Home, Insert, Layout, and View tabs show very few tools.</p>
+        
+        <h4 style="margin-top: 15px;">Quick Fixes:</h4>
+        <ul>
+          <li><strong>Expand Ribbon:</strong> Press Ctrl + F1 or click the upward arrow (^) on the right</li>
+          <li><strong>Display Options:</strong> Click arrow at ribbon bottom-right → Select "Show Tabs and Commands"</li>
+          <li><strong>Disable Touch Mode:</strong> File → Options → General → Uncheck "Optimize for touch"</li>
+          <li><strong>Exit Safe Mode:</strong> Close Word, press Win + R, type "winword.exe", press Enter</li>
+          <li><strong>Reset Ribbon:</strong> File → Options → Customize Ribbon → Reset → Reset all customizations</li>
+          <li><strong>Disable Add-ins:</strong> File → Options → Add-ins → COM Add-ins → Go → Uncheck all</li>
+          <li><strong>Repair Office:</strong> Win + R → "appwiz.cpl" → Select Office → Change → Quick Repair</li>
+          <li><strong>Delete Normal.dotm:</strong> Win + R → "%appdata%\Microsoft\Templates" → Rename Normal.dotm</li>
+          <li><strong>Maximize Window:</strong> Some options hide when window is too small</li>
+          <li><strong>Update Office:</strong> File → Account → Update Options → Update Now</li>
+        </ul>
+      </div>
+
+      <div class="help-card" style="margin-top: 15px;">
+        <h3>Issue 2: Ribbon Commands Disabled (Grayed Out)</h3>
+        <p><strong>Problem:</strong> Buttons are visible but not clickable - appear grayed out or disabled.</p>
+        
+        <h4 style="margin-top: 15px;">Reasons:</h4>
+        <ul>
+          <li><strong>Protected Document:</strong> Document is in restricted editing mode or read-only</li>
+          <li><strong>No Content Selected:</strong> Some commands require text/object selection first</li>
+          <li><strong>Document Format:</strong> Opened in Compatibility Mode (older .doc format)</li>
+          <li><strong>Track Changes Active:</strong> Change tracking is locked by administrator</li>
+          <li><strong>Information Rights Management:</strong> Document has IRM restrictions</li>
+          <li><strong>Shared/Locked File:</strong> File is being edited by another user or locked</li>
+          <li><strong>Office Activation:</strong> Office license expired or not activated</li>
+          <li><strong>Group Policy:</strong> IT administrator disabled certain features</li>
+        </ul>
+
+        <h4 style="margin-top: 15px;">Solutions:</h4>
+        <ul>
+          <li><strong>Check Protection:</strong> Review → Restrict Editing → Stop Protection (enter password if required)</li>
+          <li><strong>Remove Read-Only:</strong> File → Info → Protect Document → Remove restrictions</li>
+          <li><strong>Convert Format:</strong> File → Info → Convert (changes .doc to .docx format)</li>
+          <li><strong>Check Status Bar:</strong> Look for "Read-Only", "Protected", or "Locked" indicators at bottom</li>
+          <li><strong>Disable Track Changes Lock:</strong> Review → Track Changes → Lock Tracking → Uncheck</li>
+          <li><strong>Save As New File:</strong> File → Save As → Choose new location and name</li>
+          <li><strong>Check File Properties:</strong> Right-click file → Properties → Uncheck "Read-only" → Apply</li>
+          <li><strong>Activate Office:</strong> File → Account → Activate Product (if license issue)</li>
+          <li><strong>Close Other Instances:</strong> Ensure file isn't open elsewhere or on network</li>
+          <li><strong>Copy Content:</strong> Select all (Ctrl+A) → Copy → Paste into new blank document</li>
+        </ul>
+
+        <h4 style="margin-top: 15px;">Quick Diagnostic:</h4>
+        <ul>
+          <li>Check title bar for "[Read-Only]" or "[Compatibility Mode]"</li>
+          <li>Look at status bar (bottom) for protection indicators</li>
+          <li>Try File → Info to see document permissions and properties</li>
+          <li>Test with a new blank document - if commands work there, issue is document-specific</li>
+        </ul>
+      </div>
+
+      <div class="help-card" style="margin-top: 15px;">
+        <h3>Issue 3: Tab Buttons Not Responding When Clicked</h3>
+        <p><strong>Problem:</strong> Home, Insert, Layout, and View buttons are visible but don't work when you click them.</p>
+        
+        <h4 style="margin-top: 15px;">Why This Happens:</h4>
+        <ul>
+          <li><strong>Tabs are hidden:</strong> The tabs are disabled in ribbon settings</li>
+          <li><strong>Corrupted settings:</strong> Word settings file is damaged</li>
+          <li><strong>Add-in conflict:</strong> A plugin is blocking the tabs</li>
+          <li><strong>Office needs repair:</strong> Installation files are corrupted</li>
+          <li><strong>Protected view:</strong> Document opened from internet or email</li>
+          <li><strong>Outdated version:</strong> Word needs updates</li>
+        </ul>
+
+        <h4 style="margin-top: 15px;">Step-by-Step Solutions:</h4>
+        
+        <p><strong>Solution 1: Enable Tabs in Settings</strong></p>
+        <ul>
+          <li>Step 1: Click "File" at the top left</li>
+          <li>Step 2: Click "Options" at the bottom</li>
+          <li>Step 3: Click "Customize Ribbon" on the left side</li>
+          <li>Step 4: Look at the right side - check the boxes next to Home, Insert, Layout, and View</li>
+          <li>Step 5: Click "OK" button</li>
+          <li>Step 6: Close and reopen Word</li>
+        </ul>
+
+        <p><strong>Solution 2: Reset All Ribbon Settings</strong></p>
+        <ul>
+          <li>Step 1: Click "File" → "Options"</li>
+          <li>Step 2: Click "Customize Ribbon"</li>
+          <li>Step 3: Click "Reset" button at the bottom</li>
+          <li>Step 4: Choose "Reset all customizations"</li>
+          <li>Step 5: Click "Yes" to confirm</li>
+          <li>Step 6: Click "OK" and restart Word</li>
+        </ul>
+
+        <p><strong>Solution 3: Disable Add-ins</strong></p>
+        <ul>
+          <li>Step 1: Click "File" → "Options"</li>
+          <li>Step 2: Click "Add-ins" on the left</li>
+          <li>Step 3: At the bottom, select "COM Add-ins" and click "Go"</li>
+          <li>Step 4: Uncheck all add-ins</li>
+          <li>Step 5: Click "OK" and restart Word</li>
+        </ul>
+
+        <p><strong>Solution 4: Exit Protected View</strong></p>
+        <ul>
+          <li>Step 1: Look for yellow bar at the top saying "Protected View"</li>
+          <li>Step 2: Click "Enable Editing" button</li>
+          <li>Step 3: All tabs should now work</li>
+        </ul>
+
+        <p><strong>Solution 5: Repair Microsoft Office</strong></p>
+        <ul>
+          <li>Step 1: Close all Office programs</li>
+          <li>Step 2: Press Windows key + R on keyboard</li>
+          <li>Step 3: Type "appwiz.cpl" and press Enter</li>
+          <li>Step 4: Find "Microsoft Office" in the list</li>
+          <li>Step 5: Click it, then click "Change" button</li>
+          <li>Step 6: Choose "Quick Repair" and click "Repair"</li>
+          <li>Step 7: Wait for repair to finish, then restart computer</li>
+        </ul>
+
+        <p><strong>Solution 6: Update Microsoft Office</strong></p>
+        <ul>
+          <li>Step 1: Open Word</li>
+          <li>Step 2: Click "File" → "Account"</li>
+          <li>Step 3: Click "Update Options"</li>
+          <li>Step 4: Click "Update Now"</li>
+          <li>Step 5: Wait for updates to install</li>
+        </ul>
+
+        <p><strong>Solution 7: Test with New Document</strong></p>
+        <ul>
+          <li>Step 1: Click "File" → "New"</li>
+          <li>Step 2: Click "Blank document"</li>
+          <li>Step 3: Try clicking the tabs</li>
+          <li>Step 4: If tabs work here, the problem is with your old document</li>
+        </ul>
+      </div>
+
+      <div class="help-card" style="margin-top: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px;">
+        <h3 style="color: white; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 10px;">📚 What Each Tab Does</h3>
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+          <h4 style="color: white;">🏠 HOME TAB</h4>
+          <p><strong>What it does:</strong> Basic typing and text formatting</p>
+          <p><strong>You can:</strong></p>
+          <ul>
+            <li>Copy and paste text</li>
+            <li>Change font style and size</li>
+            <li>Make text bold, italic, or underlined</li>
+            <li>Change text color</li>
+            <li>Add bullets and numbering</li>
+            <li>Align text (left, center, right)</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+          <h4 style="color: white;">➕ INSERT TAB</h4>
+          <p><strong>What it does:</strong> Add things to your document</p>
+          <p><strong>You can:</strong></p>
+          <ul>
+            <li>Add pictures and photos</li>
+            <li>Insert tables</li>
+            <li>Add page numbers</li>
+            <li>Insert shapes and icons</li>
+            <li>Add headers and footers</li>
+            <li>Insert special symbols</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+          <h4 style="color: white;">📐 LAYOUT TAB</h4>
+          <p><strong>What it does:</strong> Control page setup and spacing</p>
+          <p><strong>You can:</strong></p>
+          <ul>
+            <li>Change page margins (space around edges)</li>
+            <li>Switch between portrait and landscape</li>
+            <li>Change paper size</li>
+            <li>Add columns (like newspaper)</li>
+            <li>Adjust spacing between paragraphs</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+          <h4 style="color: white;">👁️ VIEW TAB</h4>
+          <p><strong>What it does:</strong> Change how you see the document</p>
+          <p><strong>You can:</strong></p>
+          <ul>
+            <li>Zoom in and out</li>
+            <li>Show or hide ruler</li>
+            <li>Change view mode (print, web, draft)</li>
+            <li>Split screen to see two parts at once</li>
+            <li>View multiple pages together</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="help-card" style="margin-top: 15px;">
+        <h3>✅ Quick Check Before Trying Solutions</h3>
+        <ul>
+          <li>Is there a yellow "Protected View" bar at the top? Click "Enable Editing"</li>
+          <li>Does the title bar say "[Read-Only]"? Save the file with a new name</li>
+          <li>Are you clicking on the tab name itself? Click directly on the word "Home", "Insert", etc.</li>
+          <li>Try pressing Alt key - this shows keyboard shortcuts for each tab</li>
+        </ul>
+      </div>
+    </div>
+
     <div class="action-buttons">
       
       <button class="word-editor-btn" (click)="goToWordEditor()">
@@ -150,69 +361,366 @@
   <div class="editor-container" *ngIf="showEditor">
     <!-- Menu Tabs -->
     <div class="editor-menu-tabs">
-      <div class="menu-tab active">Home</div>
-      <div class="menu-tab">Insert</div>
-      <div class="menu-tab">Layout</div>
-      <div class="menu-tab">View</div>
+      <div class="menu-tab" [class.active]="activeTab === 'file'" (click)="switchTab('file')">File</div>
+      <div class="menu-tab" [class.active]="activeTab === 'home'" (click)="switchTab('home')">Home</div>
+      <div class="menu-tab" [class.active]="activeTab === 'insert'" (click)="switchTab('insert')">Insert</div>
+      <div class="menu-tab" [class.active]="activeTab === 'design'" (click)="switchTab('design')">Design</div>
+      <div class="menu-tab" [class.active]="activeTab === 'layout'" (click)="switchTab('layout')">Layout</div>
+      <div class="menu-tab" [class.active]="activeTab === 'references'" (click)="switchTab('references')">References</div>
+      <div class="menu-tab" [class.active]="activeTab === 'mailings'" (click)="switchTab('mailings')">Mailings</div>
+      <div class="menu-tab" [class.active]="activeTab === 'review'" (click)="switchTab('review')">Review</div>
+      <div class="menu-tab" [class.active]="activeTab === 'view'" (click)="switchTab('view')">View</div>
     </div>
 
     <!-- Toolbar -->
     <div class="editor-toolbar">
-      <div class="toolbar-section">
-        <div class="toolbar-label">File</div>
-        <button class="toolbar-btn save-btn" (click)="saveDocument()" title="Save">💾 Save</button>
-        <button class="toolbar-btn download-btn" (click)="exportDocument()" title="Download">📥 Download</button>
+      <!-- File Tab Tools -->
+      <div *ngIf="activeTab === 'file'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">File</div>
+          <button class="toolbar-btn save-btn" (click)="saveDocument()">💾 Save</button>
+          <button class="toolbar-btn template-btn" (click)="showTemplates()">📋 Templates</button>
+          <button class="toolbar-btn download-btn" (click)="exportDocument()">📥 Download</button>
+          <button class="toolbar-btn" (click)="clearEditor()">📄 New</button>
+        </div>
       </div>
 
-      <div class="toolbar-divider"></div>
+      <!-- Home Tab Tools -->
+      <div *ngIf="activeTab === 'home'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Clipboard</div>
+          <button class="toolbar-btn" (click)="cutText()">✂️ Cut</button>
+          <button class="toolbar-btn" (click)="copyText()">📋 Copy</button>
+          <button class="toolbar-btn" (click)="pasteText()">📄 Paste</button>
+          <button class="toolbar-btn" (click)="formatPainter()">🖌️ Format Painter</button>
+        </div>
 
-      <div class="toolbar-section">
-        <div class="toolbar-label">Font</div>
-        <select class="font-select">
-          <option>Calibri</option>
-          <option>Arial</option>
-          <option>Times New Roman</option>
-        </select>
-        <select class="size-select">
-          <option>11</option>
-          <option>12</option>
-          <option>14</option>
-          <option>16</option>
-        </select>
-        <button class="toolbar-btn" (click)="formatText('bold')" title="Bold"><b>B</b></button>
-        <button class="toolbar-btn" (click)="formatText('italic')" title="Italic"><i>I</i></button>
-        <button class="toolbar-btn" (click)="formatText('underline')" title="Underline"><u>U</u></button>
-        <button class="toolbar-btn color-btn" title="Text Color">🎨</button>
-        <button class="toolbar-btn" title="Background">⬜</button>
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Font</div>
+          <select class="font-select">
+            <option>Calibri</option>
+            <option>Arial</option>
+            <option>Times New Roman</option>
+            <option>Georgia</option>
+            <option>Verdana</option>
+            <option>Comic Sans MS</option>
+            <option>Courier New</option>
+          </select>
+          <select class="size-select">
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+            <option>11</option>
+            <option>12</option>
+            <option>14</option>
+            <option>16</option>
+            <option>18</option>
+            <option>20</option>
+            <option>22</option>
+            <option>24</option>
+            <option>26</option>
+            <option>28</option>
+            <option>36</option>
+            <option>48</option>
+            <option>72</option>
+          </select>
+          <button class="toolbar-btn" (click)="increaseFontSize()">A+</button>
+          <button class="toolbar-btn" (click)="decreaseFontSize()">A-</button>
+          <button class="toolbar-btn" (click)="changeCase()">Aa</button>
+          <button class="toolbar-btn" (click)="clearFormatting()">🧹</button>
+          <button class="toolbar-btn" (click)="formatText('bold')"><b>B</b></button>
+          <button class="toolbar-btn" (click)="formatText('italic')"><i>I</i></button>
+          <button class="toolbar-btn" (click)="formatText('underline')"><u>U</u></button>
+          <button class="toolbar-btn" (click)="formatText('strikeThrough')"><s>S</s></button>
+          <button class="toolbar-btn" (click)="subscript()">X₂</button>
+          <button class="toolbar-btn" (click)="superscript()">X²</button>
+          <button class="toolbar-btn" (click)="changeTextColor()">🎨</button>
+          <button class="toolbar-btn" (click)="changeBackgroundColor()">🖍️</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Paragraph</div>
+          <button class="toolbar-btn" (click)="formatText('insertUnorderedList')">• Bullets</button>
+          <button class="toolbar-btn" (click)="formatText('insertOrderedList')">🔢 Numbering</button>
+          <button class="toolbar-btn" (click)="decreaseIndent()">⬅️ Decrease</button>
+          <button class="toolbar-btn" (click)="increaseIndent()">➡️ Increase</button>
+          <button class="toolbar-btn" (click)="changeAlignment('left')">⬅️</button>
+          <button class="toolbar-btn" (click)="changeAlignment('center')">↔️</button>
+          <button class="toolbar-btn" (click)="changeAlignment('right')">➡️</button>
+          <button class="toolbar-btn" (click)="changeAlignment('full')">⬌</button>
+          <button class="toolbar-btn" (click)="lineSpacing('1.5')">📐 Spacing</button>
+          <button class="toolbar-btn" (click)="shading()">🎨 Shading</button>
+          <button class="toolbar-btn" (click)="borders()">⬜ Borders</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Styles</div>
+          <button class="toolbar-btn" (click)="insertHeading(1)">H1</button>
+          <button class="toolbar-btn" (click)="insertHeading(2)">H2</button>
+          <button class="toolbar-btn" (click)="insertHeading(3)">H3</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Editing</div>
+          <button class="toolbar-btn" (click)="undo()">↶ Undo</button>
+          <button class="toolbar-btn" (click)="redo()">↷ Redo</button>
+        </div>
       </div>
 
-      <div class="toolbar-divider"></div>
+      <!-- Insert Tab Tools -->
+      <div *ngIf="activeTab === 'insert'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Pages</div>
+          <button class="toolbar-btn" (click)="insertCoverPage()">📑 Cover Page</button>
+          <button class="toolbar-btn" (click)="insertBlankPage()">📄 Blank Page</button>
+          <button class="toolbar-btn" (click)="insertPageBreak()">📄 Page Break</button>
+        </div>
 
-      <div class="toolbar-section">
-        <div class="toolbar-label">Styles</div>
-        <select class="style-select">
-          <option>Normal</option>
-          <option>Heading 1</option>
-          <option>Heading 2</option>
-        </select>
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Tables</div>
+          <button class="toolbar-btn" (click)="insertTable()">📊 Table</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Illustrations</div>
+          <button class="toolbar-btn" (click)="insertImage()">🖼️ Pictures</button>
+          <button class="toolbar-btn" (click)="insertShape()">⬜ Shapes</button>
+          <button class="toolbar-btn" (click)="insertIcon()">⭐ Icons</button>
+          <button class="toolbar-btn" (click)="insertChart()">📊 Chart</button>
+          <button class="toolbar-btn" (click)="insertSmartArt()">🎨 SmartArt</button>
+          <button class="toolbar-btn" (click)="insertScreenshot()">📸 Screenshot</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Add-ons</div>
+          <button class="toolbar-btn" (click)="insertEquation()">∑ Equation</button>
+          <button class="toolbar-btn" (click)="insertSymbol()">Ω Symbol</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Media</div>
+          <button class="toolbar-btn" (click)="insertHorizontalLine()">➖ Line</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Links</div>
+          <button class="toolbar-btn" (click)="insertLink()">🔗 Link</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Header & Footer</div>
+          <button class="toolbar-btn" (click)="insertHeaderFooter()">📄 Header</button>
+          <button class="toolbar-btn" (click)="insertPageNumber()">🔢 Page Number</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Text</div>
+          <button class="toolbar-btn" (click)="insertTextBox()">📝 Text Box</button>
+          <button class="toolbar-btn" (click)="insertDropCap()">🅰️ Drop Cap</button>
+          <button class="toolbar-btn" (click)="insertWordArt()">🎨 WordArt</button>
+          <button class="toolbar-btn" (click)="insertSignatureLine()">✍️ Signature</button>
+          <button class="toolbar-btn" (click)="insertDate()">📅 Date</button>
+        </div>
       </div>
 
-      <div class="toolbar-divider"></div>
+      <!-- Design Tab Tools -->
+      <div *ngIf="activeTab === 'design'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Page Background</div>
+          <button class="toolbar-btn" (click)="addWatermark()">💧 Watermark</button>
+          <button class="toolbar-btn" (click)="changePageColor()">🎨 Page Color</button>
+          <button class="toolbar-btn" (click)="borders()">⬜ Page Borders</button>
+        </div>
+      </div>
 
-      <div class="toolbar-section">
-        <div class="toolbar-label">Add Section</div>
-        <button class="toolbar-btn add-section-btn">+ Add Section</button>
+      <!-- Layout Tab Tools -->
+      <div *ngIf="activeTab === 'layout'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Page Setup</div>
+          <button class="toolbar-btn" (click)="changeMargins()">📏 Margins</button>
+          <button class="toolbar-btn" (click)="changeOrientation()">🔄 Orientation</button>
+          <button class="toolbar-btn" (click)="changePageSize()">📄 Size</button>
+          <button class="toolbar-btn" (click)="changeColumns()">📰 Columns</button>
+          <button class="toolbar-btn" (click)="insertPageBreak()">📄 Breaks</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Paragraph</div>
+          <button class="toolbar-btn" (click)="increaseIndent()">➡️ Indent</button>
+          <button class="toolbar-btn" (click)="decreaseIndent()">⬅️ Outdent</button>
+          <button class="toolbar-btn" (click)="changeLineSpacing()">📐 Spacing</button>
+        </div>
+      </div>
+
+      <!-- References Tab Tools -->
+      <div *ngIf="activeTab === 'references'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Table of Contents</div>
+          <button class="toolbar-btn" (click)="insertTableOfContents()">📑 TOC</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Footnotes</div>
+          <button class="toolbar-btn" (click)="insertFootnote()">📝 Footnote</button>
+          <button class="toolbar-btn" (click)="insertEndnote()">📝 Endnote</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Citations & Bibliography</div>
+          <button class="toolbar-btn" (click)="insertCitation()">📚 Citation</button>
+          <button class="toolbar-btn" (click)="insertBibliography()">📖 Bibliography</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Captions</div>
+          <button class="toolbar-btn" (click)="insertCaption()">🏷️ Caption</button>
+        </div>
+      </div>
+
+      <!-- Mailings Tab Tools -->
+      <div *ngIf="activeTab === 'mailings'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Create</div>
+          <button class="toolbar-btn" (click)="alert('Envelopes feature')">✉️ Envelopes</button>
+          <button class="toolbar-btn" (click)="alert('Labels feature')">🏷️ Labels</button>
+        </div>
+      </div>
+
+      <!-- Review Tab Tools -->
+      <div *ngIf="activeTab === 'review'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Proofing</div>
+          <button class="toolbar-btn" (click)="alert('Spell check')">✓ Spelling</button>
+          <button class="toolbar-btn" (click)="alert('Grammar check')">📝 Grammar</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Comments</div>
+          <button class="toolbar-btn" (click)="alert('Add comment')">💬 New Comment</button>
+        </div>
+      </div>
+
+      <!-- View Tab Tools -->
+      <div *ngIf="activeTab === 'view'" class="toolbar-content">
+        <div class="toolbar-section">
+          <div class="toolbar-label">Views</div>
+          <button class="toolbar-btn" (click)="readingMode()">📖 Reading</button>
+          <button class="toolbar-btn" (click)="printLayout()">📄 Print</button>
+          <button class="toolbar-btn" (click)="webLayout()">🌐 Web</button>
+          <button class="toolbar-btn" (click)="outlineView()">📋 Outline</button>
+          <button class="toolbar-btn" (click)="draftView()">📝 Draft</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Show</div>
+          <button class="toolbar-btn" (click)="toggleRuler()">📏 Ruler</button>
+          <button class="toolbar-btn" (click)="showGridlines()">⊞ Gridlines</button>
+          <button class="toolbar-btn" (click)="showNavigationPane()">🧭 Navigation</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Zoom</div>
+          <button class="toolbar-btn" (click)="zoom100()">100%</button>
+          <button class="toolbar-btn" (click)="zoom150()">150%</button>
+          <button class="toolbar-btn" (click)="zoom200()">200%</button>
+          <button class="toolbar-btn" (click)="zoomIn()">🔍+</button>
+          <button class="toolbar-btn" (click)="zoomOut()">🔍-</button>
+          <button class="toolbar-btn" (click)="fitToWindow()">⬜ Fit</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Window</div>
+          <button class="toolbar-btn" (click)="newWindow()">🪟 New Window</button>
+          <button class="toolbar-btn" (click)="splitWindow()">⬌ Split</button>
+          <button class="toolbar-btn" (click)="switchWindows()">🔄 Switch</button>
+          <button class="toolbar-btn" (click)="multiplePages()">📄📄 Multiple</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-label">Macros</div>
+          <button class="toolbar-btn" (click)="macros()">⚙️ Macros</button>
+        </div>
       </div>
     </div>
 
     <div class="editor-content">
-      <div class="editor-main">
+      <!-- Template Modal -->
+      <div class="template-modal" *ngIf="showTemplateModal">
+        <div class="modal-overlay" (click)="closeTemplates()"></div>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Choose a Resume Template</h2>
+            <button class="close-btn" (click)="closeTemplates()">×</button>
+          </div>
+          <div class="template-grid">
+            <div class="template-card" *ngFor="let templateName of templateNames" (click)="selectTemplate(templateName)">
+              <div class="template-preview" [ngClass]="getPreviewClass(templateName)">
+                <div class="preview-name">{{getDisplayName(templateName)}}</div>
+                <div class="preview-line" *ngIf="templateName.includes('professional') || templateName.includes('corporate')"></div>
+                <div class="thin-line" *ngIf="templateName.includes('minimal') || templateName.includes('elegant')"></div>
+                <div class="circle" *ngIf="templateName.includes('creative') || templateName.includes('artist')"></div>
+                <div class="sidebar" *ngIf="templateName.includes('modern') || templateName.includes('tech')"></div>
+              </div>
+              <p>{{getDisplayName(templateName)}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="ruler" *ngIf="showRuler">
+        <div class="ruler-marks">
+          <span *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]">{{ i }}</span>
+        </div>
+      </div>
+      
+      <div class="editor-wrapper">
+        <div class="editor-main">
         <div id="editor" contenteditable="true" class="document-editor">
           
         </div>
       </div>
 
-      <div class="saved-docs" *ngIf="savedDocs.length > 0">
+        <div class="saved-docs" *ngIf="savedDocs.length > 0">
         <h3>📄 Saved Documents</h3>
         <div class="doc-list">
           <div class="doc-item" *ngFor="let doc of savedDocs">
@@ -226,6 +734,7 @@
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   </div>

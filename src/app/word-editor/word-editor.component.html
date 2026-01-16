@@ -11,6 +11,7 @@
       <div class="toolbar-group">
         <label>File</label>
         <button class="save-btn" (click)="saveResume()">💾 Save</button>
+        <button class="template-btn" (click)="showTemplates()">📋 Templates</button>
         <button class="download-btn" (click)="downloadResume()">📄 Download</button>
       </div>
       <div class="toolbar-group">
@@ -87,57 +88,104 @@
   </div>
 
   <div class="document-area" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-    <div class="page" contenteditable="true">
-      <div class="resume-header">
-        <div class="photo-section">
-          <div class="photo-placeholder" 
-               (click)="triggerFileInput()" 
-               draggable="true"
-               (dragstart)="onDragStart($event)"
-               (dragend)="onDragEnd($event)"
-               [style.position]="'absolute'"
-               [style.left.px]="photoPosition.x"
-               [style.top.px]="photoPosition.y"
-               [style.z-index]="'10'">
-            <img *ngIf="photoUrl" [src]="photoUrl" alt="Profile Photo" class="profile-photo">
-            <div *ngIf="!photoUrl" class="photo-upload-text">
-              📷 Click to add photo
+    <!-- Template Selection Modal -->
+    <div class="template-modal" *ngIf="showTemplateModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Choose a Resume Template</h2>
+          <button class="close-btn" (click)="closeTemplates()">×</button>
+        </div>
+        <div class="template-grid">
+          <div class="template-card" (click)="selectTemplate('professional')">
+            <div class="template-preview professional-preview">
+              <div class="preview-header">YOUR NAME</div>
+              <div class="preview-line"></div>
+              <div class="preview-text"></div>
             </div>
-            <button *ngIf="photoUrl" class="delete-photo-btn" (click)="deletePhoto($event)" title="Delete Photo">×</button>
+            <p>Professional</p>
           </div>
-          <input #fileInput type="file" accept="image/*" (change)="onPhotoSelect($event)" style="display: none;">
-        </div>
-        <div class="header-text">
-          <h1 contenteditable="true">[Your Name]</h1>
-          <div class="contact-info">
-            <span contenteditable="true">📧 [email]</span> |
-            <span contenteditable="true">📱 [phone]</span>
+          <div class="template-card" (click)="selectTemplate('modern')">
+            <div class="template-preview modern-preview">
+              <div class="preview-sidebar"></div>
+              <div class="preview-content">
+                <div class="preview-header">NAME</div>
+                <div class="preview-text"></div>
+              </div>
+            </div>
+            <p>Modern</p>
+          </div>
+          <div class="template-card" (click)="selectTemplate('creative')">
+            <div class="template-preview creative-preview">
+              <div class="preview-circle"></div>
+              <div class="preview-header">YOUR NAME</div>
+              <div class="preview-text"></div>
+            </div>
+            <p>Creative</p>
+          </div>
+          <div class="template-card" (click)="selectTemplate('minimal')">
+            <div class="template-preview minimal-preview">
+              <div class="preview-header">Name</div>
+              <div class="preview-line-thin"></div>
+              <div class="preview-text"></div>
+            </div>
+            <p>Minimal</p>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="section">
-        <h2>OBJECTIVE</h2>
-        <p contenteditable="true">[Your career objective]</p>
+    <div class="page" contenteditable="true">
+      <div class="resume-header" style="text-align: center; margin-bottom: 20px;">
+        <h1 style="margin: 0; font-size: 28px; color: #2c3e50;" contenteditable="true">YOUR NAME</h1>
+        <div class="contact-info" style="margin-top: 10px; font-size: 14px; color: #555;">
+          <span contenteditable="true">📧 your.email@example.com</span> | 
+          <span contenteditable="true">📱 +91 1234567890</span> | 
+          <span contenteditable="true">📍 City, State</span>
+        </div>
       </div>
 
-      <div class="section">
-        <h2>EDUCATION</h2>
-        <p contenteditable="true">[Degree] - [College] ([Year])</p>
+      <div class="section" style="margin-bottom: 20px;">
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50;">PROFESSIONAL SUMMARY</h2>
+        <p contenteditable="true" style="margin-top: 10px; line-height: 1.6;">Experienced professional with expertise in [your field]. Proven track record of [key achievements]. Seeking to leverage skills in [target role].</p>
       </div>
 
-      <div class="section">
-        <h2>SKILLS</h2>
-        <ul>
-          <li contenteditable="true">Angular CLI 20.1.0</li>
-          <li contenteditable="true">JavaScript/TypeScript</li>
+      <div class="section" style="margin-bottom: 20px;">
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50;">WORK EXPERIENCE</h2>
+        <div style="margin-top: 10px;">
+          <h3 contenteditable="true" style="margin: 10px 0 5px 0;">Job Title - Company Name</h3>
+          <p contenteditable="true" style="font-style: italic; color: #666; margin: 0;">Month Year - Present</p>
+          <ul style="margin-top: 5px; line-height: 1.6;">
+            <li contenteditable="true">Achievement or responsibility 1</li>
+            <li contenteditable="true">Achievement or responsibility 2</li>
+            <li contenteditable="true">Achievement or responsibility 3</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section" style="margin-bottom: 20px;">
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50;">EDUCATION</h2>
+        <div style="margin-top: 10px;">
+          <h3 contenteditable="true" style="margin: 10px 0 5px 0;">Degree Name - University Name</h3>
+          <p contenteditable="true" style="font-style: italic; color: #666; margin: 0;">Graduation Year | CGPA/Percentage</p>
+        </div>
+      </div>
+
+      <div class="section" style="margin-bottom: 20px;">
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50;">SKILLS</h2>
+        <ul style="margin-top: 10px; line-height: 1.6; display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+          <li contenteditable="true">Technical Skill 1</li>
+          <li contenteditable="true">Technical Skill 2</li>
+          <li contenteditable="true">Technical Skill 3</li>
+          <li contenteditable="true">Technical Skill 4</li>
         </ul>
       </div>
 
-      <div class="section">
-        <h2>PROJECTS</h2>
-        <h3 contenteditable="true">YourProjectName</h3>
-        <p contenteditable="true">Developed a web application using Angular CLI</p>
+      <div class="section" style="margin-bottom: 20px;">
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50;">PROJECTS</h2>
+        <div style="margin-top: 10px;">
+          <h3 contenteditable="true" style="margin: 10px 0 5px 0;">Project Name</h3>
+          <p contenteditable="true" style="line-height: 1.6;">Brief description of the project, technologies used, and your role in it.</p>
+        </div>
       </div>
 
       <div id="dynamic-sections"></div>
