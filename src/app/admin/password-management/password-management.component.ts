@@ -147,28 +147,50 @@ Admin Team`
     });
   }
 
-  loadPasswordRequests() {
-    this.passwordRequests = [
-      {
-        id: 1,
-        userId: 1,
-        userName: 'राहुल शर्मा',
-        userEmail: 'rahul@email.com',
-        requestDate: new Date('2024-01-15'),
-        status: 'pending' as 'pending',
-        resetToken: 'abc123'
-      },
-      {
-        id: 2,
-        userId: 2,
-        userName: 'प्रिया पटेल',
-        userEmail: 'priya@email.com',
-        requestDate: new Date('2024-01-14'),
-        status: 'completed' as 'completed'
+  async loadPasswordRequests() {
+    try {
+      // Load password reset requests from Supabase
+      const result = await this.supabaseService.getPasswordResetRequests();
+      
+      if (result.data && result.data.length > 0) {
+        this.passwordRequests = result.data.map((request: any) => ({
+          id: request.id,
+          userId: request.id,
+          userName: request.username || request.email.split('@')[0],
+          userEmail: request.email,
+          requestDate: new Date(request.requested_at),
+          status: 'pending' as 'pending',
+          resetToken: undefined
+        }));
+      } else {
+        // Fallback to demo data if no requests found
+        this.passwordRequests = [
+          {
+            id: 1,
+            userId: 1,
+            userName: 'राहुल शर्मा',
+            userEmail: 'rahul@email.com',
+            requestDate: new Date('2024-01-15'),
+            status: 'pending' as 'pending',
+            resetToken: 'abc123'
+          },
+          {
+            id: 2,
+            userId: 2,
+            userName: 'प्रिया पटेल',
+            userEmail: 'priya@email.com',
+            requestDate: new Date('2024-01-14'),
+            status: 'completed' as 'completed'
+          }
+        ].filter(request => 
+          this.users.some(user => user.email === request.userEmail)
+        );
       }
-    ].filter(request => 
-      this.users.some(user => user.email === request.userEmail)
-    );
+    } catch (error) {
+      console.error('Error loading password requests:', error);
+      // Use demo data on error
+      this.passwordRequests = [];
+    }
   }
 
   openResetModal(userId?: number) {
@@ -198,6 +220,29 @@ Admin Team`
     }
 
     try {
+      // First try to send Supabase password reset email
+      const resetResult = await this.supabaseService.adminResetPassword(
+        this.resetForm.email, 
+        this.resetForm.newPassword
+      );
+      
+      if (resetResult.success) {
+        alert(`✅ Password reset email sent to ${this.resetForm.email}\n\nThe user will receive an email with a reset link.`);
+        
+        // Update request status
+        const request = this.passwordRequests.find(r => r.userEmail === this.resetForm.email && r.status === 'pending');
+        if (request) {
+          request.status = 'completed';
+        }
+        
+        // Log the password reset request
+        await this.supabaseService.logPasswordChangeActivity(this.resetForm.email, 'admin_reset', 'admin@example.com');
+        
+        this.closeResetModal();
+        return;
+      }
+      
+      // Fallback to direct password update
       const result = await this.supabaseService.updateUserPasswordByEmail(
         this.resetForm.email, 
         this.resetForm.newPassword
@@ -210,6 +255,9 @@ Admin Team`
         if (request) {
           request.status = 'completed';
         }
+        
+        // Log the password change
+        await this.supabaseService.logPasswordChangeActivity(this.resetForm.email, 'admin_reset', 'admin@example.com');
       } else {
         alert(`❌ Error: ${result.error}`);
       }
@@ -223,23 +271,45 @@ Admin Team`
 
   async sendResetLink(email: string) {
     try {
+      // First try to send Supabase password reset email
+      const resetResult = await this.supabaseService.adminResetPassword(email, '');
+      
+      if (resetResult.success) {
+        alert(`✅ Password reset email sent to ${email}\n\nThe user will receive an email with a reset link.`);
+        
+        // Update the request status
+        const request = this.passwordRequests.find(r => r.userEmail === email && r.status === 'pending');
+        if (request) {
+          request.status = 'completed';
+        }
+        
+        // Log the password reset request
+        await this.supabaseService.logPasswordChangeActivity(email, 'admin_reset', 'admin@example.com');
+        
+        return;
+      }
+      
+      // Fallback to temporary password method
       const tempPassword = this.generateRandomPassword();
       const result = await this.supabaseService.updateUserPasswordByEmail(email, tempPassword);
       
       if (result.success) {
-        alert(`✅ Password reset for ${email}:\n\nNew Password: ${tempPassword}`);
+        alert(`✅ Password reset for ${email}:\n\nNew Temporary Password: ${tempPassword}\n\nNote: User should change this password after login.`);
         
         const request = this.passwordRequests.find(r => r.userEmail === email && r.status === 'pending');
         if (request) {
           request.resetToken = tempPassword;
           request.status = 'completed';
         }
+        
+        // Log the password change
+        await this.supabaseService.logPasswordChangeActivity(email, 'admin_reset', 'admin@example.com');
       } else {
         alert(`❌ Error: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error generating temp password:', error);
-      alert('❌ Failed to generate temporary password');
+      console.error('Error sending reset link:', error);
+      alert('❌ Failed to send password reset');
     }
   }
 

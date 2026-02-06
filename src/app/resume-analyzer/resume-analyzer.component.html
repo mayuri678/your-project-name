@@ -1,0 +1,23 @@
+<div class="resume-analyzer">
+  <div class="input-section">
+    <textarea 
+      [(ngModel)]="resumeText" 
+      placeholder="Paste your resume text here..."
+      rows="10"
+      class="resume-input">
+    </textarea>
+    <button (click)="analyzeResume()" class="analyze-btn">Analyze Resume</button>
+  </div>
+
+  <div class="results-section" *ngIf="analysisResult">
+    <div class="score">
+      Resume Score: {{analysisResult.score}}/10
+    </div>
+    <div class="suggestions">
+      <h3>Suggestions:</h3>
+      <ul>
+        <li *ngFor="let suggestion of analysisResult.suggestions">{{suggestion}}</li>
+      </ul>
+    </div>
+  </div>
+</div>

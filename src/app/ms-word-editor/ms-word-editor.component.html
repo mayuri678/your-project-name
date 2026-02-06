@@ -9,10 +9,8 @@
   <div class="ribbon">
     <div class="tabs">
       <div class="file-tab" (click)="toggleFileMenu()">File</div>
-      <div class="tab active">Home</div>
-      <div class="tab">Insert</div>
-      <div class="tab">Layout</div>
-      <div class="tab">View</div>
+      <div class="tab" [class.active]="activeTab === 'home'" (click)="setActiveTab('home')">Home</div>
+      <div class="tab" [class.active]="activeTab === 'insert'" (click)="setActiveTab('insert')">Insert</div>
     </div>
     
     <!-- File Menu Dropdown -->
@@ -24,14 +22,21 @@
           <div class="menu-desc">Choose from resume templates</div>
         </div>
       </div>
-      <div class="file-menu-item">
+      <div class="file-menu-item" (click)="showTranslateDialog()">
+        <span class="icon">🌐</span>
+        <div>
+          <div class="menu-title">Translate</div>
+          <div class="menu-desc">Translate resume to another language</div>
+        </div>
+      </div>
+      <div class="file-menu-item" (click)="saveDocument()">
         <span class="icon">💾</span>
         <div>
           <div class="menu-title">Save</div>
           <div class="menu-desc">Save your document</div>
         </div>
       </div>
-      <div class="file-menu-item">
+      <div class="file-menu-item" (click)="downloadPDF()">
         <span class="icon">📥</span>
         <div>
           <div class="menu-title">Download</div>
@@ -41,36 +46,143 @@
     </div>
     
     <div class="toolbar">
-      <div class="group">
-        <button class="paste-btn">📋<br>Paste</button>
-        <div class="small-btns">
-          <button>✂️ Cut</button>
-          <button>📄 Copy</button>
+      <!-- Home Tab Content -->
+      <div *ngIf="activeTab === 'home'">
+        <div class="group">
+          <button class="paste-btn" (click)="paste()">📋<br>Paste</button>
+          <div class="small-btns">
+            <button (click)="cut()">✂️ Cut</button>
+            <button (click)="copy()">📄 Copy</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <select class="font-select" (change)="changeFont($event.target.value)">
+            <option value="Calibri">Calibri (Body)</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+          <select class="size-select" (change)="changeFontSize(+$event.target.value)">
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11" selected>11</option>
+            <option value="12">12</option>
+            <option value="14">14</option>
+            <option value="16">16</option>
+            <option value="18">18</option>
+            <option value="20">20</option>
+            <option value="24">24</option>
+            <option value="28">28</option>
+            <option value="36">36</option>
+          </select>
+          <div class="format-btns">
+            <button (click)="formatPainter()" title="Format Painter">🖌️</button>
+            <button (click)="execCmd('bold')"><b>B</b></button>
+            <button (click)="execCmd('italic')"><i>I</i></button>
+            <button (click)="execCmd('underline')"><u>U</u></button>
+            <button (click)="execCmd('strikethrough')"><s>S</s></button>
+            <button (click)="textShading()" title="Text Shading">🎨</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="styles">
+            <div class="style-item" *ngFor="let style of styles" (click)="applyStyle(style)">
+              <span [ngStyle]="style.css">{{style.name}}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="alignment-btns">
+            <button (click)="execCmd('justifyLeft')" title="Align Left">⬅️</button>
+            <button (click)="execCmd('justifyCenter')" title="Center">↔️</button>
+            <button (click)="execCmd('justifyRight')" title="Align Right">➡️</button>
+            <button (click)="execCmd('justifyFull')" title="Justify">⬌</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="list-btns">
+            <button (click)="execCmd('insertUnorderedList')" title="Bullet List">• Bullets</button>
+            <button (click)="execCmd('insertOrderedList')" title="Numbered List">1. Numbering</button>
+            <button (click)="execCmd('outdent')" title="Decrease Indent">⬅ Decrease</button>
+            <button (click)="execCmd('indent')" title="Increase Indent">➡ Increase</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="undo-redo-btns">
+            <button (click)="undo()" title="Undo">↶ Undo</button>
+            <button (click)="redo()" title="Redo">↷ Redo</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <button class="translate-btn" (click)="showTranslateDialog()" title="Translate Resume">
+            🌐<br>Translate
+          </button>
         </div>
       </div>
-      
-      <div class="group">
-        <select class="font-select">
-          <option>Calibri (Body)</option>
-          <option>Arial</option>
-          <option>Times New Roman</option>
-        </select>
-        <select class="size-select">
-          <option>11</option>
-          <option>12</option>
-          <option>14</option>
-        </select>
-        <div class="format-btns">
-          <button (click)="execCmd('bold')"><b>B</b></button>
-          <button (click)="execCmd('italic')"><i>I</i></button>
-          <button (click)="execCmd('underline')"><u>U</u></button>
+
+      <!-- Insert Tab Content -->
+      <div *ngIf="activeTab === 'insert'" class="insert-toolbar">
+        <div class="group">
+          <div class="pages-group">
+            <button (click)="insertCoverPage()" title="Cover Page">📑 Cover Page</button>
+            <button (click)="insertBlankPage()" title="Blank Page">📄 Blank Page</button>
+            <button (click)="insertPageBreak()" title="Page Break">📄 Page Break</button>
+          </div>
         </div>
-      </div>
-      
-      <div class="group">
-        <div class="styles">
-          <div class="style-item" *ngFor="let style of styles" (click)="applyStyle(style)">
-            <span [ngStyle]="style.css">{{style.name}}</span>
+        
+        <div class="group">
+          <div class="tables-group">
+            <button (click)="insertTable()" title="Table">📊 Table</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="illustrations-group">
+            <button (click)="insertPicture()" title="Pictures">🖼️ Pictures</button>
+            <button (click)="insertShapes()" title="Shapes">⬜ Shapes</button>
+            <button (click)="insertIcons()" title="Icons">⭐ Icons</button>
+            <button (click)="insertChart()" title="Chart">📊 Chart</button>
+            <button (click)="insertSmartArt()" title="SmartArt">🎨 SmartArt</button>
+            <button (click)="insertScreenshot()" title="Screenshot">📸 Screenshot</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="symbols-group">
+            <button (click)="insertEquation()" title="Equation">∑ Equation</button>
+            <button (click)="insertSymbol()" title="Symbol">Ω Symbol</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="media-group">
+            <button (click)="insertLine()" title="Line">➖ Line</button>
+            <button (click)="insertLink()" title="Link">🔗 Link</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="header-footer-group">
+            <button (click)="insertHeader()" title="Header">📄 Header</button>
+            <button (click)="insertPageNumber()" title="Page Number">🔢 Page Number</button>
+          </div>
+        </div>
+        
+        <div class="group">
+          <div class="text-group">
+            <button (click)="insertTextBox()" title="Text Box">📝 Text Box</button>
+            <button (click)="insertDropCap()" title="Drop Cap">🅰️ Drop Cap</button>
+            <button (click)="insertWordArt()" title="WordArt">🎨 WordArt</button>
+            <button (click)="insertSignature()" title="Signature">✍️ Signature</button>
+            <button (click)="insertDate()" title="Date">📅 Date</button>
           </div>
         </div>
       </div>
@@ -108,16 +220,16 @@
           </div>
           <div class="template-card" (click)="selectTemplate('creative')">
             <div class="template-preview creative">
-              <div class="circle"></div>
-              <div class="preview-name">NAME</div>
+              <div class="creative-circle"></div>
+              <div class="preview-text"></div>
               <div class="preview-text"></div>
             </div>
             <p>Creative</p>
           </div>
           <div class="template-card" (click)="selectTemplate('minimal')">
             <div class="template-preview minimal">
-              <div class="preview-name">Name</div>
-              <div class="thin-line"></div>
+              <div class="preview-name">NAME</div>
+              <div class="preview-line thin"></div>
               <div class="preview-text"></div>
             </div>
             <p>Minimal</p>
@@ -125,18 +237,80 @@
         </div>
       </div>
     </div>
-    <div class="ruler"></div>
+
+    <!-- Translation Modal -->
+    <div class="translate-modal" *ngIf="showTranslateModal">
+      <div class="modal-overlay" (click)="closeTranslateDialog()"></div>
+      <div class="modal-content translate-content">
+        <div class="modal-header">
+          <h2>🌐 Translate Resume</h2>
+          <button class="close-btn" (click)="closeTranslateDialog()">×</button>
+        </div>
+        <div class="translate-body">
+          <div class="language-selection">
+            <label for="targetLang">Target Language:</label>
+            <select id="targetLang" [(ngModel)]="targetLanguage" class="language-select">
+              <option value="Spanish">Spanish (Español)</option>
+              <option value="French">French (Français)</option>
+              <option value="German">German (Deutsch)</option>
+              <option value="Marathi">Marathi (मराठी)</option>
+              <option value="Chinese">Chinese (中文)</option>
+            </select>
+          </div>
+          
+          <div class="content-preview">
+            <div class="original-content">
+              <h3>Original Content:</h3>
+              <div class="content-box">{{resumeContent}}</div>
+            </div>
+            
+            <div class="translated-content" *ngIf="translatedContent">
+              <h3>Translated Content:</h3>
+              <div class="content-box">{{translatedContent}}</div>
+            </div>
+          </div>
+          
+          <div class="translate-actions">
+            <button class="btn-primary" (click)="translateResume()" [disabled]="isTranslating">
+              {{isTranslating ? '🔄 Translating...' : '🔄 Translate'}}
+            </button>
+            <button class="btn-success" (click)="applyTranslation()" *ngIf="translatedContent">✅ Apply Translation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="page-container">
-      <div class="page" contenteditable="true">
-        <p>Type your document here...</p>
+      <div class="page" contenteditable="true" [style.transform]="'scale(' + zoomLevel/100 + ')'">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="margin: 0; font-size: 28px; color: #2c3e50;">YOUR NAME</h1>
+          <p style="margin: 5px 0; color: #555;">📧 email@example.com | 📱 +91 1234567890 | 📍 City, State</p>
+        </div>
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50;">PROFESSIONAL SUMMARY</h2>
+        <p>Experienced professional with expertise in [your field]. Click here to edit.</p>
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50; margin-top: 20px;">WORK EXPERIENCE</h2>
+        <h3 style="margin: 10px 0 5px;">Job Title - Company Name</h3>
+        <p style="font-style: italic; color: #666;">Month Year - Present</p>
+        <ul>
+          <li>Achievement 1</li>
+          <li>Achievement 2</li>
+        </ul>
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50; margin-top: 20px;">EDUCATION</h2>
+        <h3 style="margin: 10px 0 5px;">Degree - University Name</h3>
+        <p style="font-style: italic; color: #666;">Year</p>
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50; margin-top: 20px;">SKILLS</h2>
+        <ul>
+          <li>Skill 1</li>
+          <li>Skill 2</li>
+        </ul>
       </div>
     </div>
   </div>
   
   <div class="status-bar">
     <span>Page 1 of 1</span>
-    <div class="zoom">
-      <button (click)="zoom(-10)">−</button>
+    <div class="zoom-controls">
+      <button (click)="zoom(-10)">-</button>
       <span>{{zoomLevel}}%</span>
       <button (click)="zoom(10)">+</button>
     </div>

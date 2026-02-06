@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ResumeTemplatesService } from '../services/resume-templates.service';
+import { SupabaseService } from '../services/supabase.service';
 
 @Component({
   selector: 'app-help',
@@ -16,13 +17,24 @@ export class HelpComponent {
   editorContent = '';
   savedDocs: any[] = [];
   searchQuery = '';
-  activeTab = 'home';
+  activeTab = 'file';
   showRuler = false;
   showTemplateModal = false;
   selectedTemplate = 'professional';
+  showTranslateDropdown = false;
   templateNames: string[] = [];
+  languages = [
+    { code: 'mr', name: 'मराठी (Marathi)' },
+    { code: 'hi', name: 'हिंदी (Hindi)' },
+    { code: 'en', name: 'English' },
+    { code: 'gu', name: 'ગુજરાતી (Gujarati)' },
+    { code: 'ta', name: 'தமிழ் (Tamil)' },
+    { code: 'te', name: 'తెలుగు (Telugu)' },
+    { code: 'kn', name: 'ಕನ್ನಡ (Kannada)' },
+    { code: 'bn', name: 'বাংলা (Bengali)' }
+  ];
 
-  constructor(private router: Router, private location: Location, private templatesService: ResumeTemplatesService) {
+  constructor(private router: Router, private location: Location, private templatesService: ResumeTemplatesService, private supabaseService: SupabaseService) {
     this.loadSavedDocs();
     this.templateNames = this.templatesService.getTemplateNames();
   }
@@ -51,6 +63,247 @@ export class HelpComponent {
     document.execCommand(command, false, value);
   }
 
+  showTranslateDialog(): void {
+    this.showTranslateDropdown = !this.showTranslateDropdown;
+  }
+
+  selectLanguage(language: any): void {
+    const editor = document.getElementById('editor');
+    if (editor) {
+      // Get current template content
+      const currentTemplate = this.templatesService.getTemplate(this.selectedTemplate);
+      let translatedContent = currentTemplate;
+      
+      if (language.code === 'mr') {
+        // Translate current template to Marathi - more comprehensive
+        translatedContent = translatedContent
+          .replace(/\bExecutive\b/gi, 'कार्यकारी')
+          .replace(/\bResume\b/gi, 'बायोडेटा')
+          .replace(/\bExperienced\b/gi, 'अनुभवी')
+          .replace(/\bWith\b/gi, 'सह')
+          .replace(/\bProven\b/gi, 'सिद्ध')
+          .replace(/\bTrack\b/gi, 'ट्रॅक')
+          .replace(/\bRecord\b/gi, 'रेकॉर्ड')
+          .replace(/\bPresent\b/gi, 'सद्य')
+          .replace(/\bKey\b/gi, 'मुख्य')
+          .replace(/\bAchievement\b/gi, 'यश')
+          .replace(/\bGraduation\b/gi, 'पदवीधर')
+          .replace(/\bName\b/gi, 'नाव')
+          .replace(/\bFull Name\b/gi, 'पूर्ण नाव')
+          .replace(/\bExperience\b/gi, 'अनुभव')
+          .replace(/\bWork Experience\b/gi, 'कामाचा अनुभव')
+          .replace(/\bEducation\b/gi, 'शिक्षण')
+          .replace(/\bSkills\b/gi, 'कौशल्ये')
+          .replace(/\bTechnical Skills\b/gi, 'तांत्रिक कौशल्ये')
+          .replace(/\bAddress\b/gi, 'पत्ता')
+          .replace(/\bPhone\b/gi, 'फोन')
+          .replace(/\bMobile\b/gi, 'मोबाइल')
+          .replace(/\bEmail\b/gi, 'ईमेल')
+          .replace(/\bObjective\b/gi, 'उद्दिष्ट')
+          .replace(/\bCareer Objective\b/gi, 'करिअर उद्दिष्ट')
+          .replace(/\bSummary\b/gi, 'सारांश')
+          .replace(/\bProfessional Summary\b/gi, 'व्यावसायिक सारांश')
+          .replace(/\bWork\b/gi, 'काम')
+          .replace(/\bJob\b/gi, 'नोकरी')
+          .replace(/\bCompany\b/gi, 'कंपनी')
+          .replace(/\bProject\b/gi, 'प्रकल्प')
+          .replace(/\bProjects\b/gi, 'प्रकल्प')
+          .replace(/\bAchievements\b/gi, 'यश')
+          .replace(/\bAwards\b/gi, 'पुरस्कार')
+          .replace(/\bCertifications\b/gi, 'प्रमाणपत्रे')
+          .replace(/\bLanguages\b/gi, 'भाषा')
+          .replace(/\bHobbies\b/gi, 'छंद')
+          .replace(/\bInterests\b/gi, 'आवडी')
+          .replace(/\bReferences\b/gi, 'संदर्भ')
+          .replace(/\bContact\b/gi, 'संपर्क')
+          .replace(/\bProfile\b/gi, 'प्रोफाइल')
+          .replace(/\bAbout\b/gi, 'बद्दल')
+          .replace(/\bPersonal\b/gi, 'वैयक्तिक')
+          .replace(/\bProfessional\b/gi, 'व्यावसायिक')
+          .replace(/\bDeveloper\b/gi, 'डेव्हलपर')
+          .replace(/\bEngineer\b/gi, 'अभियंता')
+          .replace(/\bManager\b/gi, 'व्यवस्थापक')
+          .replace(/\bYour\b/gi, 'तुमचे')
+          .replace(/\bNav\b/gi, 'नाव')
+          .replace(/\bHere\b/gi, 'येथे')
+          .replace(/\bClick\b/gi, 'क्लिक')
+          .replace(/\bStart\b/gi, 'सुरू')
+          .replace(/\bTyping\b/gi, 'टाइपिंग')
+          .replace(/\bText\b/gi, 'मजकूर')
+          .replace(/\bContent\b/gi, 'आशय')
+          .replace(/\bInformation\b/gi, 'माहिती')
+          .replace(/\bDetails\b/gi, 'तपशील')
+          .replace(/\bDescription\b/gi, 'वर्णन')
+          .replace(/\bLocation\b/gi, 'ठिकाण')
+          .replace(/\bDate\b/gi, 'तारीख')
+          .replace(/\bYear\b/gi, 'वर्ष')
+          .replace(/\bMonth\b/gi, 'महिना')
+          .replace(/\bDegree\b/gi, 'पदवी')
+          .replace(/\bUniversity\b/gi, 'विद्यापीठ')
+          .replace(/\bCollege\b/gi, 'महाविद्यालय')
+          .replace(/\bSchool\b/gi, 'शाळा')
+          .replace(/\bPosition\b/gi, 'पद')
+          .replace(/\bRole\b/gi, 'भूमिका')
+          .replace(/\bTitle\b/gi, 'पदवी')
+          .replace(/\bResponsibilities\b/gi, 'जबाबदार्या')
+          .replace(/\bto\b/gi, 'ते')
+          .replace(/\bthe\b/gi, '')
+          .replace(/\band\b/gi, 'आणि')
+          .replace(/\bof\b/gi, 'चे')
+          .replace(/\bin\b/gi, 'मध्ये')
+          .replace(/\bfor\b/gi, 'साठी')
+          .replace(/\bwith\b/gi, 'सह')
+          .replace(/\bat\b/gi, 'येथे')
+          .replace(/\bis\b/gi, 'आहे')
+          .replace(/\bwas\b/gi, 'होते')
+          .replace(/\bhas\b/gi, 'आहे')
+          .replace(/\bhave\b/gi, 'आहे')
+          .replace(/\bwill\b/gi, 'होईल')
+          .replace(/\bcan\b/gi, 'करू शकतो')
+          .replace(/\bshould\b/gi, 'पाहिजे')
+          .replace(/\bmust\b/gi, 'पाहिजे')
+          .replace(/\bthis\b/gi, 'हे')
+          .replace(/\bthat\b/gi, 'ते')
+          .replace(/\bthese\b/gi, 'हे')
+          .replace(/\bthose\b/gi, 'ते')
+          .replace(/\bmy\b/gi, 'माझे')
+          .replace(/\byour\b/gi, 'तुमचे')
+          .replace(/\bhis\b/gi, 'त्याचे')
+          .replace(/\bher\b/gi, 'तिचे')
+          .replace(/\bour\b/gi, 'आमचे')
+          .replace(/\btheir\b/gi, 'त्यांचे')
+          .replace(/\bSkill\b/gi, 'कौशल्य')
+          .replace(/\bTitle\b/gi, 'पदवी')
+          .replace(/\bAchievement\b/gi, 'यश')
+          .replace(/\bJob\b/gi, 'नोकरी')
+          .replace(/\bCompany\b/gi, 'कंपनी')
+          .replace(/\bContact\b/gi, 'संपर्क')
+          .replace(/\bProfessional\b/gi, 'व्यावसायिक')
+          .replace(/\bYOUR\b/gi, 'तुमचे')
+          .replace(/\bनाम\b/gi, 'नाव')
+          .replace(/1/g, '१')
+          .replace(/2/g, '२')
+          .replace(/3/g, '३')
+          .replace(/4/g, '४')
+          .replace(/5/g, '५')
+          .replace(/6/g, '६')
+          .replace(/7/g, '७')
+          .replace(/8/g, '८')
+          .replace(/9/g, '९')
+          .replace(/0/g, '०')
+          .replace(/@/g, '@')
+          .replace(/\+/g, '+');
+      } else if (language.code === 'hi') {
+        // Translate current template to Hindi
+        translatedContent = translatedContent
+          .replace(/\bName\b/gi, 'नाम')
+          .replace(/\bFull Name\b/gi, 'पूरा नाम')
+          .replace(/\bExperience\b/gi, 'अनुभव')
+          .replace(/\bWork Experience\b/gi, 'कार्य अनुभव')
+          .replace(/\bEducation\b/gi, 'शिक्षा')
+          .replace(/\bSkills\b/gi, 'कौशल')
+          .replace(/\bTechnical Skills\b/gi, 'तकनीकी कौशल')
+          .replace(/\bAddress\b/gi, 'पता')
+          .replace(/\bPhone\b/gi, 'फोन')
+          .replace(/\bMobile\b/gi, 'मोबाइल')
+          .replace(/\bEmail\b/gi, 'ईमेल')
+          .replace(/\bObjective\b/gi, 'उद्देश्य')
+          .replace(/\bCareer Objective\b/gi, 'करियर उद्देश्य')
+          .replace(/\bSummary\b/gi, 'सारांश')
+          .replace(/\bProfessional Summary\b/gi, 'व्यावसायिक सारांश')
+          .replace(/\bWork\b/gi, 'काम')
+          .replace(/\bJob\b/gi, 'नौकरी')
+          .replace(/\bCompany\b/gi, 'कंपनी')
+          .replace(/\bProject\b/gi, 'परियोजना')
+          .replace(/\bProjects\b/gi, 'परियोजनाएं')
+          .replace(/\bAchievements\b/gi, 'उपलब्धियां')
+          .replace(/\bAwards\b/gi, 'पुरस्कार')
+          .replace(/\bCertifications\b/gi, 'प्रमाणपत्र')
+          .replace(/\bLanguages\b/gi, 'भाषाएं')
+          .replace(/\bHobbies\b/gi, 'शौक')
+          .replace(/\bInterests\b/gi, 'रुचियां')
+          .replace(/\bReferences\b/gi, 'संदर्भ')
+          .replace(/\bContact\b/gi, 'संपर्क')
+          .replace(/\bProfile\b/gi, 'प्रोफाइल')
+          .replace(/\bAbout\b/gi, 'के बारे में')
+          .replace(/\bPersonal\b/gi, 'व्यक्तिगत')
+          .replace(/\bProfessional\b/gi, 'व्यावसायिक')
+          .replace(/\bDeveloper\b/gi, 'डेवलपर')
+          .replace(/\bEngineer\b/gi, 'इंजीनियर')
+          .replace(/\bManager\b/gi, 'प्रबंधक')
+      } else if (language.code === 'gu') {
+        // Translate to Gujarati
+        translatedContent = translatedContent
+          .replace(/\bName\b/gi, 'નામ')
+          .replace(/\bExperience\b/gi, 'અનુભવ')
+          .replace(/\bEducation\b/gi, 'શિક્ષણ')
+          .replace(/\bSkills\b/gi, 'કુશળતા')
+          .replace(/\bAddress\b/gi, 'સરનામું')
+          .replace(/\bPhone\b/gi, 'ફોન')
+          .replace(/\bEmail\b/gi, 'ઈમેલ')
+          .replace(/\bObjective\b/gi, 'ઉદ્દેશ્ય')
+          .replace(/\bWork\b/gi, 'કામ')
+          .replace(/\bCompany\b/gi, 'કંપની');
+      } else if (language.code === 'ta') {
+        // Translate to Tamil
+        translatedContent = translatedContent
+          .replace(/\bName\b/gi, 'பெயர்')
+          .replace(/\bExperience\b/gi, 'அனுபவம்')
+          .replace(/\bEducation\b/gi, 'கல்வி')
+          .replace(/\bSkills\b/gi, 'திறன்கள்')
+          .replace(/\bAddress\b/gi, 'முகவரி')
+          .replace(/\bPhone\b/gi, 'தொலைபேசி')
+          .replace(/\bEmail\b/gi, 'மின்னஞ்சல்')
+          .replace(/\bObjective\b/gi, 'நோக்கம்')
+          .replace(/\bWork\b/gi, 'வேலை')
+          .replace(/\bCompany\b/gi, 'நிறுவனம்');
+      } else if (language.code === 'te') {
+        // Translate to Telugu
+        translatedContent = translatedContent
+          .replace(/\bName\b/gi, 'పేరు')
+          .replace(/\bExperience\b/gi, 'అనుభవం')
+          .replace(/\bEducation\b/gi, 'విద్య')
+          .replace(/\bSkills\b/gi, 'నైపుణ్యాలు')
+          .replace(/\bAddress\b/gi, 'చిరునామా')
+          .replace(/\bPhone\b/gi, 'ఫోన్')
+          .replace(/\bEmail\b/gi, 'ఇమెయిల్')
+          .replace(/\bObjective\b/gi, 'లక్ష్యం')
+          .replace(/\bWork\b/gi, 'పని')
+          .replace(/\bCompany\b/gi, 'కంపెనీ');
+      } else if (language.code === 'kn') {
+        // Translate to Kannada
+        translatedContent = translatedContent
+          .replace(/\bName\b/gi, 'ಹೆಸರು')
+          .replace(/\bExperience\b/gi, 'ಅನುಭವ')
+          .replace(/\bEducation\b/gi, 'ಶಿಕ್ಷಣ')
+          .replace(/\bSkills\b/gi, 'ಕೌಶಲ್ಯಗಳು')
+          .replace(/\bAddress\b/gi, 'ವಿಳಾಸ')
+          .replace(/\bPhone\b/gi, 'ಫೋನ್')
+          .replace(/\bEmail\b/gi, 'ಇಮೇಲ್')
+          .replace(/\bObjective\b/gi, 'ಉದ್ದೇಶ')
+          .replace(/\bWork\b/gi, 'ಕೆಲಸ')
+          .replace(/\bCompany\b/gi, 'ಕಂಪನಿ');
+      } else if (language.code === 'bn') {
+        // Translate to Bengali
+        translatedContent = translatedContent
+          .replace(/\bName\b/gi, 'নাম')
+          .replace(/\bExperience\b/gi, 'অভিজ্ঞতা')
+          .replace(/\bEducation\b/gi, 'শিক্ষা')
+          .replace(/\bSkills\b/gi, 'দক্ষতা')
+          .replace(/\bAddress\b/gi, 'ঠিকানা')
+          .replace(/\bPhone\b/gi, 'ফোন')
+          .replace(/\bEmail\b/gi, 'ইমেইল')
+          .replace(/\bObjective\b/gi, 'উদ্দেশ্য')
+          .replace(/\bWork\b/gi, 'কাজ')
+          .replace(/\bCompany\b/gi, 'কোম্পানি');
+      }
+      
+      editor.innerHTML = translatedContent;
+      alert(`🌐 Template translated to ${language.name}`);
+    }
+    this.showTranslateDropdown = false;
+  }
+
   saveDocument(): void {
     const title = prompt('Enter document title:') || 'Untitled';
     const content = document.getElementById('editor')?.innerHTML || '';
@@ -60,21 +313,44 @@ export class HelpComponent {
       return;
     }
     
-    // Check if editing existing template
+    // Save to backend using SupabaseService
+    const templateData = {
+      content: {
+        name: title,
+        html: content
+      },
+      templateId: this.selectedTemplate
+    };
+    
+    this.supabaseService.saveTemplate(templateData).then(result => {
+      if (result.error) {
+        console.error('Error saving to backend:', result.error);
+        // Fallback to localStorage if backend fails
+        this.saveToLocalStorage(title, content);
+        alert('Template saved locally (backend unavailable)');
+      } else {
+        console.log('Template saved to backend:', result.data);
+        alert('Template saved to backend successfully!');
+      }
+    }).catch(error => {
+      console.error('Exception saving to backend:', error);
+      // Fallback to localStorage
+      this.saveToLocalStorage(title, content);
+      alert('Template saved locally (backend error)');
+    });
+  }
+  
+  private saveToLocalStorage(title: string, content: string): void {
     const savedTemplates = JSON.parse(localStorage.getItem('myTemplates') || '[]');
     const existingIndex = savedTemplates.findIndex((t: any) => t.name === this.selectedTemplate);
     
     if (existingIndex !== -1) {
-      // Update existing template
       savedTemplates[existingIndex] = {
         ...savedTemplates[existingIndex],
         content: content,
         updatedAt: new Date().toISOString()
       };
-      localStorage.setItem('myTemplates', JSON.stringify(savedTemplates));
-      alert('Template updated successfully!');
     } else {
-      // Save as new template
       const doc = {
         id: Date.now(),
         title,
@@ -91,14 +367,11 @@ export class HelpComponent {
         createdAt: new Date().toISOString()
       };
       savedTemplates.push(doc);
-      localStorage.setItem('myTemplates', JSON.stringify(savedTemplates));
-      
-      // Also save to helpDocs for backward compatibility
-      this.savedDocs.push(doc);
-      localStorage.setItem('helpDocs', JSON.stringify(this.savedDocs));
-      
-      alert('Document saved successfully!');
     }
+    
+    localStorage.setItem('myTemplates', JSON.stringify(savedTemplates));
+    this.savedDocs.push({ id: Date.now(), title, content, lastModified: new Date().toLocaleDateString() });
+    localStorage.setItem('helpDocs', JSON.stringify(this.savedDocs));
   }
 
   loadDocument(doc: any): void {

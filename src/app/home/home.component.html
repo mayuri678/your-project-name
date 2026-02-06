@@ -22,7 +22,7 @@
           </p>
 
           <div class="resume-actions">
-            <button type="button" class="cta-btn primary" (click)="getGoogleTemplates()">
+            <button type="button" class="cta-btn primary" (click)="openResumeOptions()">
               <span class="btn-icon">📄</span>
               Create Resume
             </button>
@@ -148,7 +148,7 @@
       </div>
 
       <!-- MS Word Editor Card -->
-      <div class="resume-option-card" (click)="openMsWordEditor()">
+      <div class="resume-option-card">
         <div class="option-icon">📝</div>
         <h3>MS Word Editor</h3>
         <p>Minimal Microsoft Word-like editor with authentic styling and A4 layout</p>
@@ -159,7 +159,7 @@
           <span class="feature-badge">✓ Rich Text</span>
         </div>
 
-        <button class="option-btn primary-option" (click)="openMsWordEditor(); $event.stopPropagation()">
+        <button class="option-btn primary-option" (click)="openMsWordEditor()">
           🚀 Open MS Editor
         </button>
       </div>

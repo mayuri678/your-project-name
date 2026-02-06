@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { AuthService } from '../auth.service'; // Use AuthService for simple auth
-import { SupabaseService } from '../services/supabase.service'; // Also support Supabase
+import { AuthService } from '../auth.service';
+import { SupabaseAuthService } from '../services/supabase-auth.service';
+import { EmailService } from '../services/email.service';
+import { SimpleEmailService } from '../services/simple-email.service';
 
 @Component({
   selector: 'app-login',
@@ -22,254 +24,141 @@ export class LoginComponent {
   successMessage: string = '';
   isRegisterMode: boolean = false;
   isForgotPasswordMode: boolean = false;
+  showForgotPopup: boolean = false;
+  forgotEmail: string = '';
+  otpSent: boolean = false;
+  isLoading: boolean = false;
 
   // 👉 popup बंद करण्यासाठी event emitter
   @Output() close = new EventEmitter<void>();
 
   constructor(
-    private authService: AuthService, // Simple auth service (admin/admin)
-    private supabaseService: SupabaseService, // Supabase service for real users
+    private authService: AuthService,
+    private supabaseAuthService: SupabaseAuthService,
+    private emailService: EmailService,
+    private simpleEmailService: SimpleEmailService,
     private router: Router,
     private location: Location
   ) {
   }
 
-  // 🔹 Register new user - registers in both AuthService and Supabase
+  // 🔹 Register new user - registers directly in AuthService
   async onRegister(): Promise<void> {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (this.email.trim() && this.password.trim()) {
-      const emailTrimmed = this.email.trim();
-      const passwordTrimmed = this.password.trim();
-      const nameTrimmed = this.name.trim() || (emailTrimmed.includes('@') ? emailTrimmed.split('@')[0] : emailTrimmed);
-
-      // Try to register in Supabase first
-      try {
-        const { data, error } = await this.supabaseService.signUp(emailTrimmed, passwordTrimmed);
-
-        if (error) {
-          console.error('Supabase signup error:', error);
-          
-          // Handle specific error cases
-          if (error.message) {
-            if (error.message.includes('User already registered') || error.message.includes('already registered')) {
-              this.errorMessage = 'This email is already registered. Please login instead.';
-            } else if (error.message.includes('Password') || error.message.includes('password')) {
-              this.errorMessage = 'Password is too weak. Please use a stronger password (at least 6 characters).';
-            } else if (error.message.includes('For security purposes') || error.message.includes('only request this after')) {
-              // Rate limiting error
-              const match = error.message.match(/(\d+)\s+seconds/);
-              const seconds = match ? match[1] : '60';
-              this.errorMessage = `Too many registration attempts. Please wait ${seconds} seconds before trying again.`;
-            } else if (error.message.includes('Database error') || error.message.includes('database error')) {
-              this.errorMessage = 'Database configuration error. The users table trigger may need to be fixed. Please contact support or check Supabase dashboard.';
-              console.error('Database error details:', error);
-            } else if (error.status === 500) {
-              this.errorMessage = 'Server error during registration. This might be a database configuration issue. Please try again later or contact support.';
-            } else if (error.status === 429) {
-              const match = error.message.match(/(\d+)\s+seconds/);
-              const seconds = match ? match[1] : '60';
-              this.errorMessage = `Too many requests. Please wait ${seconds} seconds before trying again.`;
-            } else {
-              this.errorMessage = error.message || 'Registration failed. Please try again.';
-            }
-          } else {
-            // Check error status
-            if (error.status === 500) {
-              this.errorMessage = 'Server error during registration. Please check your Supabase database configuration.';
-            } else if (error.status === 429) {
-              this.errorMessage = 'Too many registration attempts. Please wait 60 seconds before trying again.';
-            } else {
-              this.errorMessage = 'Registration failed. Please try again.';
-            }
-          }
-          return;
-        }
-
-        // Also register in local AuthService for backward compatibility
-        this.authService.register(emailTrimmed, passwordTrimmed, nameTrimmed);
-
-        // Check if email confirmation is required
-        if (data.user && !data.session) {
-          this.successMessage = 'Registration successful! Please check your email to confirm your account before logging in.';
-          // Don't switch to login mode if email confirmation is required
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 5000);
-        } else if (data.user && data.session) {
-          // User is automatically logged in
-          this.successMessage = 'Registration successful! You are now logged in.';
-          setTimeout(() => {
-            this.close.emit();
-            this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-              this.router.navigate(['/loading'], { replaceUrl: true });
-            });
-          }, 1500);
-        } else {
-          this.successMessage = 'Registration successful! You can now login.';
-          // Switch to login mode after 2 seconds
-        setTimeout(() => {
-          this.isRegisterMode = false;
-          this.successMessage = '';
-            // Pre-fill email for easy login
-            this.email = emailTrimmed;
-        }, 2000);
-        }
-      } catch (err: any) {
-        console.error('Registration error:', err);
-        this.errorMessage = err?.message || 'An unexpected error occurred during registration. Please try again.';
-      }
-    } else {
-      this.errorMessage = 'Please enter email and password';
+    if (!this.email.trim() || !this.password.trim()) {
+      this.errorMessage = 'Please enter both email and password';
+      return;
     }
-  }
 
-  // 🔹 Login - tries AuthService first, then Supabase
-  async onLogin(): Promise<void> {
-    this.errorMessage = '';
-    this.successMessage = '';
+    const emailTrimmed = this.email.trim();
+    const passwordTrimmed = this.password.trim();
+    const nameTrimmed = this.name.trim() || (emailTrimmed.includes('@') ? emailTrimmed.split('@')[0] : emailTrimmed);
 
-    if (this.email.trim() && this.password.trim()) {
-      const emailTrimmed = this.email.trim();
-      const passwordTrimmed = this.password.trim();
-
-      // Clear any previous user data before login
-      this.authService.clearUserSession();
-
-      // Try simple AuthService first (for registered users)
-      const simpleAuthSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
+    // Register in AuthService
+    const success = this.authService.register(emailTrimmed, passwordTrimmed, nameTrimmed, 'user');
+    
+    if (success) {
+      this.successMessage = 'Account created successfully!';
       
-      if (simpleAuthSuccess) {
-        // ✅ Success with simple auth
-        this.close.emit();
-        this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-          this.router.navigate(['/loading'], { replaceUrl: true });
-        });
-        return;
-      }
-
-      // If simple auth fails, try Supabase
+      // Save to Supabase
       try {
-        const { data, error } = await this.supabaseService.login(emailTrimmed, passwordTrimmed);
-
-        if (error || !data.session) {
-          // If user doesn't exist, auto-register them so they can login immediately
-          if (error && (error.message?.includes('Invalid login credentials') || 
-                       error.message?.includes('Invalid login') ||
-                       error.message?.includes('User not found'))) {
-            
-            // Auto-register the user
-            this.errorMessage = 'Account not found. Creating account automatically...';
-            
-            try {
-              const nameFromEmail = emailTrimmed.includes('@') ? emailTrimmed.split('@')[0] : emailTrimmed;
-              const signupResult = await this.supabaseService.signUp(emailTrimmed, passwordTrimmed);
-              
-              if (signupResult.error) {
-                // If signup fails, check the reason
-                if (signupResult.error.message?.includes('User already registered')) {
-                  // User exists but password might be wrong
-                  this.errorMessage = 'Account exists but password is incorrect. Please check your password.';
-                } else if (signupResult.error.message?.includes('For security purposes')) {
-                  const match = signupResult.error.message.match(/(\d+)\s+seconds/);
-                  const seconds = match ? match[1] : '60';
-                  this.errorMessage = `Too many attempts. Please wait ${seconds} seconds.`;
-                } else if (signupResult.error.message?.includes('Database error')) {
-                  this.errorMessage = 'Account creation failed. Please try registering manually.';
-                } else {
-                  this.errorMessage = signupResult.error.message || 'Failed to create account. Please try registering manually.';
-                }
-              } else if (signupResult.data?.user) {
-                // Account created successfully
-                if (signupResult.data.session) {
-                  // Auto-logged in after signup - success!
-                  this.errorMessage = '';
-                  // Also register in local AuthService
-                  this.authService.register(emailTrimmed, passwordTrimmed, nameFromEmail);
-                  
-                  // User is already created in users table by ensureUserInTable in signUp
-                  
-                  this.close.emit();
-                  this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-                    this.router.navigate(['/loading'], { replaceUrl: true });
-                  });
-                  return;
-                } else {
-                  // Email confirmation might be required - try auto-login
-                  this.errorMessage = 'Account created! Attempting to login automatically...';
-                  
-                  // Wait a bit longer for user to be fully created
-                  await new Promise(resolve => setTimeout(resolve, 1500));
-                  
-                  // Try login again
-                  const retryLogin = await this.supabaseService.login(emailTrimmed, passwordTrimmed);
-                  if (retryLogin.data?.session) {
-                    // Success! Auto-logged in
-                    this.errorMessage = '';
-                    this.authService.register(emailTrimmed, passwordTrimmed, nameFromEmail);
-                    
-                    this.close.emit();
-                    this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-                      this.router.navigate(['/loading'], { replaceUrl: true });
-                    });
-                    return;
-                  } else {
-                    // Still can't login - email confirmation required
-                    this.errorMessage = 'Account created! If email confirmation is enabled, please check your email. Otherwise, try logging in again.';
-                    
-                    // Switch to login mode so user can try again
-                    setTimeout(() => {
-                      this.isRegisterMode = false;
-                      this.email = emailTrimmed;
-                      this.errorMessage = '';
-                    }, 3000);
-                  }
-                }
-              }
-            } catch (signupErr: any) {
-              this.errorMessage = 'Failed to create account automatically. Please try registering manually.';
-            }
-            return;
-          }
-          
-          // Show specific error message from Supabase for other errors
-          if (error) {
-            console.error('Supabase login error:', error);
-            
-            // Handle specific error cases
-            if (error.message) {
-              if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
-                this.errorMessage = 'Please confirm your email address before logging in. Check your inbox for a confirmation link.';
-              } else {
-                this.errorMessage = error.message || 'Login failed. Please try again.';
-              }
-            } else {
-              // Check error status code
-              const errorStatus = (error as any).status;
-              if (errorStatus === 400) {
-                this.errorMessage = 'Invalid email or password. Please check your credentials.';
-              } else {
-          this.errorMessage = 'Invalid credentials. Please try again.';
-              }
-            }
-          } else {
-            this.errorMessage = 'Login failed. Please try again.';
-          }
-        } else {
-          // ✅ Success with Supabase
+        const uniqueId = emailTrimmed.replace(/[@.]/g, '_').toLowerCase();
+        const profileData = {
+          id: uniqueId,
+          email: emailTrimmed,
+          full_name: nameTrimmed,
+          username: nameTrimmed,
+          role: 'user',
+          is_dark_mode: false,
+          language: 'en'
+        };
+        
+        await this.supabaseAuthService.upsertUserProfile(profileData);
+        console.log('✅ Registration saved to Supabase');
+      } catch (error) {
+        console.error('❌ Supabase save failed:', error);
+      }
+      
+      // Auto-login
+      setTimeout(() => {
+        const loginSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
+        if (loginSuccess) {
           this.close.emit();
           this.router.navigate([{ outlets: { modal: null } }]).then(() => {
             this.router.navigate(['/loading'], { replaceUrl: true });
           });
         }
-      } catch (err: any) {
-        console.error('Login error:', err);
-        this.errorMessage = err?.message || 'An unexpected error occurred. Please try again.';
-      }
+      }, 1000);
     } else {
-      this.errorMessage = 'Please enter email and password';
+      this.errorMessage = 'This email is already registered. Please login instead.';
     }
+  }
+
+  // 🔹 Login - simplified login logic
+  async onLogin(): Promise<void> {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (!this.email.trim() || !this.password.trim()) {
+      this.errorMessage = 'Please enter both email and password';
+      return;
+    }
+
+    const emailTrimmed = this.email.trim();
+    const passwordTrimmed = this.password.trim();
+
+    console.log('🔐 Login attempt:', { email: emailTrimmed });
+
+    this.authService.clearUserSession();
+
+    const loginSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
+    
+    if (loginSuccess) {
+      console.log('✅ Login successful');
+      
+      const currentUser = this.authService.getCurrentUser();
+      const userRole = this.authService.getCurrentUserRole();
+      
+      // Save to Supabase
+      try {
+        const uniqueId = emailTrimmed.replace(/[@.]/g, '_').toLowerCase();
+        const userName = currentUser?.name || emailTrimmed.split('@')[0];
+        
+        const profileData = {
+          id: uniqueId,
+          email: emailTrimmed,
+          full_name: userName,
+          username: userName,
+          role: userRole || 'user',
+          is_dark_mode: false,
+          language: 'en'
+        };
+        
+        await this.supabaseAuthService.upsertUserProfile(profileData);
+        console.log('✅ Login info saved to Supabase');
+      } catch (error) {
+        console.error('❌ Supabase save failed:', error);
+      }
+      
+      this.successMessage = 'Login successful!';
+      this.close.emit();
+      
+      setTimeout(() => {
+        this.router.navigate([{ outlets: { modal: null } }]).then(() => {
+          if (userRole === 'admin') {
+            this.router.navigate(['/admin'], { replaceUrl: true });
+          } else {
+            this.router.navigate(['/loading'], { replaceUrl: true });
+          }
+        });
+      }, 1000);
+      return;
+    }
+
+    this.errorMessage = 'Invalid email or password. Please check your credentials.';
+    console.log('❌ Login failed for:', emailTrimmed);
   }
 
   // 🔹 Toggle between login and register modes
@@ -296,49 +185,52 @@ export class LoginComponent {
     this.showPassword = !this.showPassword;
   }
 
-  // 🔹 Forgot Password functionality
-  async onForgotPassword(): Promise<void> {
-    this.errorMessage = '';
-    this.successMessage = '';
-    
-    if (!this.email.trim()) {
-      this.errorMessage = 'Please enter your email address first';
+  // 🔹 Navigate to Forgot Password page
+  navigateToForgotPassword(): void {
+    this.close.emit();
+    this.router.navigate([{ outlets: { modal: null } }]).then(() => {
+      this.router.navigate(['/forgot-password']);
+    });
+  }
+
+  // 🔹 Show forgot password popup
+  showForgotPasswordPopup(): void {
+    this.showForgotPopup = true;
+    this.forgotEmail = '';
+    this.otpSent = false;
+  }
+
+  // 🔹 Close forgot password popup
+  closeForgotPopup(): void {
+    this.showForgotPopup = false;
+    this.forgotEmail = '';
+    this.otpSent = false;
+  }
+
+  // 🔹 Send OTP to email using Supabase
+  async sendOTP(): Promise<void> {
+    if (!this.forgotEmail.trim()) {
+      this.errorMessage = 'Please enter your email';
       return;
     }
-
-    const emailTrimmed = this.email.trim();
+    
+    this.errorMessage = '';
+    this.isLoading = true;
     
     try {
-      // First try Supabase password reset
-      console.log('Attempting Supabase password reset for:', emailTrimmed);
-      const result = await this.supabaseService.resetPassword(emailTrimmed);
+      console.log('📧 Sending OTP via Supabase to:', this.forgotEmail);
       
-      if (!result.error) {
-        this.successMessage = 'Password reset email sent! Check your inbox and spam folder.';
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 10000);
-        return;
-      } else {
-        console.log('Supabase reset error:', result.error);
-      }
-    } catch (err) {
-      console.log('Supabase reset failed:', err);
-    }
-    
-    // Fallback to local AuthService
-    console.log('Trying local auth password reset for:', emailTrimmed);
-    const password = this.authService.resetPassword(emailTrimmed);
-    
-    if (password) {
-      this.successMessage = `Your password is: ${password}\n\nNote: This is for demo purposes only. In production, a reset link would be sent to your email.`;
+      // Navigate directly to OTP-based forgot password flow
+      this.close.emit();
+      this.router.navigate([{ outlets: { modal: null } }]).then(() => {
+        this.router.navigate(['/forgot-password-otp']);
+      });
       
-      // Clear the message after 15 seconds
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 15000);
-    } else {
-      this.errorMessage = 'No account found with this email address. Please check your email or register a new account.';
+    } catch (error) {
+      console.error('Navigation error:', error);
+      this.errorMessage = 'Navigation failed. Please try again.';
+    } finally {
+      this.isLoading = false;
     }
   }
 }

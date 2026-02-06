@@ -2,9 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, UserProfile } from '../auth.service';
+import { AuthService } from '../auth.service';
+import { SupabaseAuthService, UserProfile } from '../services/supabase-auth.service';
 import { SupabaseService } from '../services/supabase.service';
 import { UserDataService } from '../services/user-data.service';
+import { TranslationService } from '../services/translation.service';
+import { EmailService } from '../services/email.service';
+import { RealEmailService } from '../services/real-email.service';
+import { SimpleEmailService } from '../services/simple-email.service';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -17,8 +22,10 @@ import { FooterComponent } from '../footer/footer.component';
 })
 export class ProfileComponent implements OnInit {
   profile: UserProfile = {
-    username: '',
+    id: '',
     email: '',
+    full_name: '',
+    username: '',
     contactNo: '',
     notification: true,
     address: '',
@@ -28,8 +35,25 @@ export class ProfileComponent implements OnInit {
     country: '',
     pincode: '',
     location: '',
-    photo: ''
+    photo: '',
+    education: '',
+    degree: '',
+    institution: '',
+    graduationYear: '',
+    role: 'user',
+    is_dark_mode: false,
+    language: 'en'
   };
+
+  // Display name for UI (full name if available, otherwise username)
+  get displayName(): string {
+    return this.profile.full_name || this.profile.username || this.profile.email?.split('@')[0] || '';
+  }
+
+  // Check if user is logged in for header
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
 
   isEditing: boolean = false;
   successMessage: string = '';
@@ -44,12 +68,20 @@ export class ProfileComponent implements OnInit {
   // Password change fields
   newPassword: string = '';
   confirmPassword: string = '';
+  
+  // Language selection
+  selectedLanguage: string = 'en';
 
   constructor(
     private authService: AuthService,
+    private supabaseAuthService: SupabaseAuthService,
     private supabaseService: SupabaseService,
     private userDataService: UserDataService,
-    public router: Router
+    public translationService: TranslationService,
+    public router: Router,
+    private emailService: EmailService,
+    private realEmailService: RealEmailService,
+    private simpleEmailService: SimpleEmailService
   ) {}
 
   ngOnInit(): void {
@@ -74,79 +106,162 @@ export class ProfileComponent implements OnInit {
 
   async loadProfile(): Promise<void> {
     this.loading = true;
+    this.errorMessage = '';
     const currentUser = this.authService.getCurrentUser();
     
     if (currentUser) {
-      // Check if user is gulvemayuri63 and load their specific data
-      if (currentUser.email === 'gulvemayuri63') {
-        this.profile.username = 'Mayuri Gulve';
-        this.profile.email = 'gulvemayuri63@gmail.com';
-        this.profile.contactNo = '+91-9876543210';
-        this.profile.location = 'Pune, Maharashtra, India';
-        this.profile.city = 'Pune';
-        this.profile.state = 'Maharashtra';
-        this.profile.country = 'India';
-      } else {
-        this.profile.email = currentUser.email;
-        this.profile.username = currentUser.name || currentUser.email.split('@')[0];
-      }
+      // Set basic profile data
+      this.profile.email = currentUser.email;
       
-      // Fetch user data from Supabase users table
+      // Set default profile first
+      this.setDefaultProfile(currentUser);
+      
+      // Fetch profile from backend (Supabase)
       try {
-        const { data, error } = await this.supabaseService.getUserByEmail(currentUser.email);
+        console.log('🔄 Fetching profile from backend for:', currentUser.email);
+        const { data: supabaseProfile, error } = await this.supabaseAuthService.getUserProfile(currentUser.email);
         
         if (error) {
-          // Don't show error for 406 (RLS policy) or if user doesn't exist in custom table
-          const errorStatus = (error as any).status;
-          if (errorStatus !== 406 && error.code !== 'PGRST116') {
-            console.error('Error fetching user from Supabase:', error);
+          console.warn('⚠️ Backend fetch error:', error);
+          this.loadFromLocalStorage(currentUser);
+        } else if (supabaseProfile) {
+          console.log('✅ Profile fetched from backend:', supabaseProfile);
+          
+          // Map all backend data to profile
+          this.profile = {
+            id: supabaseProfile.id || currentUser.email,
+            full_name: supabaseProfile.full_name || supabaseProfile.username || this.profile.full_name,
+            username: supabaseProfile.username || this.profile.username,
+            email: supabaseProfile.email || currentUser.email,
+            contactNo: supabaseProfile.contactNo || '',
+            notification: true,
+            address: supabaseProfile.address || '',
+            street: supabaseProfile.street || '',
+            city: supabaseProfile.city || '',
+            state: supabaseProfile.state || '',
+            country: supabaseProfile.country || '',
+            pincode: supabaseProfile.pincode || '',
+            location: this.buildLocationString(supabaseProfile),
+            photo: supabaseProfile.photo || '',
+            education: supabaseProfile.education || '',
+            degree: supabaseProfile.degree || '',
+            institution: supabaseProfile.institution || '',
+            graduationYear: supabaseProfile.graduationYear || '',
+            role: supabaseProfile.role || 'user',
+            is_dark_mode: supabaseProfile.is_dark_mode || false,
+            language: supabaseProfile.language || 'en'
+          };
+          
+          // Set photo preview
+          if (this.profile.photo) {
+            this.photoPreview = this.profile.photo;
           }
-          // User might not exist in custom users table yet - that's okay
-        } else if (data) {
-          this.supabaseUser = data;
-          // Update profile with data from Supabase
-          if (data.full_name) {
-            this.profile.username = data.full_name;
-          }
-          if (data.email) {
-            this.profile.email = data.email;
-          }
+          
+          // Save to localStorage as backup
+          this.userDataService.saveUserData('profile', this.profile);
+          
+        } else {
+          console.log('📝 No backend profile found, creating new one');
+          
+          // Create new profile in backend
+          await this.createBackendProfile(currentUser);
+          
+          // Load from localStorage as fallback
+          this.loadFromLocalStorage(currentUser);
         }
-      } catch (err: any) {
-        // Ignore 406 errors
-        if (err?.status !== 406 && err?.code !== 'PGRST116') {
-          console.error('Exception loading user from Supabase:', err);
-        }
+      } catch (error) {
+        console.error('❌ Backend fetch failed:', error);
+        this.errorMessage = 'Could not load profile from server. Using local data.';
+        this.loadFromLocalStorage(currentUser);
       }
-    }
-
-    // Load saved profile data using UserDataService (skip for gulvemayuri63)
-    if (currentUser && currentUser.email !== 'gulvemayuri63') {
-      const savedProfile = this.userDataService.getUserData('profile');
-      if (savedProfile) {
-        // Merge saved profile with default values to ensure all fields exist
-        this.profile = {
-          username: savedProfile.username || this.profile.username,
-          email: savedProfile.email || this.profile.email,
-          contactNo: savedProfile.contactNo || '',
-          notification: savedProfile.notification !== undefined ? savedProfile.notification : true,
-          address: savedProfile.address || '',
-          street: savedProfile.street || '',
-          city: savedProfile.city || '',
-          state: savedProfile.state || '',
-          country: savedProfile.country || '',
-          pincode: savedProfile.pincode || '',
-          location: savedProfile.location || '',
-          photo: savedProfile.photo || ''
-        };
-        // Set photo preview if photo exists
-        if (this.profile.photo) {
-          this.photoPreview = this.profile.photo;
-        }
-      }
+    } else {
+      this.errorMessage = 'User not authenticated';
     }
     
     this.loading = false;
+  }
+
+  private buildLocationString(profile: any): string {
+    const parts = [profile.city, profile.state, profile.country].filter(Boolean);
+    return parts.join(', ');
+  }
+
+  private async createBackendProfile(currentUser: any): Promise<void> {
+    try {
+      const newProfile: Partial<UserProfile> = {
+        id: currentUser.email,
+        email: currentUser.email,
+        full_name: this.profile.full_name,
+        username: this.profile.username,
+        role: 'user',
+        is_dark_mode: false,
+        language: 'en',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      await this.supabaseAuthService.upsertUserProfile(newProfile);
+      console.log('✅ Backend profile created successfully');
+    } catch (createError) {
+      console.warn('⚠️ Could not create backend profile:', createError);
+    }
+  }
+
+  private setDefaultProfile(currentUser: any): void {
+    // Set default profile based on user email
+    this.profile.id = currentUser.email;
+    
+    if (currentUser.email === 'gulvemayuri63') {
+      this.profile.full_name = 'Mayuri Suresh Gulve';
+      this.profile.username = 'Mayuri Suresh Gulve';
+      this.profile.contactNo = '+91-9876543210';
+      this.profile.location = 'Pune, Maharashtra, India';
+      this.profile.city = 'Pune';
+      this.profile.state = 'Maharashtra';
+      this.profile.country = 'India';
+    } else if (currentUser.email === 'admin') {
+      this.profile.full_name = 'Admin System Administrator';
+      this.profile.username = 'Admin System Administrator';
+    } else {
+      const name = currentUser.name || currentUser.email.split('@')[0];
+      this.profile.full_name = name;
+      this.profile.username = name;
+    }
+  }
+
+  private loadFromLocalStorage(currentUser: any): void {
+    // Load saved profile data using UserDataService
+    const savedProfile = this.userDataService.getUserData('profile');
+    if (savedProfile) {
+      // Merge saved profile with default values
+      this.profile = {
+        id: savedProfile.id || this.profile.id,
+        full_name: savedProfile.full_name || savedProfile.username || this.profile.full_name,
+        username: savedProfile.username || this.profile.username,
+        email: savedProfile.email || this.profile.email,
+        contactNo: savedProfile.contactNo || this.profile.contactNo || '',
+        notification: savedProfile.notification !== undefined ? savedProfile.notification : true,
+        address: savedProfile.address || '',
+        street: savedProfile.street || '',
+        city: savedProfile.city || this.profile.city || '',
+        state: savedProfile.state || this.profile.state || '',
+        country: savedProfile.country || this.profile.country || '',
+        pincode: savedProfile.pincode || '',
+        location: savedProfile.location || this.profile.location || '',
+        photo: savedProfile.photo || '',
+        education: savedProfile.education || '',
+        degree: savedProfile.degree || '',
+        institution: savedProfile.institution || '',
+        graduationYear: savedProfile.graduationYear || '',
+        role: savedProfile.role || 'user',
+        is_dark_mode: savedProfile.is_dark_mode || false,
+        language: savedProfile.language || 'en'
+      };
+      // Set photo preview if photo exists
+      if (this.profile.photo) {
+        this.photoPreview = this.profile.photo;
+      }
+    }
   }
 
   toggleEdit(): void {
@@ -166,110 +281,206 @@ export class ProfileComponent implements OnInit {
   }
 
   async saveProfile(): Promise<void> {
+    console.log('💾 Saving profile to backend:', this.profile);
+    
+    // Clear previous messages
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.loading = true;
+    
     // Validate required fields
     if (!this.profile.email || !this.profile.username) {
-      this.errorMessage = 'Email and Username are required fields.';
+      this.errorMessage = 'Email and Full Name are required fields.';
+      this.loading = false;
       return;
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (this.profile.email && !emailRegex.test(this.profile.email)) {
-      this.errorMessage = 'Please enter a valid email address.';
+    // Validate full name format
+    const nameParts = this.profile.username.trim().split(/\s+/);
+    if (nameParts.length < 3) {
+      this.errorMessage = 'Please enter your complete full name (First Name, Father Name, Surname).';
+      this.loading = false;
       return;
     }
 
-    // Validate contact number (if provided)
-    if (this.profile.contactNo && !/^[\d\s\-\+\(\)]+$/.test(this.profile.contactNo)) {
-      this.errorMessage = 'Please enter a valid contact number.';
-      return;
-    }
-
-    // Validate pincode (if provided)
-    if (this.profile.pincode && !/^\d{4,10}$/.test(this.profile.pincode.replace(/\s/g, ''))) {
-      this.errorMessage = 'Please enter a valid pincode (4-10 digits).';
-      return;
-    }
-
-    // Validate password change if provided
-    if (this.newPassword || this.confirmPassword) {
-      if (this.newPassword !== this.confirmPassword) {
-        this.errorMessage = 'Passwords do not match.';
-        return;
-      }
-      if (this.newPassword.length < 6) {
-        this.errorMessage = 'Password must be at least 6 characters long.';
-        return;
-      }
-    }
-
-    // Update photo if a new file was selected
+    // Update photo if changed
     if (this.photoPreview && this.photoPreview !== this.profile.photo) {
       this.profile.photo = this.photoPreview;
     }
 
-    // Handle password change and log it
-    if (this.newPassword) {
-      try {
-        await this.supabaseService.logPasswordChange(this.profile.email, this.profile.username);
-        console.log('Password change logged successfully');
-      } catch (err) {
-        console.error('Failed to log password change:', err);
-      }
-    }
-
-    // Save to Supabase users table if user exists
-    if (this.supabaseUser && this.supabaseUser.id) {
-      try {
-        const updates: any = {
-          full_name: this.profile.username,
-          email: this.profile.email
-        };
-        
-        // Add password to updates if changed
-        if (this.newPassword) {
-          updates.password = this.newPassword;
-        }
-
-        const { data, error } = await this.supabaseService.updateUser(this.supabaseUser.id, updates);
-
-        if (error) {
-          console.error('Error updating user in Supabase:', error);
-          this.errorMessage = 'Failed to update user in database. Please try again.';
-          return;
-        } else if (data) {
-          this.supabaseUser = data;
-          console.log('User updated in Supabase:', data);
-        }
-      } catch (err) {
-        console.error('Exception updating user in Supabase:', err);
-        this.errorMessage = 'Failed to update user in database. Please try again.';
-        return;
-      }
-    }
-
-    // Save profile using UserDataService for proper user isolation
-    const success = this.userDataService.saveUserData('profile', this.profile);
-    
-    if (success) {
-      this.successMessage = 'Profile updated successfully!';
-      if (this.newPassword) {
-        this.successMessage += ' Password changed successfully!';
-      }
-      this.errorMessage = '';
-      this.isEditing = false;
+    try {
+      // Save to backend first
+      console.log('🔄 Saving to backend...');
+      const { data, error } = await this.supabaseAuthService.upsertUserProfile(this.profile);
       
-      // Clear password fields
-      this.newPassword = '';
-      this.confirmPassword = '';
+      if (error) {
+        console.warn('⚠️ Backend save failed:', error);
+        
+        // Fallback to localStorage
+        const localSuccess = this.userDataService.saveUserData('profile', this.profile);
+        if (localSuccess) {
+          this.successMessage = 'Profile saved locally (server unavailable).';
+        } else {
+          this.errorMessage = 'Failed to save profile. Please try again.';
+          this.loading = false;
+          return;
+        }
+      } else {
+        console.log('✅ Profile saved to backend successfully:', data);
+        
+        // Also save locally as backup
+        this.userDataService.saveUserData('profile', this.profile);
+        this.successMessage = 'Profile updated successfully!';
+      }
+      
+      this.isEditing = false;
       
       // Clear success message after 3 seconds
       setTimeout(() => {
         this.successMessage = '';
       }, 3000);
-    } else {
-      this.errorMessage = 'Failed to save profile. Please try again.';
+      
+    } catch (error) {
+      console.error('❌ Exception saving profile:', error);
+      
+      // Fallback to localStorage
+      const localSuccess = this.userDataService.saveUserData('profile', this.profile);
+      if (localSuccess) {
+        this.successMessage = 'Profile saved locally.';
+        this.isEditing = false;
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 3000);
+      } else {
+        this.errorMessage = 'Failed to save profile. Please try again.';
+      }
+    } finally {
+      this.loading = false;
     }
+  }
+
+  async resetAndTestLogin(): Promise<void> {
+    console.log('🔄 Resetting localStorage and testing login...');
+    
+    // Clear all localStorage
+    localStorage.clear();
+    
+    // Manually add admin user
+    const defaultUsers = [
+      { email: 'admin', password: 'admin', name: 'Admin System Administrator', role: 'admin' },
+      { email: 'user1', password: 'user1', name: 'User One Kumar', role: 'user' },
+      { email: 'test@example.com', password: 'test123', name: 'Test User Account', role: 'user' }
+    ];
+    
+    localStorage.setItem('registeredUsers', JSON.stringify(defaultUsers));
+    console.log('✅ Default users added to localStorage:', defaultUsers);
+    
+    // Test admin login
+    const loginResult = this.authService.login('admin', 'admin');
+    console.log('📊 Admin login result:', loginResult);
+    
+    if (loginResult) {
+      const currentUser = this.authService.getCurrentUser();
+      console.log('✅ Current user after login:', currentUser);
+      this.successMessage = 'Admin login successful! You can now test Supabase.';
+      
+      // Reload profile
+      setTimeout(() => {
+        this.loadProfile();
+      }, 1000);
+    } else {
+      console.error('❌ Admin login failed');
+      this.errorMessage = 'Admin login failed!';
+    }
+  }
+
+  async testLogin(): Promise<void> {
+    console.log('🔐 Testing admin login...');
+    
+    // Test admin login
+    const loginResult = this.authService.login('admin', 'admin');
+    console.log('📊 Admin login result:', loginResult);
+    
+    if (loginResult) {
+      const currentUser = this.authService.getCurrentUser();
+      console.log('✅ Current user after login:', currentUser);
+      this.successMessage = 'Admin login successful!';
+    } else {
+      console.error('❌ Admin login failed');
+      this.errorMessage = 'Admin login failed!';
+    }
+  }
+
+  async directInsertTest(): Promise<void> {
+    console.log('🔄 Direct insert test...');
+    
+    try {
+      const result = await this.supabaseAuthService['supabase']
+        .from('user_profiles')
+        .insert({
+          id: 'direct-test-' + Date.now(),
+          email: 'direct@test.com',
+          full_name: 'Direct Test User',
+          username: 'directtest',
+          role: 'user',
+          is_dark_mode: false,
+          language: 'en',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select();
+        
+      console.log('📊 Direct insert result:', result);
+      
+      if (result.error) {
+        console.error('❌ Direct insert failed:', result.error);
+        this.errorMessage = `Direct insert failed: ${result.error.message}`;
+      } else {
+        console.log('✅ Direct insert successful:', result.data);
+        this.successMessage = 'Direct insert successful! Check Supabase table.';
+      }
+    } catch (error) {
+      console.error('❌ Direct insert exception:', error);
+      this.errorMessage = `Direct insert exception: ${error}`;
+    }
+  }
+
+  async testCreateProfile(): Promise<void> {
+    console.log('🧪 Testing profile creation...');
+    console.log('🔗 Supabase URL:', 'https://kwlaqovlzhxghwtilxxu.supabase.co');
+    
+    const testProfile: Partial<UserProfile> = {
+      id: 'test-user-123',
+      email: 'test@example.com',
+      full_name: 'Test User Name',
+      username: 'testuser',
+      role: 'user',
+      is_dark_mode: false,
+      language: 'en',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    console.log('📝 Creating profile:', testProfile);
+    
+    try {
+      const { data, error } = await this.supabaseAuthService.upsertUserProfile(testProfile);
+      if (error) {
+        console.error('❌ Test profile creation failed:', error);
+        console.error('❌ Error details:', JSON.stringify(error, null, 2));
+        this.errorMessage = `Profile creation failed: ${error.message || error}`;
+      } else {
+        console.log('✅ Test profile created successfully:', data);
+        this.successMessage = 'Test profile created successfully! Check Supabase table.';
+      }
+    } catch (error) {
+      console.error('❌ Test profile creation exception:', error);
+      this.errorMessage = `Exception: ${error}`;
+    }
+  }
+
+  goToChangePassword(): void {
+    this.router.navigate(['/change-password']);
   }
 
   onPhotoSelected(event: Event): void {
@@ -320,8 +531,104 @@ export class ProfileComponent implements OnInit {
       input.value = '';
     }
   }
+  
+  changeLanguage(lang: string): void {
+    this.selectedLanguage = lang;
+    this.translationService.setLanguage(lang);
+  }
 
-  get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+  // Refresh profile data from backend
+  async refreshProfile(): Promise<void> {
+    console.log('🔄 Refreshing profile from backend...');
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    try {
+      await this.loadProfile();
+      this.successMessage = 'Profile refreshed successfully!';
+      
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 2000);
+    } catch (error) {
+      console.error('❌ Error refreshing profile:', error);
+      this.errorMessage = 'Failed to refresh profile from server.';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  // Send OTP for email verification
+  async sendOTPForVerification(): Promise<void> {
+    if (!this.profile.email) {
+      this.errorMessage = 'Email is required to send OTP.';
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    try {
+      // Generate OTP and store it
+      const otp = this.emailService.generateOTP();
+      this.emailService.storeOTP(this.profile.email, otp);
+      
+      // Try to send email using simple email service
+      const result = await this.simpleEmailService.sendOTPEmail(this.profile.email, otp, this.profile.username);
+      
+      if (result.success) {
+        this.successMessage = `OTP sent successfully to ${this.profile.email}! Check your email.`;
+        
+        setTimeout(() => {
+          this.router.navigate(['/otp-verification'], {
+            queryParams: {
+              email: this.profile.email,
+              returnUrl: '/profile'
+            }
+          });
+        }, 2000);
+      } else {
+        // Fallback: Open email client
+        this.simpleEmailService.openEmailClient(this.profile.email, otp, this.profile.username);
+        this.successMessage = `Email client opened. OTP: ${otp} - Send the email manually.`;
+        
+        setTimeout(() => {
+          this.router.navigate(['/otp-verification'], {
+            queryParams: {
+              email: this.profile.email,
+              returnUrl: '/profile'
+            }
+          });
+        }, 3000);
+      }
+      
+    } catch (error) {
+      // Generate OTP for fallback
+      const otp = this.emailService.generateOTP();
+      this.emailService.storeOTP(this.profile.email, otp);
+      
+      // Fallback: Open email client
+      this.simpleEmailService.openEmailClient(this.profile.email, otp, this.profile.username);
+      this.errorMessage = 'Email service failed. Email client opened for manual sending.';
+      console.error('OTP send error:', error);
+      
+      setTimeout(() => {
+        this.router.navigate(['/otp-verification'], {
+          queryParams: {
+            email: this.profile.email,
+            returnUrl: '/profile'
+          }
+        });
+      }, 3000);
+    } finally {
+      this.loading = false;
+    }
   }
 }

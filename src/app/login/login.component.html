@@ -54,13 +54,13 @@
       />
       <!-- Password Toggle (only for login) -->
       <button type="button" class="password-toggle" *ngIf="!isRegisterMode" (click)="togglePasswordVisibility()">
-        {{ showPassword ? '🙈' : '👁️' }}
+        👁️
       </button>
     </div>
 
     <!-- Forgot Password Link (only for login) -->
     <div class="forgot-password" *ngIf="!isRegisterMode">
-      <button type="button" class="link-button forgot-btn" (click)="onForgotPassword()">
+      <button type="button" class="link-button forgot-btn" (click)="showForgotPasswordPopup()">
         🔑 Forgot Password?
       </button>
     </div>
@@ -92,6 +92,23 @@
     <button type="button" class="back-btn full" (click)="onClose()">BACK</button>
 
   </form>
+
+  <!-- Forgot Password Popup -->
+  <div class="forgot-popup" *ngIf="showForgotPopup">
+    <div class="popup-content">
+      <h4>Reset Password</h4>
+      <p>Enter your email to receive OTP</p>
+      <input type="email" [(ngModel)]="forgotEmail" placeholder="Enter your email" class="input-field">
+      <div class="popup-buttons">
+        <button type="button" class="accept-btn" (click)="sendOTP()" [disabled]="!forgotEmail.trim() || isLoading">
+          {{ isLoading ? 'Redirecting...' : 'Send OTP' }}
+        </button>
+        <button type="button" class="back-btn" (click)="closeForgotPopup()">Cancel</button>
+      </div>
+      <div class="success-message" *ngIf="otpSent || successMessage">{{ successMessage || 'OTP sent to your email!' }}</div>
+      <div class="error" *ngIf="errorMessage && showForgotPopup">{{ errorMessage }}</div>
+    </div>
+  </div>
 
   <!-- Modal Footer -->
   <div class="modal-footer">

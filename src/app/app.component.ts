@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './auth.service';
 import { UserDataService } from './services/user-data.service';
+import { SupabaseService } from './services/supabase.service';
 
 import { FooterComponent } from './footer/footer.component';
 
@@ -13,14 +14,20 @@ import { FooterComponent } from './footer/footer.component';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   showTemplateManager = false;
 
   constructor(
     private authService: AuthService, 
     private userDataService: UserDataService,
+    private supabaseService: SupabaseService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    // Supabase will automatically handle URL detection and redirect
+    // No need for global auth state handling
+  }
 
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();

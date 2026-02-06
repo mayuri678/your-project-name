@@ -71,20 +71,40 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   get currentUserLabel(): string | null {
     const user = this.authService.getCurrentUser();
-    return user ? `${user.name} (${user.email})` : null;
+    if (user) {
+      // Get full name from profile if available
+      const profile = this.authService.getUserProfile();
+      const displayName = profile?.username || user.name;
+      return `${displayName} (${user.email})`;
+    }
+    return null;
   }
 
   getUserInitial(user: LoggedInUser | null = null): string {
     const targetUser = user || this.authService.getCurrentUser();
-    if (targetUser && targetUser.name) {
-      return targetUser.name.charAt(0).toUpperCase();
+    if (targetUser) {
+      // Get full name from profile if available
+      const profile = this.authService.getUserProfile();
+      const displayName = profile?.username || targetUser.name;
+      if (displayName) {
+        return displayName.charAt(0).toUpperCase();
+      }
     }
     return 'U'; // Default to 'U' for User
   }
 
   getCurrentUserName(): string {
     const user = this.authService.getCurrentUser();
-    return user ? user.name : 'User';
+    if (user) {
+      // Get full name from profile if available
+      const profile = this.authService.getUserProfile();
+      if (profile && profile.username) {
+        return profile.username;
+      }
+      // Fallback to user.name from auth service
+      return user.name;
+    }
+    return 'User';
   }
 
   getCurrentUserEmail(): string {
@@ -117,9 +137,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authService.logoutUser(user.email);
     this.loadLoggedInUsers();
     
-    // If it's the current user, emit logout event
+    // If it's the current user, emit logout event and navigate to login
     if (currentUser && currentUser.email === user.email) {
       this.logout.emit();
+      this.router.navigate(['/login']);
     }
   }
 
@@ -204,6 +225,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   goToHelp(): void {
     this.router.navigate(['/help']);
+  }
+
+  openContactForm(): void {
+    this.router.navigate(['/contact']);
+  }
+
+  openResumeGenerator(): void {
+    if (!this.loggedIn) {
+      this.goToLogin();
+      return;
+    }
+    this.router.navigate(['/resume-generator']);
+  }
+
+  logoutCurrentUser(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   async loadAdminTemplates(): Promise<void> {

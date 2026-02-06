@@ -1,7 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { provideRouter } from '@angular/router';
-import { routes } from './app/app.routes';
+import { appConfig } from './app/app.config';
 
 // Global error handler for NavigatorLockAcquireTimeoutError
 if (typeof window !== 'undefined') {
@@ -42,9 +41,8 @@ if (typeof window !== 'undefined') {
   };
 }
 
-bootstrapApplication(AppComponent, {
-  providers: [provideRouter(routes)]
-}).catch(err => {
+bootstrapApplication(AppComponent, appConfig)
+.catch(err => {
   // Don't log NavigatorLockAcquireTimeoutError
   if (!err?.name?.includes('NavigatorLockAcquireTimeoutError') && 
       !err?.message?.includes('lock:sb-')) {

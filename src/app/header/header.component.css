@@ -170,6 +170,54 @@
   display: inline-block;
 }
 
+.templates-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #ffffff;
+  border-radius: 12px;
+  margin-top: 12px;
+  box-shadow: 0 20px 60px rgba(15, 15, 45, 0.3), 0 8px 24px rgba(0, 0, 0, 0.1);
+  min-width: 280px;
+  z-index: 10000;
+  overflow: hidden;
+  border: 1px solid rgba(14, 17, 38, 0.08);
+  animation: slideDown 0.3s ease-out;
+}
+
+.template-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  font-size: 14px;
+  color: #1a202c;
+  font-weight: 500;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.template-menu-item:hover {
+  background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
+  transform: translateX(4px);
+}
+
+.template-menu-item:last-child {
+  border-bottom: none;
+}
+
+.template-menu-item .menu-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 .dropdown-toggle {
   display: flex;
   align-items: center;

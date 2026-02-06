@@ -12,7 +12,19 @@
       <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
       <a class="nav-link" routerLink="/about" routerLinkActive="active">About</a>
       <a class="nav-link" routerLink="/my-templates" routerLinkActive="active">My Templates</a>
-      <a class="nav-link" (click)="onTemplatesClick()">Templates</a>
+      <div class="templates-dropdown">
+        <a class="nav-link" (click)="toggleTemplates()">Templates ▼</a>
+        <div class="templates-menu" *ngIf="isTemplatesOpen" (mouseleave)="closeTemplates()">
+          <button class="template-menu-item" (click)="onTemplatesClick(); closeTemplates()">
+            <span class="menu-icon">📄</span>
+            Resume Templates
+          </button>
+          <button class="template-menu-item" (click)="openResumeGenerator(); closeTemplates()">
+            <span class="menu-icon">✨</span>
+            Resume Summary Generator
+          </button>
+        </div>
+      </div>
     </nav>
 
     <!-- Right: Contact and Account -->
@@ -21,7 +33,7 @@
       <button class="help-btn" (click)="goToHelp()" title="Help & Documentation">📋 HELP</button>
       
       <!-- Contact Button -->
-      <a href="https://wa.me/918080156065" target="_blank" class="contact-btn" aria-label="Contact us on WhatsApp">💬 CONTACT</a>
+      <button class="contact-btn" (click)="openContactForm()" aria-label="Contact us">💬 CONTACT</button>
 
       <!-- ✅ Login Button: Only visible if not logged in -->
       <button *ngIf="!loggedIn" class="login-btn" (click)="goToLogin()">Login</button>
@@ -65,7 +77,7 @@
               Admin Panel
             </button>
             <div class="menu-divider"></div>
-            <button class="menu-item logout" (click)="logout.emit(); closeAccount()">
+            <button class="menu-item logout" (click)="logoutCurrentUser(); closeAccount()">
               <span class="menu-icon">🚪</span>
               Logout
             </button>

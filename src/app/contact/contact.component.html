@@ -11,6 +11,11 @@
       <input id="email" type="email" [(ngModel)]="email" name="email" placeholder="Your Email" required />
     </div>
 
+    <div class="form-field">
+      <label for="message">Message</label>
+      <textarea id="message" [(ngModel)]="message" name="message" placeholder="Tell us about your project or inquiry..." rows="5" required></textarea>
+    </div>
+
     <div class="actions">
       <button type="submit" class="primary">Send</button>
       <button type="button" class="secondary" (click)="cancel()">Cancel</button>

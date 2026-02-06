@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { ContactService } from '../services/contact.service';
 
 @Component({
   selector: 'app-contact',
@@ -16,7 +17,11 @@ export class ContactComponent implements OnInit {
   email: string = '';
   message: string = '';
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private contactService: ContactService
+  ) {}
 
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
@@ -26,15 +31,24 @@ export class ContactComponent implements OnInit {
     }
   }
 
-  sendEnquiry(): void {
-    const to = 'gulve.mayuri11119@coea.ac.in';
-    const subject = encodeURIComponent('Website Contact Enquiry');
-    const body = encodeURIComponent(
-      `Name: ${this.name}\nEmail: ${this.email}\n\nMessage:\n${this.message}`
-    );
+  async sendEnquiry(): Promise<void> {
+    if (!this.name || !this.email || !this.message) {
+      alert('Please fill in all fields');
+      return;
+    }
 
-    const mailtoUrl = `mailto:${to}?subject=${subject}&body=${body}`;
-    window.location.href = mailtoUrl;
+    const result = await this.contactService.submitContactForm({
+      full_name: this.name,
+      email: this.email,
+      message: this.message
+    });
+
+    if (result.success) {
+      alert('Thank you! Your message has been sent successfully.');
+      this.router.navigate(['/']);
+    } else {
+      alert(`Error: ${result.error || 'Failed to send message. Please try again.'}`);
+    }
   }
 
   cancel(): void {

@@ -366,6 +366,10 @@ export class WordEditorComponent implements OnInit {
     page.innerHTML = templates[template] || templates.professional;
   }
 
+  showTranslateDialog(): void {
+    alert('Translate feature coming soon!');
+  }
+
   saveResume(): void {
     console.log('Resume saved');
   }

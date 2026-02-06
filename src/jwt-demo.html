@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Authentication Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin-right: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
+        .credentials {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .credentials h4 {
+            margin-top: 0;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JWT Authentication Demo</h1>
+        
+        <div class="nav-links">
+            <a href="/jwt-login">Login Page</a>
+            <a href="/jwt-profile">Profile Page</a>
+        </div>
+
+        <h2>Implementation Overview</h2>
+        <p>This demo includes a complete JWT authentication system with:</p>
+        <ul>
+            <li><strong>Login Form:</strong> Email/password authentication</li>
+            <li><strong>JWT Token Storage:</strong> Tokens stored in localStorage</li>
+            <li><strong>Profile Page:</strong> Fetches user data using Authorization Bearer token</li>
+            <li><strong>Mock API:</strong> Simulates backend authentication</li>
+        </ul>
+
+        <div class="credentials">
+            <h4>Test Credentials:</h4>
+            <p><strong>User Account:</strong></p>
+            <p>Email: <code>user@example.com</code></p>
+            <p>Password: <code>password123</code></p>
+            
+            <p><strong>Admin Account:</strong></p>
+            <p>Email: <code>admin@example.com</code></p>
+            <p>Password: <code>admin123</code></p>
+        </div>
+
+        <h2>Files Created:</h2>
+        <ul>
+            <li><code>services/jwt-auth.service.ts</code> - JWT authentication service</li>
+            <li><code>services/mock-api.service.ts</code> - Mock backend API</li>
+            <li><code>components/jwt-login.component.ts</code> - Login form component</li>
+            <li><code>components/jwt-profile.component.ts</code> - Profile display component</li>
+        </ul>
+
+        <h2>How It Works:</h2>
+        <ol>
+            <li>User enters email/password on login form</li>
+            <li>Service calls mock API to authenticate</li>
+            <li>On success, JWT token is stored in localStorage</li>
+            <li>Profile page uses stored token to fetch user data</li>
+            <li>Token is sent as Authorization Bearer header</li>
+            <li>Logout clears the token from localStorage</li>
+        </ol>
+
+        <h2>Key Features:</h2>
+        <ul>
+            <li>✅ JWT token authentication</li>
+            <li>✅ localStorage token storage</li>
+            <li>✅ Authorization Bearer header</li>
+            <li>✅ Login/logout functionality</li>
+            <li>✅ Profile data fetching</li>
+            <li>✅ Error handling</li>
+            <li>✅ Loading states</li>
+            <li>✅ Responsive design</li>
+        </ul>
+    </div>
+</body>
+</html>

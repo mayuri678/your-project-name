@@ -376,11 +376,21 @@
     <div class="editor-toolbar">
       <!-- File Tab Tools -->
       <div *ngIf="activeTab === 'file'" class="toolbar-content">
-        <div class="toolbar-section">
+          <div class="toolbar-section" style="position: relative;">
           <div class="toolbar-label">File</div>
           <button class="toolbar-btn save-btn" (click)="saveDocument()">💾 Save</button>
           <button class="toolbar-btn template-btn" (click)="showTemplates()">📋 Templates</button>
           <button class="toolbar-btn download-btn" (click)="exportDocument()">📥 Download</button>
+          <button class="toolbar-btn translate-btn" (click)="showTranslateDialog()">🌐 Translate ▼</button>
+          <div class="translate-dropdown" *ngIf="showTranslateDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #333; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); z-index: 1000; min-width: 200px;">
+            <div *ngFor="let lang of languages" 
+                 (click)="selectLanguage(lang)" 
+                 style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #ddd; color: #333; font-weight: 500;"
+                 (mouseover)="$event.target.style.backgroundColor='#e3f2fd'; $event.target.style.color='#1976d2'"
+                 (mouseout)="$event.target.style.backgroundColor='white'; $event.target.style.color='#333'">
+              {{lang.name}}
+            </div>
+          </div>
           <button class="toolbar-btn" (click)="clearEditor()">📄 New</button>
         </div>
       </div>
