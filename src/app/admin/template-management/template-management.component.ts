@@ -46,9 +46,9 @@ export class TemplateManagementComponent implements OnInit {
   constructor(private adminService: AdminService, private router: Router) {}
 
   ngOnInit(): void {
+    console.log('TemplateManagement: Component initialized');
     this.loadTemplates();
     
-    // Check if we need to refresh templates
     if (typeof window !== 'undefined') {
       const shouldRefresh = localStorage.getItem('refreshTemplates');
       if (shouldRefresh) {
@@ -60,19 +60,25 @@ export class TemplateManagementComponent implements OnInit {
 
   loadTemplates(): void {
     this.isLoading = true;
-    this.templates = []; // Clear existing templates
-    this.filteredTemplates = []; // Clear filtered templates
-    console.log('Loading templates...');
+    this.templates = [];
+    this.filteredTemplates = [];
+    console.log('TemplateManagement: Starting to load templates...');
     
     this.adminService.getTemplates().subscribe({
       next: (templates) => {
-        console.log('Templates loaded:', templates);
+        console.log('TemplateManagement: Templates received:', templates.length, templates);
         this.templates = templates;
         this.applyFilters();
         this.isLoading = false;
+        console.log('TemplateManagement: Loading complete, isLoading:', this.isLoading);
       },
       error: (error) => {
-        console.error('Error loading templates:', error);
+        console.error('TemplateManagement: Error loading templates:', error);
+        this.isLoading = false;
+        this.templates = [];
+        this.filteredTemplates = [];
+      },
+      complete: () => {
         this.isLoading = false;
       }
     });

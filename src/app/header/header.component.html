@@ -15,14 +15,27 @@
       <div class="templates-dropdown">
         <a class="nav-link" (click)="toggleTemplates()">Templates ▼</a>
         <div class="templates-menu" *ngIf="isTemplatesOpen" (mouseleave)="closeTemplates()">
-          <button class="template-menu-item" (click)="onTemplatesClick(); closeTemplates()">
-            <span class="menu-icon">📄</span>
-            Resume Templates
-          </button>
-          <button class="template-menu-item" (click)="openResumeGenerator(); closeTemplates()">
-            <span class="menu-icon">✨</span>
-            Resume Summary Generator
-          </button>
+          <div class="templates-header">
+            <h3>Choose Template</h3>
+            <button class="close-templates-btn" (click)="closeTemplates()">×</button>
+          </div>
+          <div class="templates-grid">
+            <button class="template-item" *ngFor="let template of templateList" (click)="selectTemplate(template); closeTemplates()">
+              <div class="template-preview">
+                <div class="template-icon">📄</div>
+                <div class="template-info">
+                  <div class="template-name">{{ template.name }}</div>
+                  <div class="template-category">{{ template.category }}</div>
+                  <div class="template-description">{{ template.description }}</div>
+                </div>
+              </div>
+            </button>
+          </div>
+          <div class="templates-footer">
+            <button class="view-all-btn" (click)="onTemplatesClick(); closeTemplates()">
+              View All Templates →
+            </button>
+          </div>
         </div>
       </div>
     </nav>
@@ -41,7 +54,8 @@
       <!-- User Profile Avatar: Visible if logged in -->
       <div class="user-profile" *ngIf="loggedIn">
         <button class="user-avatar" (click)="toggleAccount()" [attr.aria-haspopup]="true" [attr.aria-expanded]="isAccountOpen">
-          {{ getUserInitial() }}
+          <img *ngIf="getUserPhoto()" [src]="getUserPhoto()" alt="Profile" class="avatar-photo">
+          <span *ngIf="!getUserPhoto()">{{ getUserInitial() }}</span>
         </button>
         <div class="user-menu" *ngIf="isAccountOpen" (mouseleave)="closeAccount()">
           <!-- Menu Header with Close Button -->
@@ -54,7 +68,10 @@
           
           <!-- Current User Info Section -->
           <div class="user-info current-user">
-            <div class="user-avatar-large">{{ getUserInitial() }}</div>
+            <div class="user-avatar-large">
+              <img *ngIf="getUserPhoto()" [src]="getUserPhoto()" alt="Profile" class="avatar-photo-large">
+              <span *ngIf="!getUserPhoto()">{{ getUserInitial() }}</span>
+            </div>
             <div class="user-details">
               <div class="user-name">{{ getCurrentUserName() }}</div>
               <div class="user-email">{{ getCurrentUserEmail() }}</div>
@@ -88,3 +105,29 @@
 
   </div>
 </header>
+
+<!-- Contact Popup -->
+<div class="contact-popup-overlay" *ngIf="showContactPopup" (click)="closeContactPopup()">
+  <div class="contact-popup" (click)="$event.stopPropagation()">
+    <button class="close-popup" (click)="closeContactPopup()">&times;</button>
+    <h2>Contact Us</h2>
+    <div>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="contactForm.name" name="name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="contactForm.email" name="email">
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea [(ngModel)]="contactForm.message" name="message" rows="5"></textarea>
+      </div>
+      <div class="popup-actions">
+        <button type="button" class="btn-send" (click)="sendContactMessage()">Send</button>
+        <button type="button" class="btn-cancel" (click)="closeContactPopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

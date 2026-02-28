@@ -1,96 +1,198 @@
-# Supabase Edge Function Setup for Email Sending
+# 🚀 Supabase Email Setup - Password Reset
 
-## 1. Supabase CLI Install करा
+## ✅ Solution Implemented
+
+आता **Supabase Auth** वापरून automatic emails जातील!
+
+## How It Works
+
+```
+User → Forgot Password → Enter Email
+  ↓
+Supabase sends reset link to email
+  ↓
+User clicks link in email
+  ↓
+Opens reset-password page
+  ↓
+User enters new password
+  ↓
+Password updated in Supabase
+```
+
+## Supabase Email Settings
+
+### Step 1: Enable Email Auth
+
+1. Go to: https://supabase.com/dashboard
+2. Select your project: `kwlaqovlzhxghwtilxxu`
+3. Go to **Authentication** → **Providers**
+4. Enable **Email** provider
+5. Save changes
+
+### Step 2: Configure Email Templates
+
+1. Go to **Authentication** → **Email Templates**
+2. Find **Reset Password** template
+3. Customize if needed (optional)
+
+### Step 3: Test Email Delivery
+
+**Development Mode:**
+- Supabase sends emails automatically
+- Check your email inbox (including spam)
+- Email comes from: `noreply@mail.app.supabase.io`
+
+**Production Mode:**
+- Configure custom SMTP (optional)
+- Go to **Project Settings** → **Auth** → **SMTP Settings**
+
+## Files Changed
+
+1. ✅ `forgot-password.component.ts` - Uses Supabase Auth
+2. ✅ `forgot-password.component.html` - Simplified UI
+3. ✅ `reset-password.component.ts` - Handles password reset
+
+## Testing Steps
+
+### 1. Test Forgot Password
+
 ```bash
-npm install -g supabase
+ng serve
 ```
 
-## 2. Project Link करा
-```bash
-supabase login
-supabase link --project-ref YOUR_PROJECT_REF
+1. Go to login page
+2. Click "Forgot Password?"
+3. Enter email: `test@example.com`
+4. Click "Send Reset Link"
+5. Check email inbox
+
+### 2. Test Reset Link
+
+1. Open email
+2. Click reset link
+3. Enter new password
+4. Submit
+5. Login with new password
+
+## Email Template
+
+Supabase sends email like this:
+
+```
+Subject: Reset Your Password
+
+Hi,
+
+Follow this link to reset your password:
+[Reset Password Button]
+
+If you didn't request this, ignore this email.
+
+This link expires in 1 hour.
 ```
 
-## 3. Edge Function Create करा
-```bash
-supabase functions new send-otp-email
-```
+## Troubleshooting
 
-## 4. Function Code (supabase/functions/send-otp-email/index.ts):
-```typescript
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+### Email नाही येत?
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+1. **Check Spam Folder**
+   - Supabase emails sometimes go to spam
 
-serve(async (req) => {
-  const { email, otp, userName, subject } = await req.json()
+2. **Verify Email Provider**
+   ```
+   Dashboard → Authentication → Providers
+   Email provider enabled आहे का?
+   ```
 
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: 'Your App <noreply@yourdomain.com>',
-        to: [email],
-        subject: subject || 'Your OTP Code',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">🔐 Your OTP Code</h2>
-            <p>Hello ${userName},</p>
-            <p>Your One-Time Password (OTP) is:</p>
-            <div style="background: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
-              ${otp}
-            </div>
-            <p>⏰ This OTP will expire in 5 minutes.</p>
-            <p>🔒 Security Notice:</p>
-            <ul>
-              <li>Do not share this OTP with anyone</li>
-              <li>Use this OTP only on the official website</li>
-            </ul>
-            <p>Generated at: ${new Date().toLocaleString()}</p>
-          </div>
-        `,
-      }),
-    })
+3. **Check Supabase Logs**
+   ```
+   Dashboard → Logs → Auth Logs
+   Email sent होतो का check करा
+   ```
 
-    const data = await res.json()
-    
-    return new Response(
-      JSON.stringify({ success: true, data }),
-      { headers: { "Content-Type": "application/json" } },
-    )
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { "Content-Type": "application/json" } },
-    )
-  }
-})
-```
+4. **Test with Different Email**
+   - Gmail, Outlook, Yahoo try करा
 
-## 5. Environment Variables Set करा
-```bash
-supabase secrets set RESEND_API_KEY=your_resend_api_key
-```
+### Link काम करत नाही?
 
-## 6. Function Deploy करा
-```bash
-supabase functions deploy send-otp-email
-```
+1. **Check URL**
+   - Link should contain: `#access_token=...`
+   - Supabase automatically handles this
 
-## 7. Resend Account Setup
-1. https://resend.com/ वर account बनवा
-2. API key generate करा
-3. Domain verify करा (optional, resend.dev domain use कर सकते हैं)
+2. **Link Expired?**
+   - Links expire in 1 hour
+   - Request new reset link
 
-## Current Status:
-- ✅ Supabase service updated
-- ✅ Profile component updated  
-- ⚠️ Edge Function needs to be deployed
-- ⚠️ Resend API key needed
+3. **Check Console**
+   ```javascript
+   // Browser console मध्ये errors check करा
+   F12 → Console
+   ```
 
-## Fallback:
-अगर Edge Function setup नहीं करना चाहते तो current system OTP popup में दिखाता है।
+## Development vs Production
+
+### Development (Current)
+- ✅ Supabase sends emails automatically
+- ✅ No configuration needed
+- ✅ Free tier: 30,000 emails/month
+
+### Production (Future)
+- Configure custom SMTP
+- Use your own email domain
+- Better deliverability
+
+## Custom SMTP Setup (Optional)
+
+For production, configure custom SMTP:
+
+1. Go to **Project Settings** → **Auth**
+2. Scroll to **SMTP Settings**
+3. Enter your SMTP details:
+   ```
+   Host: smtp.gmail.com
+   Port: 587
+   Username: your-email@gmail.com
+   Password: your-app-password
+   ```
+
+### Gmail SMTP Example
+
+1. Enable 2-factor authentication
+2. Generate App Password
+3. Use in Supabase SMTP settings
+
+## Email Limits
+
+**Supabase Free Tier:**
+- 30,000 emails/month
+- 3 emails/hour per user
+- Enough for development & small apps
+
+**Need More?**
+- Upgrade to Pro plan
+- Or use custom SMTP
+
+## Next Steps
+
+1. ✅ Code already updated
+2. ✅ Supabase configured
+3. 🔄 Test the flow:
+   ```bash
+   ng serve
+   Login → Forgot Password → Enter Email
+   ```
+4. 📧 Check your email inbox
+
+## Support
+
+**Supabase Docs:**
+- https://supabase.com/docs/guides/auth/auth-email
+
+**Email Issues:**
+- Check Supabase Dashboard → Logs
+- Contact Supabase support
+
+---
+
+**Note:** Supabase automatically handles email sending. तुम्हाला फक्त test करायचं आहे!

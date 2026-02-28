@@ -64,18 +64,13 @@ export class ResumeComponent implements OnInit {
     // Clear previous user data first
     this.clearPreviousUserData();
     
-    this.name = 'Test User';
-    this.email = 'test@example.com';
-    this.skills = ['HTML', 'CSS', 'JavaScript'];
-    
-    if (this.isLoggedIn && !this.pdfImported) {
-      this.loadUserData();
-      this.loadFirstSavedResume();
-    }
-    
+    // Check query params FIRST before loading any data
     this.route.queryParams.subscribe(async params => {
+      console.log('🔍 Query params:', params);
+      
       if (params['template']) {
         this.selectedTemplate = params['template'];
+        console.log('✅ Template selected:', this.selectedTemplate);
       }
       if (params['edit'] === 'true') {
         this.isEditMode = true;
@@ -84,12 +79,19 @@ export class ResumeComponent implements OnInit {
         this.templateName = params['templateName'];
       }
       if (params['loadData']) {
-        // Load template data from My Templates page
         await this.loadTemplateFromMyTemplates(params['loadData']);
       }
       if (params['templateId']) {
         this.editingTemplateId = params['templateId'];
         await this.loadTemplateData(params['templateId']);
+      }
+      
+      // Load user data AFTER template is set
+      if (this.isLoggedIn && !this.pdfImported) {
+        this.loadUserData();
+      } else {
+        // Set default sample data if not logged in
+        this.setDefaultSampleData();
       }
     });
   }
@@ -508,6 +510,9 @@ export class ResumeComponent implements OnInit {
       return;
     }
     
+    const templateName = prompt('Enter template name:', this.name || 'My Resume');
+    if (!templateName) return;
+    
     try {
       const templateData = {
         name: this.name,
@@ -527,23 +532,50 @@ export class ResumeComponent implements OnInit {
         profilePhoto: this.profilePhoto
       };
 
-      const result = await this.supabaseService.saveTemplate({
-        templateId: this.selectedTemplate,
-        content: templateData,
-        existingId: this.editingTemplateId
-      });
-
-      if (result.error) {
-        alert('Failed to save template: ' + result.error.message);
+      // Always save to localStorage first
+      const templateId = this.editingTemplateId || `local_${Date.now()}`;
+      const localTemplates = JSON.parse(localStorage.getItem('myTemplates') || '[]');
+      
+      const newTemplate = {
+        id: templateId,
+        name: templateName,
+        title: templateName,
+        category: this.selectedTemplate,
+        description: JSON.stringify(templateData),
+        created_at: new Date().toISOString()
+      };
+      
+      if (this.editingTemplateId) {
+        const index = localTemplates.findIndex((t: any) => t.id === this.editingTemplateId);
+        if (index !== -1) {
+          localTemplates[index] = newTemplate;
+        } else {
+          localTemplates.push(newTemplate);
+        }
       } else {
-        alert('Template saved successfully!');
-        if (this.editingTemplateId) {
-          this.router.navigate(['/my-templates']);
+        localTemplates.push(newTemplate);
+      }
+      
+      localStorage.setItem('myTemplates', JSON.stringify(localTemplates));
+      
+      // Try Supabase if logged in (but don't fail if it doesn't work)
+      if (this.isLoggedIn) {
+        try {
+          await this.supabaseService.saveTemplate({
+            content: templateData,
+            templateId: this.selectedTemplate,
+            existingId: this.editingTemplateId
+          });
+        } catch (err) {
+          console.log('Supabase save failed, using localStorage only:', err);
         }
       }
+      
+      alert('✅ Template saved successfully!');
+      this.router.navigate(['/my-templates']);
     } catch (error) {
       console.error('Error saving template:', error);
-      alert('Error saving template');
+      alert('❌ Error saving template: ' + error);
     }
   }
 
@@ -1071,6 +1103,70 @@ export class ResumeComponent implements OnInit {
     this.technicalSkills = [];
     this.projects = [];
     this.certifications = [];
+  }
+
+  private setDefaultSampleData(): void {
+    this.name = 'John Doe';
+    this.title = 'Software Developer';
+    this.email = 'john.doe@example.com';
+    this.phone = '+1-234-567-8900';
+    this.location = 'New York, NY, USA';
+    this.linkedIn = 'linkedin.com/in/johndoe';
+    this.github = 'github.com/johndoe';
+    
+    this.education = [
+      { degree: 'Bachelor of Computer Science', institute: 'University of Technology', year: '2020' },
+      { degree: 'High School Diploma', institute: 'Central High School', year: '2016' }
+    ];
+    
+    this.skills = ['JavaScript', 'TypeScript', 'Angular', 'React', 'Node.js', 'HTML', 'CSS', 'Git'];
+    
+    this.experience = [
+      {
+        role: 'Senior Software Developer',
+        company: 'Tech Solutions Inc.',
+        duration: '2022 - Present',
+        description: 'Led development of web applications using Angular and React. Collaborated with cross-functional teams to deliver high-quality software solutions.'
+      },
+      {
+        role: 'Software Developer',
+        company: 'Digital Innovations Ltd.',
+        duration: '2020 - 2022',
+        description: 'Developed and maintained multiple web applications. Implemented new features and fixed bugs in existing systems.'
+      }
+    ];
+    
+    this.highlights = [
+      'Strong problem-solving and analytical skills',
+      'Excellent team collaboration and communication',
+      'Quick learner with passion for new technologies'
+    ];
+    
+    this.technicalSkills = [
+      'Frontend: Angular, React, Vue.js, HTML5, CSS3',
+      'Backend: Node.js, Express.js, Python',
+      'Database: MongoDB, PostgreSQL, MySQL'
+    ];
+    
+    this.projects = [
+      {
+        name: 'E-Commerce Platform',
+        technology: 'Angular, Node.js, MongoDB',
+        description: 'Built a full-stack e-commerce platform with user authentication, payment integration, and admin dashboard.',
+        file: null
+      },
+      {
+        name: 'Task Management App',
+        technology: 'React, Firebase',
+        description: 'Developed a real-time task management application with team collaboration features.',
+        file: null
+      }
+    ];
+    
+    this.certifications = [
+      { name: 'AWS Certified Developer', file: null },
+      { name: 'Angular Certification', file: null }
+    ];
   }
 
 }

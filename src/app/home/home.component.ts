@@ -3,29 +3,27 @@ import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
+import { LearnMoreModalComponent } from '../learn-more-modal/learn-more-modal.component';
+import { ResumeOptionsModalComponent } from '../resume-options-modal/resume-options-modal.component';
+import { TemplateManagerComponent } from '../template-manager/template-manager.component';
 
 import { AuthService } from '../auth.service';
+import { TemplateService } from '../template.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, CommonModule, FormsModule, HeaderComponent],
+  imports: [RouterModule, CommonModule, FormsModule, HeaderComponent, LearnMoreModalComponent, ResumeOptionsModalComponent, TemplateManagerComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
   loggedIn: boolean = false;
-  isLoginOpen: boolean = false; // no longer used for popup
   showResumeOptions: boolean = false;
   showLearnMore: boolean = false;
+  showTemplateManager: boolean = false;
   typedName: string = '';
 
-  // Resume form data
-  resumeData = {
-    fullName: '',
-    email: '',
-    profession: ''
-  };
   typingComplete: boolean = false;
   builderNameInput: string = '';
 
@@ -33,7 +31,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private typingIndex = 0;
   private typingTimer: any;
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(public router: Router, private authService: AuthService, private templateService: TemplateService) {}
 
   ngOnInit() {
     this.updateLoginStatus();
@@ -43,6 +41,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     setInterval(() => {
       this.updateLoginStatus();
     }, 1000);
+    
+    // Listen for template manager open event
+    if (typeof window !== 'undefined') {
+      window.addEventListener('openTemplateManager', () => {
+        this.openTemplateManager();
+      });
+    }
   }
 
   updateLoginStatus(): void {
@@ -68,27 +73,24 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showLearnMore = false;
   }
 
-  createResume(): void {
-    if (!this.resumeData.fullName || !this.resumeData.email) {
-      alert('Please fill in all required fields');
-      return;
-    }
+  designResume(): void {
+    this.router.navigate(['/loading']);
+  }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.resumeData.email)) {
-      alert('Please enter a valid email address');
-      return;
-    }
+  getGoogleTemplates(): void {
+    window.open('https://docs.google.com/document/u/0/?ftv=1&tgif=d&resourcekey=0', '_blank');
+  }
 
-    this.router.navigate(['/builder'], {
-      queryParams: {
-        name: this.resumeData.fullName,
-        email: this.resumeData.email,
-        profession: this.resumeData.profession || ''
-      }
-    });
+  openMsWordEditor(): void {
+    this.router.navigate(['/ms-word-editor']);
+  }
 
-    this.closeLearnMore();
+  closeResumeOptions(): void {
+    this.showResumeOptions = false;
+  }
+
+  openResumeOptions(): void {
+    this.showResumeOptions = true;
   }
 
   private beginTypingAnimation(): void {
@@ -130,65 +132,30 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToTemplates(): void {
-    const isLoggedIn = this.authService.isLoggedIn();
-    this.loggedIn = isLoggedIn;
-
-    if (isLoggedIn) {
-      this.router.navigate(['/resume']);
-    } else {
-      this.showResumeOptions = true;
-    }
+    this.showTemplateManager = true;
   }
 
   goToResumeEditor(): void {
-    const isLoggedIn = this.authService.isLoggedIn();
-    this.loggedIn = isLoggedIn;
+    this.showTemplateManager = true;
+  }
 
-    if (isLoggedIn) {
-      this.router.navigate(['/resume'], {
-        queryParams: {
-          template: 'template1',
-          edit: 'true'
-        }
+  openTemplateManager(): void {
+    this.showTemplateManager = true;
+  }
+
+  closeTemplateManager(): void {
+    this.showTemplateManager = false;
+  }
+
+  onTemplateSelected(templateId: string): void {
+    const template = this.templateService.getTemplateById(templateId);
+    if (template) {
+      this.templateService.saveSelectedTemplate(template);
+      this.showTemplateManager = false;
+      this.router.navigate(['/resume-builder'], { 
+        queryParams: { template: templateId } 
       });
-    } else {
-      this.router.navigate([{ outlets: { modal: ['login'] } }]);
     }
-  }
-
-  openResumeOptions(): void {
-    this.showResumeOptions = true;
-  }
-
-  closeResumeOptions(): void {
-    this.showResumeOptions = false;
-  }
-
-  designResume(): void {
-    const isLoggedIn = this.authService.isLoggedIn();
-    this.loggedIn = isLoggedIn;
-
-    if (isLoggedIn) {
-      this.router.navigate(['/resume'], {
-        queryParams: {
-          template: 'template1',
-          edit: 'true'
-        }
-      });
-    } else {
-      this.router.navigate([{ outlets: { modal: ['login'] } }]);
-    }
-    this.closeResumeOptions();
-  }
-
-  getGoogleTemplates(): void {
-    window.open('https://docs.google.com/document/u/0/?ftv=1&tgif=d&resourcekey=0', '_blank');
-    this.closeResumeOptions();
-  }
-
-  openMsWordEditor(): void {
-    this.router.navigate(['/ms-word-editor']);
-    this.closeResumeOptions();
   }
 
   goToLogin(): void {

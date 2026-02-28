@@ -1,0 +1,687 @@
+﻿[
+    {
+        "file":  "src\\app\\about\\about.component.ts",
+        "symbols":  [
+                        "method:createResumeDirectly",
+                        "method:goToLogin",
+                        "method:goToTemplates",
+                        "method:onLogout"
+                    ]
+    },
+    {
+        "file":  "src\\app\\admin\\admin.component.ts",
+        "symbols":  [
+                        "method:loadRequests",
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "src\\app\\admin\\admin-templates\\resume-template.component.ts",
+        "symbols":  [
+                        "method:addEducation",
+                        "method:addSkill",
+                        "method:removeEducation",
+                        "method:removeSkill",
+                        "method:uploadPhoto"
+                    ]
+    },
+    {
+        "file":  "src\\app\\admin\\password-management\\password-management.component.ts",
+        "symbols":  [
+                        "method:addNewTemplate",
+                        "method:bulkPasswordReset",
+                        "method:closeAddTemplateModal",
+                        "method:closeBulkResetModal",
+                        "method:closeEditModal",
+                        "method:closeResetModal",
+                        "method:closeTemplateEditModal",
+                        "method:closeTemplateModal",
+                        "method:generatePassword",
+                        "method:getRequestStats",
+                        "method:loadPasswordRequests",
+                        "method:loadTemplates",
+                        "method:loadUsers",
+                        "method:ngOnInit",
+                        "method:openAddTemplateModal",
+                        "method:openBulkResetModal",
+                        "method:openEditModal",
+                        "method:openResetModal",
+                        "method:openTemplateEditModal",
+                        "method:openTemplateModal",
+                        "method:resetPassword",
+                        "method:saveTemplate",
+                        "method:saveTemplateChanges",
+                        "method:sendResetLink",
+                        "method:toggleDarkMode",
+                        "method:updateRequestStatus",
+                        "method:updateUserInfo"
+                    ]
+    },
+    {
+        "file":  "src\\app\\auth\\forgot-password\\forgot-password.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:onResetPassword"
+                    ]
+    },
+    {
+        "file":  "src\\app\\auth\\login\\login.ts",
+        "symbols":  [
+                        "method:goToForgotPassword",
+                        "method:goToRegister",
+                        "method:onLogin"
+                    ]
+    },
+    {
+        "file":  "src\\app\\auth\\register\\register.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:onRegister"
+                    ]
+    },
+    {
+        "file":  "src\\app\\auth\\reset-password\\reset-password.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:ngOnInit",
+                        "method:onResetPassword"
+                    ]
+    },
+    {
+        "file":  "src\\app\\components\\auth-demo.component.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:goToProfile",
+                        "method:logout",
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "src\\app\\components\\forgot-password.component.ts",
+        "symbols":  [
+                        "method:goBack",
+                        "method:onSubmit"
+                    ]
+    },
+    {
+        "file":  "src\\app\\components\\forgot-password-otp.component.ts",
+        "symbols":  [
+                        "method:goBack",
+                        "method:goToVerification",
+                        "method:sendOtp"
+                    ]
+    },
+    {
+        "file":  "src\\app\\components\\reset-password.component.ts",
+        "symbols":  [
+                        "method:goToForgotPassword",
+                        "method:ngOnInit",
+                        "method:onSubmit"
+                    ]
+    },
+    {
+        "file":  "src\\app\\components\\supabase-login.component.ts",
+        "symbols":  [
+                        "method:goToForgotPassword",
+                        "method:onSubmit",
+                        "method:toggleMode"
+                    ]
+    },
+    {
+        "file":  "src\\app\\components\\supabase-profile.component.ts",
+        "symbols":  [
+                        "method:cancelEdit",
+                        "method:loadProfile",
+                        "method:logout",
+                        "method:ngOnDestroy",
+                        "method:ngOnInit",
+                        "method:saveProfile",
+                        "method:toggleEdit"
+                    ]
+    },
+    {
+        "file":  "src\\app\\components\\verify-otp.component.ts",
+        "symbols":  [
+                        "method:goBack",
+                        "method:ngOnInit",
+                        "method:updatePassword",
+                        "method:verifyOtp"
+                    ]
+    },
+    {
+        "file":  "src\\app\\editor-toolbar\\editor-toolbar.component.ts",
+        "symbols":  [
+                        "method:onAlign",
+                        "method:onBold",
+                        "method:onBulletList",
+                        "method:onExportDocx",
+                        "method:onExportPDF",
+                        "method:onFontChange",
+                        "method:onFontSizeChange",
+                        "method:onHighlightColor",
+                        "method:onItalic",
+                        "method:onLoadDocument",
+                        "method:onNewDocument",
+                        "method:onNumberedList",
+                        "method:onPrint",
+                        "method:onRedo",
+                        "method:onSaveDocument",
+                        "method:onStrikethrough",
+                        "method:onTextColor",
+                        "method:onUnderline",
+                        "method:onUndo",
+                        "method:onZoomIn",
+                        "method:onZoomOut"
+                    ]
+    },
+    {
+        "file":  "src\\app\\footer\\footer.component.ts",
+        "symbols":  [
+                        "method:closeContactPopup",
+                        "method:openContactPopup",
+                        "method:resetForm",
+                        "method:sendMessage"
+                    ]
+    },
+    {
+        "file":  "src\\app\\guards\\supabase-auth.guard.ts",
+        "symbols":  [
+                        "method:map"
+                    ]
+    },
+    {
+        "file":  "src\\app\\home\\home.component.ts",
+        "symbols":  [
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "src\\app\\loading\\loading.component.ts",
+        "symbols":  [
+                        "method:ngOnInit",
+                        "method:startLoading"
+                    ]
+    },
+    {
+        "file":  "src\\app\\my-templates\\my-templates.component.ts",
+        "symbols":  [
+                        "method:cancelEdit",
+                        "method:deleteTemplate",
+                        "method:editTemplate",
+                        "method:loadTemplates",
+                        "method:navigateToResume",
+                        "method:ngOnInit",
+                        "method:onLogout",
+                        "method:toggleFeature",
+                        "method:updateTemplate",
+                        "method:viewTemplate"
+                    ]
+    },
+    {
+        "file":  "src\\app\\popup\\popup.component.ts",
+        "symbols":  [
+                        "method:closePopup"
+                    ]
+    },
+    {
+        "file":  "src\\app\\resume-examples\\resume-examples.component.ts",
+        "symbols":  [
+                        "method:applyFilters",
+                        "method:logout",
+                        "method:toggleTemplateSelection"
+                    ]
+    },
+    {
+        "file":  "src\\app\\services\\admin.service.ts",
+        "symbols":  [
+                        "method:map"
+                    ]
+    },
+    {
+        "file":  "src\\app\\services\\auth.service.ts",
+        "symbols":  [
+                        "method:forgotPassword",
+                        "method:getPasswordResetRequests",
+                        "method:resetPassword",
+                        "method:setSession"
+                    ]
+    },
+    {
+        "file":  "src\\app\\services\\supabase.service.ts",
+        "symbols":  [
+                        "arrowConst:handler",
+                        "method:adminResetPassword",
+                        "method:createAdminTemplate",
+                        "method:createUser",
+                        "method:createUserProfile",
+                        "method:deleteTemplate",
+                        "method:ensureUserProfile",
+                        "method:getAllTemplates",
+                        "method:getPasswordChangeHistory",
+                        "method:getPasswordResetRequests",
+                        "method:getTemplateById",
+                        "method:getUserByEmail",
+                        "method:getUserById",
+                        "method:getUserProfile",
+                        "method:getUsers",
+                        "method:getUserTemplates",
+                        "method:logPasswordChange",
+                        "method:logPasswordChangeActivity",
+                        "method:resetPassword",
+                        "method:saveTemplate",
+                        "method:saveUserProfile",
+                        "method:signOut",
+                        "method:signUp",
+                        "method:updateTemplate",
+                        "method:updateTemplateContent",
+                        "method:updateUser",
+                        "method:updateUserPassword",
+                        "method:updateUserPasswordByEmail"
+                    ]
+    },
+    {
+        "file":  "src\\app\\services\\supabase-auth.service.ts",
+        "symbols":  [
+                        "method:createUserProfileOnSignup",
+                        "method:ensureUserProfile",
+                        "method:initializeAuth",
+                        "method:markResetTokenAsUsed",
+                        "method:saveLoginHistory",
+                        "method:savePasswordResetRequest",
+                        "method:signIn",
+                        "method:signOut",
+                        "method:signUp",
+                        "method:updatePassword"
+                    ]
+    },
+    {
+        "file":  "src\\app\\services\\supabase-otp.service.ts",
+        "symbols":  [
+                        "method:sendPasswordResetOtp",
+                        "method:updatePassword",
+                        "method:verifyOtp"
+                    ]
+    },
+    {
+        "file":  "src\\app\\services\\translation.service.ts",
+        "symbols":  [
+                        "method:setLanguage"
+                    ]
+    },
+    {
+        "file":  "src\\app\\template-manager\\template-builder.component.ts",
+        "symbols":  [
+                        "method:addCertification",
+                        "method:addEducation",
+                        "method:addExperience",
+                        "method:addHighlight",
+                        "method:addProject",
+                        "method:addSection",
+                        "method:addSkill",
+                        "method:closeBuilder",
+                        "method:getAvailableSections",
+                        "method:getDefaultData",
+                        "method:ngOnInit",
+                        "method:onNameChange",
+                        "method:previewTemplate",
+                        "method:removeCertification",
+                        "method:removeEducation",
+                        "method:removeExperience",
+                        "method:removeHighlight",
+                        "method:removeProject",
+                        "method:removeSection",
+                        "method:removeSkill",
+                        "method:saveTemplate",
+                        "method:testClick",
+                        "method:testSave",
+                        "method:trackSection"
+                    ]
+    },
+    {
+        "file":  "src\\app\\template-manager\\template-viewer.component.ts",
+        "symbols":  [
+                        "method:closeViewer",
+                        "method:editTemplate",
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "src\\app\\templates-table\\templates-table.component.ts",
+        "symbols":  [
+                        "method:logout"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\about\\about.component.ts",
+        "symbols":  [
+                        "method:createResumeDirectly",
+                        "method:goToLogin",
+                        "method:goToTemplates",
+                        "method:onLogout"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\admin\\admin.component.ts",
+        "symbols":  [
+                        "method:loadRequests",
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\admin\\admin-templates\\resume-template.component.ts",
+        "symbols":  [
+                        "method:addEducation",
+                        "method:addSkill",
+                        "method:removeEducation",
+                        "method:removeSkill",
+                        "method:uploadPhoto"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\admin\\password-management\\password-management.component.ts",
+        "symbols":  [
+                        "method:addNewTemplate",
+                        "method:bulkPasswordReset",
+                        "method:closeAddTemplateModal",
+                        "method:closeBulkResetModal",
+                        "method:closeEditModal",
+                        "method:closeResetModal",
+                        "method:closeTemplateEditModal",
+                        "method:closeTemplateModal",
+                        "method:generatePassword",
+                        "method:getRequestStats",
+                        "method:loadPasswordRequests",
+                        "method:loadTemplates",
+                        "method:loadUsers",
+                        "method:ngOnInit",
+                        "method:openAddTemplateModal",
+                        "method:openBulkResetModal",
+                        "method:openEditModal",
+                        "method:openResetModal",
+                        "method:openTemplateEditModal",
+                        "method:openTemplateModal",
+                        "method:resetPassword",
+                        "method:saveTemplate",
+                        "method:saveTemplateChanges",
+                        "method:sendResetLink",
+                        "method:toggleDarkMode",
+                        "method:updateRequestStatus",
+                        "method:updateUserInfo"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\auth\\forgot-password\\forgot-password.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:onResetPassword"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\auth\\login\\login.ts",
+        "symbols":  [
+                        "method:goToForgotPassword",
+                        "method:goToRegister",
+                        "method:onLogin"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\auth\\register\\register.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:onRegister"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\auth\\reset-password\\reset-password.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:ngOnInit",
+                        "method:onResetPassword"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\components\\auth-demo.component.ts",
+        "symbols":  [
+                        "method:goToLogin",
+                        "method:goToProfile",
+                        "method:logout",
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\components\\forgot-password.component.ts",
+        "symbols":  [
+                        "method:goBack",
+                        "method:onSubmit"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\components\\forgot-password-otp.component.ts",
+        "symbols":  [
+                        "method:goBack",
+                        "method:goToVerification",
+                        "method:sendOtp"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\components\\reset-password.component.ts",
+        "symbols":  [
+                        "method:goToForgotPassword",
+                        "method:ngOnInit",
+                        "method:onSubmit"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\components\\supabase-login.component.ts",
+        "symbols":  [
+                        "method:goToForgotPassword",
+                        "method:onSubmit",
+                        "method:toggleMode"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\components\\supabase-profile.component.ts",
+        "symbols":  [
+                        "method:cancelEdit",
+                        "method:loadProfile",
+                        "method:logout",
+                        "method:ngOnDestroy",
+                        "method:ngOnInit",
+                        "method:saveProfile",
+                        "method:toggleEdit"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\components\\verify-otp.component.ts",
+        "symbols":  [
+                        "method:goBack",
+                        "method:ngOnInit",
+                        "method:updatePassword",
+                        "method:verifyOtp"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\editor-toolbar\\editor-toolbar.component.ts",
+        "symbols":  [
+                        "method:onAlign",
+                        "method:onBold",
+                        "method:onBulletList",
+                        "method:onExportDocx",
+                        "method:onExportPDF",
+                        "method:onFontChange",
+                        "method:onFontSizeChange",
+                        "method:onHighlightColor",
+                        "method:onItalic",
+                        "method:onLoadDocument",
+                        "method:onNewDocument",
+                        "method:onNumberedList",
+                        "method:onPrint",
+                        "method:onRedo",
+                        "method:onSaveDocument",
+                        "method:onStrikethrough",
+                        "method:onTextColor",
+                        "method:onUnderline",
+                        "method:onUndo",
+                        "method:onZoomIn",
+                        "method:onZoomOut"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\guards\\supabase-auth.guard.ts",
+        "symbols":  [
+                        "method:map"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\home\\home.component.ts",
+        "symbols":  [
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\my-templates\\my-templates.component.ts",
+        "symbols":  [
+                        "method:cancelEdit",
+                        "method:deleteTemplate",
+                        "method:editTemplate",
+                        "method:loadTemplates",
+                        "method:navigateToResume",
+                        "method:ngOnInit",
+                        "method:onLogout",
+                        "method:toggleFeature",
+                        "method:updateTemplate",
+                        "method:viewTemplate"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\popup\\popup.component.ts",
+        "symbols":  [
+                        "method:closePopup"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\resume-examples\\resume-examples.component.ts",
+        "symbols":  [
+                        "method:applyFilters",
+                        "method:logout",
+                        "method:toggleTemplateSelection"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\services\\admin.service.ts",
+        "symbols":  [
+                        "method:map"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\services\\auth.service.ts",
+        "symbols":  [
+                        "method:forgotPassword",
+                        "method:getPasswordResetRequests",
+                        "method:resetPassword",
+                        "method:setSession"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\services\\supabase.service.ts",
+        "symbols":  [
+                        "arrowConst:handler",
+                        "method:adminResetPassword",
+                        "method:createAdminTemplate",
+                        "method:createUser",
+                        "method:createUserProfile",
+                        "method:deleteTemplate",
+                        "method:ensureUserProfile",
+                        "method:getAllTemplates",
+                        "method:getPasswordChangeHistory",
+                        "method:getPasswordResetRequests",
+                        "method:getTemplateById",
+                        "method:getUserByEmail",
+                        "method:getUserById",
+                        "method:getUserProfile",
+                        "method:getUsers",
+                        "method:getUserTemplates",
+                        "method:logPasswordChange",
+                        "method:logPasswordChangeActivity",
+                        "method:resetPassword",
+                        "method:saveTemplate",
+                        "method:saveUserProfile",
+                        "method:signOut",
+                        "method:signUp",
+                        "method:updateTemplate",
+                        "method:updateTemplateContent",
+                        "method:updateUser",
+                        "method:updateUserPassword",
+                        "method:updateUserPasswordByEmail"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\services\\supabase-auth.service.ts",
+        "symbols":  [
+                        "method:createUserProfileOnSignup",
+                        "method:ensureUserProfile",
+                        "method:initializeAuth",
+                        "method:markResetTokenAsUsed",
+                        "method:saveLoginHistory",
+                        "method:savePasswordResetRequest",
+                        "method:signIn",
+                        "method:signOut",
+                        "method:signUp",
+                        "method:updatePassword"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\services\\supabase-otp.service.ts",
+        "symbols":  [
+                        "method:sendPasswordResetOtp",
+                        "method:updatePassword",
+                        "method:verifyOtp"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\services\\translation.service.ts",
+        "symbols":  [
+                        "method:setLanguage"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\template-manager\\template-builder.component.ts",
+        "symbols":  [
+                        "method:addCertification",
+                        "method:addEducation",
+                        "method:addExperience",
+                        "method:addHighlight",
+                        "method:addProject",
+                        "method:addSection",
+                        "method:addSkill",
+                        "method:closeBuilder",
+                        "method:getAvailableSections",
+                        "method:getDefaultData",
+                        "method:ngOnInit",
+                        "method:previewTemplate",
+                        "method:removeCertification",
+                        "method:removeEducation",
+                        "method:removeExperience",
+                        "method:removeHighlight",
+                        "method:removeProject",
+                        "method:removeSection",
+                        "method:removeSkill",
+                        "method:saveTemplate",
+                        "method:trackSection"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\template-manager\\template-viewer.component.ts",
+        "symbols":  [
+                        "method:closeViewer",
+                        "method:editTemplate",
+                        "method:ngOnInit"
+                    ]
+    },
+    {
+        "file":  "your-project-name\\src\\app\\templates-table\\templates-table.component.ts",
+        "symbols":  [
+                        "method:logout"
+                    ]
+    }
+]

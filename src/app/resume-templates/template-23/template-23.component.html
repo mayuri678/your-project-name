@@ -1,0 +1,41 @@
+<div class="max-w-[210mm] min-h-[297mm] mx-auto bg-white p-16 shadow-lg print:shadow-none">
+  <header class="mb-8">
+    <h1 class="text-5xl font-light text-purple-400 mb-2">{{data.name}}</h1>
+    <p class="text-xl text-gray-600 mb-4">{{data.title}}</p>
+    <div class="text-sm text-gray-500 space-x-3">
+      <span>{{data.email}}</span>
+      <span>•</span>
+      <span>{{data.phone}}</span>
+      <span>•</span>
+      <span>{{data.location}}</span>
+    </div>
+  </header>
+  <section class="mb-8" *ngIf="data.summary">
+    <p class="text-gray-700 leading-relaxed">{{data.summary}}</p>
+  </section>
+  <section class="mb-8" *ngIf="data.experience?.length">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-purple-400 mb-4">Experience</h2>
+    <div *ngFor="let exp of data.experience" class="mb-5">
+      <div class="flex justify-between mb-1">
+        <h3 class="font-bold">{{exp.role}}</h3>
+        <span class="text-sm text-gray-500">{{exp.duration}}</span>
+      </div>
+      <p class="text-sm text-gray-600 mb-2">{{exp.company}}</p>
+      <p class="text-sm text-gray-700">{{exp.description}}</p>
+    </div>
+  </section>
+  <section class="mb-8" *ngIf="data.education?.length">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-purple-400 mb-4">Education</h2>
+    <div *ngFor="let edu of data.education" class="mb-3">
+      <div class="flex justify-between">
+        <h3 class="font-bold">{{edu.degree}}</h3>
+        <span class="text-sm text-gray-500">{{edu.year}}</span>
+      </div>
+      <p class="text-sm text-gray-600">{{edu.institution}}</p>
+    </div>
+  </section>
+  <section *ngIf="data.skills?.length">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-purple-400 mb-4">Skills</h2>
+    <p class="text-sm text-gray-700">{{data.skills.join(' • ')}}</p>
+  </section>
+</div>

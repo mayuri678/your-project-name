@@ -494,28 +494,25 @@ export class SupabaseService {
   // 🔹 Save template data (insert or update)
   async saveTemplate(templateData: any) {
     try {
-      // Check if user is logged in via localStorage first
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      const userEmail = localStorage.getItem('currentUserEmail');
+      const userEmail = localStorage.getItem('currentUserEmail') || 'guest@example.com';
       
-      if (!isLoggedIn || !userEmail) {
-        throw new Error('User not authenticated');
-      }
-
-      // Try to get current session
+      // Get current user session
       const { data: { session } } = await this.supabase.auth.getSession();
+      const userId = session?.user?.id;
       
-      // Use session user ID if available, otherwise create a simple ID from email
-      const userId = session?.user?.id || userEmail;
-
+      if (!userId) {
+        console.error('No user session found');
+        return { data: null, error: { message: 'User not authenticated. Please login again.' } };
+      }
+      
       const templatePayload = {
+        user_id: userId,
         title: templateData.content.name || 'Untitled Resume',
         description: JSON.stringify(templateData.content),
         category: templateData.templateId,
         image_url: userEmail
       };
 
-      // If existingId is provided, update the existing template
       if (templateData.existingId) {
         const { data, error } = await this.supabase
           .from('templates')
@@ -525,7 +522,6 @@ export class SupabaseService {
           .single();
         return { data, error };
       } else {
-        // Otherwise, insert a new template
         const { data, error } = await this.supabase
           .from('templates')
           .insert(templatePayload)
@@ -558,12 +554,7 @@ export class SupabaseService {
   // 🔹 Get user templates
   async getUserTemplates() {
     try {
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      const userEmail = localStorage.getItem('currentUserEmail');
-      
-      if (!isLoggedIn || !userEmail) {
-        throw new Error('User not authenticated');
-      }
+      const userEmail = localStorage.getItem('currentUserEmail') || 'guest@example.com';
 
       const { data, error } = await this.supabase
         .from('templates')
@@ -593,7 +584,6 @@ export class SupabaseService {
     }
   }
 
-  // 🔹 Create template from Admin Panel (only meta info, not full resume)
   async createAdminTemplate(template: {
     name: string;
     category: string;
@@ -606,142 +596,38 @@ export class SupabaseService {
     isActive?: boolean;
   }) {
     try {
-      // Check for authenticated session
-      let { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
-      
-      // If no session, try to create one with mock admin credentials
-      if (!session || !session.user?.id) {
-        console.log('No session found, attempting admin login...');
-        const loginResult = await this.login('admin@example.com', 'admin123');
-        
-        if (loginResult.data?.session) {
-          session = loginResult.data.session;
-          console.log('Admin session created successfully');
-        } else {
-          // Create a mock session for template creation
-          console.log('Creating template with mock admin credentials');
-          const mockUserId = 'admin-mock-' + Date.now();
-          
-          const resumeMeta = {
-            name: template.name,
-            description: template.description || '',
-            templateColor: template.color || 'Blue',
-            templateLayout: template.layout || '1 Column',
-            templateFeatures: template.templateFeatures || ['Photo', 'Skills Bar', 'Charts', 'Icons', 'Timeline', 'Portfolio'],
-            isPremium: template.isPremium ?? false,
-            price: template.price ?? 0,
-            isActive: template.isActive ?? true
-          };
-
-          const basePayload = {
-            user_id: mockUserId,
-            category: template.category || 'Professional',
-            title: template.name,
-            description: JSON.stringify(resumeMeta)
-          };
-
-          console.log('Inserting template with payload:', basePayload);
-
-          const { data, error } = await this.supabase
-            .from('templates')
-            .insert(basePayload)
-            .select()
-            .single();
-
-          if (error) {
-            console.error('Template creation failed:', error);
-            // Try without user_id if RLS is blocking
-            const fallbackPayload = {
-              category: template.category || 'Professional',
-              title: template.name,
-              description: JSON.stringify(resumeMeta)
-            };
-            
-            const fallbackResult = await this.supabase
-              .from('templates')
-              .insert(fallbackPayload)
-              .select()
-              .single();
-              
-            if (fallbackResult.error) {
-              console.error('Fallback template creation also failed:', fallbackResult.error);
-              return { data: null, error: fallbackResult.error };
-            }
-            
-            console.log('Template created with fallback method:', fallbackResult.data);
-            return { data: fallbackResult.data, error: null };
-          }
-
-          console.log('Template created successfully:', data);
-          return { data, error: null };
-        }
-      }
-
-      if (!session || !session.user?.id) {
-        const authError = { message: 'User not authenticated for template insert' };
-        console.error(authError.message);
-        return { data: null, error: authError };
-      }
-
-      // Store visual/template information inside description JSON
       const resumeMeta = {
         name: template.name,
         description: template.description || '',
         templateColor: template.color || 'Blue',
         templateLayout: template.layout || '1 Column',
-        templateFeatures: template.templateFeatures || [],
+        templateFeatures: template.templateFeatures || ['Photo', 'Skills Bar', 'Charts', 'Icons', 'Timeline', 'Portfolio'],
         isPremium: template.isPremium ?? false,
         price: template.price ?? 0,
         isActive: template.isActive ?? true
       };
 
-      // Minimal payload to match your live Supabase schema
-      const category = template.category || 'my-template';
-      const slug = template.name
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '')
-        .slice(0, 60) || 'template';
-      const templateId = `${slug}-${Date.now()}`;
-
       const basePayload = {
-        user_id: session.user.id,
-        category,
+        category: template.category || 'Professional',
         title: template.name,
         description: JSON.stringify(resumeMeta)
       };
 
-      // First attempt with template_id
-      const payloadWithTemplateId: Record<string, any> = {
-        ...basePayload,
-        template_id: templateId
-      };
+      console.log('Creating template with payload:', basePayload);
 
-      let { data, error } = await this.supabase
+      const { data, error } = await this.supabase
         .from('templates')
-        .insert(payloadWithTemplateId)
+        .insert(basePayload)
         .select()
         .single();
 
-      // If column missing, retry without template_id
-      if (error && `${error.message}`.toLowerCase().includes("template_id")) {
-        console.warn('template_id column missing, retrying without it');
-        const payloadWithoutTemplateId = { ...basePayload };
-        const retry = await this.supabase
-          .from('templates')
-          .insert(payloadWithoutTemplateId)
-          .select()
-          .single();
-        data = retry.data;
-        error = retry.error;
-      }
-
       if (error) {
-        console.error('Error creating admin template:', error);
+        console.error('Template creation failed:', error);
+        return { data: null, error };
       }
 
-      return { data, error };
+      console.log('Template created successfully:', data);
+      return { data, error: null };
     } catch (error: any) {
       console.error('Exception creating admin template:', error);
       return { data: null, error };

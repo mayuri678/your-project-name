@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { SupabaseService } from '../services/supabase.service';
 import { SupabaseAuthService } from '../services/supabase-auth.service';
+import { PasswordHistoryService } from '../services/password-history.service';
 
 @Component({
   selector: 'app-change-password',
@@ -30,7 +31,8 @@ export class ChangePasswordComponent implements OnInit {
     private supabaseService: SupabaseService,
     private supabaseAuth: SupabaseAuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private passwordHistory: PasswordHistoryService
   ) {}
 
   ngOnInit(): void {
@@ -92,6 +94,13 @@ export class ChangePasswordComponent implements OnInit {
         const currentUser = this.authService.getCurrentUser();
         if (currentUser?.email) {
           await this.supabaseService.logPasswordChangeActivity(currentUser.email, 'change');
+          this.passwordHistory.logPasswordChange({
+            userId: '',
+            userEmail: currentUser.email,
+            userName: currentUser.name || currentUser.email,
+            changeType: 'change',
+            changedBy: currentUser.email
+          });
         }
         
         this.message = 'Password changed successfully! You will be redirected to login.';

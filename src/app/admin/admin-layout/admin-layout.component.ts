@@ -20,23 +20,17 @@ export class AdminLayoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.currentAdmin = this.adminService.getCurrentAdmin();
-    if (!this.currentAdmin) {
-      // Set default admin for demo purposes
-      const defaultAdmin: AdminUser = {
-        id: '1',
-        email: 'admin@example.com',
-        name: 'Admin User',
-        role: 'admin',
-        isActive: true,
-        createdAt: new Date()
-      };
-      this.currentAdmin = defaultAdmin;
+    // Check if admin is logged in
+    if (!this.adminService.isAdminLoggedIn()) {
+      this.router.navigate(['/admin/login']);
+      return;
     }
+    
+    this.currentAdmin = this.adminService.getCurrentAdmin();
   }
 
   logout(): void {
     this.adminService.adminLogout();
-    this.router.navigate(['/home']);
+    this.router.navigate(['/admin/login']);
   }
 }

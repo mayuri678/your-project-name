@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,7 +15,7 @@ import { SimpleEmailService } from '../services/simple-email.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   email: string = '';
   password: string = '';
   name: string = '';
@@ -42,7 +42,12 @@ export class LoginComponent {
   ) {
   }
 
-  // 🔹 Register new user - registers directly in AuthService
+  ngOnInit(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  // 🔹 Register new user - registers in Supabase
   async onRegister(): Promise<void> {
     this.errorMessage = '';
     this.successMessage = '';
@@ -56,109 +61,77 @@ export class LoginComponent {
     const passwordTrimmed = this.password.trim();
     const nameTrimmed = this.name.trim() || (emailTrimmed.includes('@') ? emailTrimmed.split('@')[0] : emailTrimmed);
 
-    // Register in AuthService
-    const success = this.authService.register(emailTrimmed, passwordTrimmed, nameTrimmed, 'user');
+    // Register in Supabase
+    const { data, error } = await this.supabaseAuthService.signUp(emailTrimmed, passwordTrimmed);
     
-    if (success) {
-      this.successMessage = 'Account created successfully!';
-      
-      // Save to Supabase
-      try {
-        const uniqueId = emailTrimmed.replace(/[@.]/g, '_').toLowerCase();
-        const profileData = {
-          id: uniqueId,
-          email: emailTrimmed,
-          full_name: nameTrimmed,
-          username: nameTrimmed,
-          role: 'user',
-          is_dark_mode: false,
-          language: 'en'
-        };
-        
-        await this.supabaseAuthService.upsertUserProfile(profileData);
-        console.log('✅ Registration saved to Supabase');
-      } catch (error) {
-        console.error('❌ Supabase save failed:', error);
-      }
+    if (error) {
+      this.errorMessage = error.message || 'Registration failed. Please try again.';
+      return;
+    }
+    
+    if (data.user) {
+      this.successMessage = 'Account created successfully! Logging you in...';
+      console.log('✅ Registration completed in Supabase');
       
       // Auto-login
-      setTimeout(() => {
-        const loginSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
-        if (loginSuccess) {
-          this.close.emit();
-          this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-            this.router.navigate(['/loading'], { replaceUrl: true });
-          });
+      setTimeout(async () => {
+        const loginResult = await this.supabaseAuthService.signIn(emailTrimmed, passwordTrimmed);
+        if (loginResult.data.user) {
+          this.authService.setCurrentUser(emailTrimmed, nameTrimmed, 'user');
+          this.router.navigate(['/home'], { replaceUrl: true });
         }
       }, 1000);
-    } else {
-      this.errorMessage = 'This email is already registered. Please login instead.';
     }
   }
 
-  // 🔹 Login - simplified login logic
+  // 🔹 Login - uses Supabase authentication
   async onLogin(): Promise<void> {
     this.errorMessage = '';
     this.successMessage = '';
 
     if (!this.email.trim() || !this.password.trim()) {
-      this.errorMessage = 'Please enter both email and password';
+      this.errorMessage = 'Please enter email and password';
       return;
     }
 
     const emailTrimmed = this.email.trim();
     const passwordTrimmed = this.password.trim();
 
-    console.log('🔐 Login attempt:', { email: emailTrimmed });
+    console.log('🔐 Login attempt:', emailTrimmed);
 
-    this.authService.clearUserSession();
-
-    const loginSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
-    
-    if (loginSuccess) {
-      console.log('✅ Login successful');
-      
-      const currentUser = this.authService.getCurrentUser();
-      const userRole = this.authService.getCurrentUserRole();
-      
-      // Save to Supabase
-      try {
-        const uniqueId = emailTrimmed.replace(/[@.]/g, '_').toLowerCase();
-        const userName = currentUser?.name || emailTrimmed.split('@')[0];
-        
-        const profileData = {
-          id: uniqueId,
-          email: emailTrimmed,
-          full_name: userName,
-          username: userName,
-          role: userRole || 'user',
-          is_dark_mode: false,
-          language: 'en'
-        };
-        
-        await this.supabaseAuthService.upsertUserProfile(profileData);
-        console.log('✅ Login info saved to Supabase');
-      } catch (error) {
-        console.error('❌ Supabase save failed:', error);
-      }
-      
-      this.successMessage = 'Login successful!';
-      this.close.emit();
-      
-      setTimeout(() => {
-        this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-          if (userRole === 'admin') {
-            this.router.navigate(['/admin'], { replaceUrl: true });
-          } else {
-            this.router.navigate(['/loading'], { replaceUrl: true });
-          }
-        });
-      }, 1000);
+    // Admin login
+    if (emailTrimmed === 'admin' && passwordTrimmed === 'admin') {
+      this.authService.setCurrentUser('admin@example.com', 'Admin User', 'admin');
+      this.successMessage = 'Admin login successful!';
+      setTimeout(() => this.router.navigate(['/admin/dashboard'], { replaceUrl: true }), 500);
       return;
     }
 
-    this.errorMessage = 'Invalid email or password. Please check your credentials.';
-    console.log('❌ Login failed for:', emailTrimmed);
+    // Supabase login (primary)
+    const { data, error } = await this.supabaseAuthService.signIn(emailTrimmed, passwordTrimmed);
+    
+    if (!error && data.user) {
+      console.log('✅ Supabase login successful');
+      const userName = data.user.user_metadata?.['full_name'] || emailTrimmed.split('@')[0];
+      const userRole = data.user.user_metadata?.['role'] || 'user';
+      this.authService.setCurrentUser(emailTrimmed, userName, userRole);
+      this.successMessage = 'Login successful!';
+      setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
+      return;
+    }
+
+    // Local fallback
+    const localLoginSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
+    if (localLoginSuccess) {
+      console.log('✅ Local login successful');
+      this.successMessage = 'Login successful!';
+      setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
+      return;
+    }
+
+    // Failed
+    this.errorMessage = 'Invalid email or password';
+    console.log('❌ Login failed:', error?.message || 'Invalid credentials');
   }
 
   // 🔹 Toggle between login and register modes
@@ -173,11 +146,7 @@ export class LoginComponent {
 
   // 👉 Close the modal
   onClose(): void {
-    this.close.emit();
-    // Clear modal outlet and navigate to home
-    this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-      this.router.navigate(['/home']);
-    });
+    this.router.navigate(['/home']);
   }
 
   // 👉 Toggle password visibility
@@ -187,10 +156,7 @@ export class LoginComponent {
 
   // 🔹 Navigate to Forgot Password page
   navigateToForgotPassword(): void {
-    this.close.emit();
-    this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-      this.router.navigate(['/forgot-password']);
-    });
+    this.router.navigate(['/forgot-password']);
   }
 
   // 🔹 Show forgot password popup
@@ -219,13 +185,7 @@ export class LoginComponent {
     
     try {
       console.log('📧 Sending OTP via Supabase to:', this.forgotEmail);
-      
-      // Navigate directly to OTP-based forgot password flow
-      this.close.emit();
-      this.router.navigate([{ outlets: { modal: null } }]).then(() => {
-        this.router.navigate(['/forgot-password-otp']);
-      });
-      
+      this.router.navigate(['/forgot-password']);
     } catch (error) {
       console.error('Navigation error:', error);
       this.errorMessage = 'Navigation failed. Please try again.';

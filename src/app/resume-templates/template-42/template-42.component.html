@@ -1,0 +1,42 @@
+<div class="max-w-[210mm] min-h-[297mm] mx-auto bg-white p-12 shadow-lg print:shadow-none">
+  <header class="bg-pink-500 text-white p-8 -mx-12 -mt-12 mb-8">
+    <h1 class="text-4xl font-bold mb-2">{{data.name}}</h1>
+    <p class="text-xl mb-4">{{data.title}}</p>
+    <div class="flex gap-4 text-sm">
+      <span>{{data.email}}</span>
+      <span>{{data.phone}}</span>
+      <span>{{data.location}}</span>
+    </div>
+  </header>
+  <section class="mb-6" *ngIf="data.summary">
+    <h2 class="text-2xl font-bold text-pink-500 border-b-2 border-pink-500 pb-2 mb-3">Summary</h2>
+    <p class="text-gray-700">{{data.summary}}</p>
+  </section>
+  <section class="mb-6" *ngIf="data.experience?.length">
+    <h2 class="text-2xl font-bold text-pink-500 border-b-2 border-pink-500 pb-2 mb-3">Experience</h2>
+    <div *ngFor="let exp of data.experience" class="mb-4">
+      <div class="flex justify-between">
+        <h3 class="text-lg font-bold">{{exp.role}}</h3>
+        <span class="text-gray-600">{{exp.duration}}</span>
+      </div>
+      <p class="text-gray-600 mb-1">{{exp.company}}</p>
+      <p class="text-sm text-gray-700">{{exp.description}}</p>
+    </div>
+  </section>
+  <div class="grid grid-cols-2 gap-6">
+    <section *ngIf="data.education?.length">
+      <h2 class="text-xl font-bold text-pink-500 border-b border-pink-500 pb-2 mb-3">Education</h2>
+      <div *ngFor="let edu of data.education" class="mb-3">
+        <h3 class="font-bold">{{edu.degree}}</h3>
+        <p class="text-sm text-gray-600">{{edu.institution}}</p>
+        <p class="text-sm text-gray-500">{{edu.year}}</p>
+      </div>
+    </section>
+    <section *ngIf="data.skills?.length">
+      <h2 class="text-xl font-bold text-pink-500 border-b border-pink-500 pb-2 mb-3">Skills</h2>
+      <div class="flex flex-wrap gap-2">
+        <span *ngFor="let skill of data.skills" class="px-3 py-1 bg-pink-500 text-white text-xs rounded-full">{{skill}}</span>
+      </div>
+    </section>
+  </div>
+</div>

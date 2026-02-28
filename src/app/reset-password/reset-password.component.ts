@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { SupabaseAuthService } from '../services/supabase-auth.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -265,21 +265,37 @@ export class ResetPasswordComponent implements OnInit {
   successMessage: string = '';
 
   constructor(
-    private authService: AuthService,
+    private supabaseAuth: SupabaseAuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    // Get email and verification status from query params
-    this.route.queryParams.subscribe(params => {
-      this.email = params['email'] || '';
-      const verified = params['verified'] || '';
+    // Handle both hash and query params from Supabase
+    this.handleSupabaseCallback();
+  }
+
+  async handleSupabaseCallback(): Promise<void> {
+    try {
+      // Supabase sends token in URL hash
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
       
-      if (!this.email || verified !== 'true') {
-        this.router.navigate(['/forgot-password']);
+      if (accessToken) {
+        console.log('✅ Valid reset token found');
+        const { data } = await this.supabaseAuth.getSessionFromUrl();
+        if (data.session) {
+          this.email = data.session.user.email || '';
+          console.log('📧 Email:', this.email);
+        }
+      } else {
+        this.errorMessage = 'Invalid or expired reset link';
+        setTimeout(() => this.router.navigate(['/forgot-password']), 3000);
       }
-    });
+    } catch (error) {
+      console.error('Error:', error);
+      this.errorMessage = 'Error loading reset page';
+    }
   }
 
   isFormValid(): boolean {
@@ -297,40 +313,50 @@ export class ResetPasswordComponent implements OnInit {
     this.errorMessage = '';
     
     try {
-      console.log('🔄 Resetting password for:', this.email);
+      const { error } = await this.supabaseAuth.updatePasswordWithSupabase(this.newPassword);
       
-      // Update password directly in registered users
-      const registeredUsers = this.authService.getAllUsers();
-      const userIndex = registeredUsers.findIndex(u => u.email === this.email);
-      
-      if (userIndex !== -1) {
-        registeredUsers[userIndex].password = this.newPassword;
-        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-        this.successMessage = 'Password reset successfully! Redirecting to login...';
+      if (error) {
+        this.errorMessage = error.message || 'Failed to reset password';
       } else {
-        // Create new user
-        const newUser = {
-          email: this.email,
-          password: this.newPassword,
-          name: this.email.split('@')[0],
-          role: 'user' as 'user'
-        };
-        registeredUsers.push(newUser);
-        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-        this.successMessage = 'Account created with new password! Redirecting to login...';
+        // Log password reset in database
+        await this.logPasswordReset();
+        
+        this.successMessage = '✅ Password reset successfully! Redirecting to login...';
+        console.log('✅ Password updated in Supabase for:', this.email);
+        setTimeout(() => this.router.navigate(['/login']), 2000);
       }
-      
-      console.log('✅ Password reset successful for:', this.email);
-      
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 2000);
-      
     } catch (error) {
-      console.error('Error resetting password:', error);
+      console.error('Error:', error);
       this.errorMessage = 'Error updating password';
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  async logPasswordReset(): Promise<void> {
+    try {
+      const userName = this.email.split('@')[0];
+      
+      const { data, error } = await this.supabaseAuth.supabase
+        .from('password_reset_requests')
+        .insert({
+          email: this.email,
+          user_name: userName,
+          requested_at: new Date().toISOString(),
+          reset_at: new Date().toISOString(),
+          user_agent: navigator.userAgent,
+          ip_address: 'client',
+          used: true
+        })
+        .select();
+      
+      if (error) {
+        console.error('❌ Failed to log reset:', error);
+      } else {
+        console.log('✅ Password reset logged:', data);
+      }
+    } catch (error) {
+      console.error('❌ Error logging reset:', error);
     }
   }
 

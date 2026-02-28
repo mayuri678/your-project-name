@@ -1,160 +1,97 @@
-<div class="admin-layout">
-  <!-- Sidebar -->
-  <nav class="sidebar">
-    <div class="sidebar-header">
-      <h2>Admin Panel</h2>
-      <div class="admin-info" *ngIf="currentAdmin">
-        <div class="admin-avatar">{{ currentAdmin.name.charAt(0) }}</div>
-        <div class="admin-details">
-          <span class="admin-name">{{ currentAdmin.name }}</span>
-          <span class="admin-role">{{ currentAdmin.role | titlecase }}</span>
-        </div>
+<div class="dashboard-content">
+  <header class="content-header">
+    <h1>Dashboard Overview</h1>
+    <p>Welcome back, {{ currentAdmin?.name }}! Here's what's happening with your platform.</p>
+  </header>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="stats">
+    <div class="stat-card users">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <h3>{{ stats.users.total }}</h3>
+        <p>Total Users</p>
+        <span class="stat-change positive">+{{ stats.users.new }} new</span>
       </div>
     </div>
 
-    <ul class="nav-menu">
-      <li>
-        <a routerLink="/admin/dashboard" routerLinkActive="active">
-          <i class="icon">📊</i>
-          Dashboard
-        </a>
-      </li>
-      <li>
-        <a routerLink="/admin/users" routerLinkActive="active">
-          <i class="icon">👥</i>
-          Manage Users
-        </a>
-      </li>
-      <li>
-        <a routerLink="/admin/templates" routerLinkActive="active">
-          <i class="icon">📄</i>
-          Resume Templates
-        </a>
-      </li>
-      <li>
-        <a routerLink="/admin/subscriptions" routerLinkActive="active">
-          <i class="icon">💳</i>
-          Subscription Plans
-        </a>
-      </li>
-      <li>
-        <a routerLink="/admin/analytics" routerLinkActive="active">
-          <i class="icon">📈</i>
-          Analytics
-        </a>
-      </li>
-      <li>
-        <a routerLink="/admin/feedback" routerLinkActive="active">
-          <i class="icon">💬</i>
-          Feedback & Messages
-        </a>
-      </li>
-    </ul>
+    <div class="stat-card templates">
+      <div class="stat-icon">📄</div>
+      <div class="stat-content">
+        <h3>{{ stats.templates.total }}</h3>
+        <p>Resume Templates</p>
+        <span class="stat-detail">{{ stats.templates.premium }} premium</span>
+      </div>
+    </div>
 
-    <div class="sidebar-footer">
-      <button class="logout-btn" (click)="logout()">
-        <i class="icon">🚪</i>
-        Logout
+    <div class="stat-card revenue">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <h3>${{ stats.revenue.total }}</h3>
+        <p>Total Revenue</p>
+        <span class="stat-change positive">${{ stats.revenue.monthly }} this month</span>
+      </div>
+    </div>
+
+    <div class="stat-card downloads">
+      <div class="stat-icon">⬇️</div>
+      <div class="stat-content">
+        <h3>{{ stats.templates.downloads }}</h3>
+        <p>Total Downloads</p>
+        <span class="stat-detail">{{ stats.revenue.subscriptions }} active subscriptions</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h2>Quick Actions</h2>
+    <div class="actions-grid">
+      <button class="action-btn" [routerLink]="['/admin/users']">
+        <i class="icon">👤</i>
+        <span>Add New User</span>
+      </button>
+      <button class="action-btn" [routerLink]="['/admin/templates']">
+        <i class="icon">➕</i>
+        <span>Create Template</span>
+      </button>
+      <button class="action-btn" [routerLink]="['/admin/subscriptions']">
+        <i class="icon">💳</i>
+        <span>Manage Plans</span>
+      </button>
+      <button class="action-btn" [routerLink]="['/admin/feedback']">
+        <i class="icon">💬</i>
+        <span>Review Feedback</span>
+        <span class="badge" *ngIf="stats && stats.feedback.pending > 0">{{ stats.feedback.pending }}</span>
       </button>
     </div>
-  </nav>
+  </div>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <header class="content-header">
-      <h1>Dashboard Overview</h1>
-      <p>Welcome back, {{ currentAdmin?.name }}! Here's what's happening with your platform.</p>
-    </header>
-
-    <!-- Stats Cards -->
-    <div class="stats-grid" *ngIf="stats">
-      <div class="stat-card users">
-        <div class="stat-icon">👥</div>
-        <div class="stat-content">
-          <h3>{{ stats.users.total }}</h3>
-          <p>Total Users</p>
-          <span class="stat-change positive">+{{ stats.users.new }} new</span>
+  <!-- Recent Activity -->
+  <div class="recent-activity">
+    <h2>Recent Activity</h2>
+    <div class="activity-list">
+      <div class="activity-item">
+        <div class="activity-icon">👤</div>
+        <div class="activity-content">
+          <p><strong>New user registered:</strong> john.doe@example.com</p>
+          <span class="activity-time">2 minutes ago</span>
         </div>
       </div>
-
-      <div class="stat-card templates">
-        <div class="stat-icon">📄</div>
-        <div class="stat-content">
-          <h3>{{ stats.templates.total }}</h3>
-          <p>Resume Templates</p>
-          <span class="stat-detail">{{ stats.templates.premium }} premium</span>
+      <div class="activity-item">
+        <div class="activity-icon">📄</div>
+        <div class="activity-content">
+          <p><strong>Template downloaded:</strong> Professional Resume Template</p>
+          <span class="activity-time">5 minutes ago</span>
         </div>
       </div>
-
-      <div class="stat-card revenue">
-        <div class="stat-icon">💰</div>
-        <div class="stat-content">
-          <h3>${{ stats.revenue.total }}</h3>
-          <p>Total Revenue</p>
-          <span class="stat-change positive">${{ stats.revenue.monthly }} this month</span>
-        </div>
-      </div>
-
-      <div class="stat-card downloads">
-        <div class="stat-icon">⬇️</div>
-        <div class="stat-content">
-          <h3>{{ stats.templates.downloads }}</h3>
-          <p>Total Downloads</p>
-          <span class="stat-detail">{{ stats.revenue.subscriptions }} active subscriptions</span>
+      <div class="activity-item">
+        <div class="activity-icon">💳</div>
+        <div class="activity-content">
+          <p><strong>New subscription:</strong> Premium Plan purchased</p>
+          <span class="activity-time">15 minutes ago</span>
         </div>
       </div>
     </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <h2>Quick Actions</h2>
-      <div class="actions-grid">
-        <button class="action-btn" [routerLink]="['/admin/users']">
-          <i class="icon">👤</i>
-          <span>Add New User</span>
-        </button>
-        <button class="action-btn" [routerLink]="['/admin/templates']">
-          <i class="icon">➕</i>
-          <span>Create Template</span>
-        </button>
-        <button class="action-btn" [routerLink]="['/admin/subscriptions']">
-          <i class="icon">💳</i>
-          <span>Manage Plans</span>
-        </button>
-        <button class="action-btn" [routerLink]="['/admin/feedback']">
-          <i class="icon">💬</i>
-          <span>Review Feedback</span>
-          <span class="badge" *ngIf="stats && stats.feedback.pending > 0">{{ stats.feedback.pending }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="recent-activity">
-      <h2>Recent Activity</h2>
-      <div class="activity-list">
-        <div class="activity-item">
-          <div class="activity-icon">👤</div>
-          <div class="activity-content">
-            <p><strong>New user registered:</strong> john.doe@example.com</p>
-            <span class="activity-time">2 minutes ago</span>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-icon">📄</div>
-          <div class="activity-content">
-            <p><strong>Template downloaded:</strong> Professional Resume Template</p>
-            <span class="activity-time">5 minutes ago</span>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-icon">💳</div>
-          <div class="activity-content">
-            <p><strong>New subscription:</strong> Premium Plan purchased</p>
-            <span class="activity-time">15 minutes ago</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
+  </div>
 </div>

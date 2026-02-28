@@ -34,34 +34,37 @@ export class MyTemplatesComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    console.log('🔍 MyTemplates component initialized');
     this.isLoggedIn = this.authService.isLoggedIn();
+    console.log('✅ Login status:', this.isLoggedIn);
     if (this.isLoggedIn) {
-      // Clear previous user's templates first
       this.clearPreviousTemplates();
       await this.loadTemplates();
+    } else {
+      console.log('❌ User not logged in, redirecting...');
+      this.loading = false;
     }
   }
 
   async loadTemplates() {
+    console.log('📦 Loading templates...');
     try {
-      // Load from localStorage (downloaded templates)
       const localTemplates = JSON.parse(localStorage.getItem('myTemplates') || '[]');
+      console.log('💾 Local templates:', localTemplates.length);
       
-      // Load user's own templates from Supabase
       const userResult = await this.supabaseService.getUserTemplates();
       let userTemplates = userResult.data || [];
+      console.log('👤 User templates from Supabase:', userTemplates.length);
       
-      // Also load admin-created templates
       const adminResult = await this.supabaseService.getAllTemplates();
       let adminTemplates = adminResult.data || [];
+      console.log('👑 Admin templates from Supabase:', adminTemplates.length);
       
-      // Combine all arrays
       const allTemplates = [...localTemplates, ...userTemplates, ...adminTemplates];
       const uniqueTemplates = allTemplates.filter((template, index, self) => 
         index === self.findIndex(t => t.id === template.id)
       );
       
-      // Process all templates
       const processedTemplates = uniqueTemplates.map(template => {
         try {
           const data = template.content ? { content: template.content } : JSON.parse(template.description || '{}');
@@ -84,9 +87,10 @@ export class MyTemplatesComponent implements OnInit {
       });
       
       this.templates = processedTemplates;
-      console.log('Loaded templates:', this.templates.length);
+      console.log('✅ Total templates loaded:', this.templates.length);
+      console.log('📋 Templates:', this.templates);
     } catch (error) {
-      console.error('Error loading templates:', error);
+      console.error('❌ Error loading templates:', error);
     } finally {
       this.loading = false;
     }

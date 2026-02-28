@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,7 +20,7 @@ import { FooterComponent } from '../footer/footer.component';
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   profile: UserProfile = {
     id: '',
     email: '',
@@ -93,7 +93,18 @@ export class ProfileComponent implements OnInit {
     // Clear any previous user's data first
     this.clearPreviousUserData();
     this.loadProfile();
+    
+    // Listen for storage changes to reload profile
+    window.addEventListener('storage', this.handleStorageChange);
   }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('storage', this.handleStorageChange);
+  }
+
+  private handleStorageChange = (): void => {
+    this.loadProfile();
+  };
 
   private clearPreviousUserData(): void {
     // Reset component state
@@ -281,79 +292,56 @@ export class ProfileComponent implements OnInit {
   }
 
   async saveProfile(): Promise<void> {
+    console.log('💾 Save button clicked!');
     console.log('💾 Saving profile to backend:', this.profile);
     
-    // Clear previous messages
     this.errorMessage = '';
     this.successMessage = '';
     this.loading = true;
     
-    // Validate required fields
-    if (!this.profile.email || !this.profile.username) {
-      this.errorMessage = 'Email and Full Name are required fields.';
+    if (!this.profile.email) {
+      this.errorMessage = 'Email is required.';
       this.loading = false;
       return;
     }
 
-    // Validate full name format
-    const nameParts = this.profile.username.trim().split(/\s+/);
-    if (nameParts.length < 3) {
-      this.errorMessage = 'Please enter your complete full name (First Name, Father Name, Surname).';
-      this.loading = false;
-      return;
-    }
-
-    // Update photo if changed
     if (this.photoPreview && this.photoPreview !== this.profile.photo) {
       this.profile.photo = this.photoPreview;
     }
 
     try {
-      // Save to backend first
-      console.log('🔄 Saving to backend...');
-      const { data, error } = await this.supabaseAuthService.upsertUserProfile(this.profile);
+      // Save to backend with timeout
+      const savePromise = this.supabaseAuthService.upsertUserProfile(this.profile);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+      
+      const { data, error } = await Promise.race([savePromise, timeoutPromise]) as any;
       
       if (error) {
         console.warn('⚠️ Backend save failed:', error);
-        
-        // Fallback to localStorage
-        const localSuccess = this.userDataService.saveUserData('profile', this.profile);
-        if (localSuccess) {
-          this.successMessage = 'Profile saved locally (server unavailable).';
-        } else {
-          this.errorMessage = 'Failed to save profile. Please try again.';
-          this.loading = false;
-          return;
-        }
+        this.userDataService.saveUserData('profile', this.profile);
+        this.successMessage = 'Profile saved locally.';
       } else {
-        console.log('✅ Profile saved to backend successfully:', data);
-        
-        // Also save locally as backup
+        console.log('✅ Backend save success:', data);
         this.userDataService.saveUserData('profile', this.profile);
         this.successMessage = 'Profile updated successfully!';
       }
       
+      this.authService.saveUserProfile(this.profile);
       this.isEditing = false;
+      window.dispatchEvent(new Event('storage'));
       
-      // Clear success message after 3 seconds
       setTimeout(() => {
         this.successMessage = '';
       }, 3000);
       
     } catch (error) {
       console.error('❌ Exception saving profile:', error);
-      
-      // Fallback to localStorage
-      const localSuccess = this.userDataService.saveUserData('profile', this.profile);
-      if (localSuccess) {
-        this.successMessage = 'Profile saved locally.';
-        this.isEditing = false;
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
-      } else {
-        this.errorMessage = 'Failed to save profile. Please try again.';
-      }
+      this.userDataService.saveUserData('profile', this.profile);
+      this.successMessage = 'Profile saved locally.';
+      this.isEditing = false;
+      window.dispatchEvent(new Event('storage'));
     } finally {
       this.loading = false;
     }
@@ -506,9 +494,13 @@ export class ProfileComponent implements OnInit {
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
           this.photoPreview = e.target.result as string;
+          this.profile.photo = this.photoPreview;
           this.errorMessage = '';
-          // Save photo immediately for current user
-          this.userDataService.saveUserPhoto(this.photoPreview);
+          // Save immediately
+          this.userDataService.saveUserData('profile', this.profile);
+          this.authService.saveUserProfile(this.profile);
+          // Trigger header update
+          window.dispatchEvent(new Event('storage'));
         }
       };
       

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Auth</title>
+</head>
+<body>
+    <h1>Debug Authentication Data</h1>
+    <button onclick="showData()">Show Registered Users</button>
+    <button onclick="clearData()">Clear All Data</button>
+    <pre id="output"></pre>
+
+    <script>
+        function showData() {
+            const users = localStorage.getItem('registeredUsers');
+            const output = document.getElementById('output');
+            if (users) {
+                output.textContent = 'Registered Users:\n' + JSON.stringify(JSON.parse(users), null, 2);
+            } else {
+                output.textContent = 'No registered users found';
+            }
+        }
+
+        function clearData() {
+            localStorage.clear();
+            alert('All data cleared! Please refresh your Angular app.');
+        }
+    </script>
+</body>
+</html>

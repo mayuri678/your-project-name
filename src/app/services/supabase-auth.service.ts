@@ -152,7 +152,8 @@ export class SupabaseAuthService {
     if (error) {
       console.error('❌ Supabase password reset email failed:', error);
     } else {
-      console.log('✅ Password reset email sent successfully:', data);
+      console.log('✅ Password reset email sent successfully');
+      console.log('🔗 Reset link will redirect to:', `${window.location.origin}/reset-password`);
     }
     
     return { data, error };
@@ -212,10 +213,10 @@ export class SupabaseAuthService {
     return !!this.getCurrentUser();
   }
 
-  // Fetch user profile from user_profiles table by email or ID
+  // Fetch user profile from user_data table by email or ID
   async getUserProfile(identifier: string): Promise<{ data: UserProfile | null; error: any }> {
     let query = this.supabase
-      .from('user_profiles')
+      .from('user_data')
       .select('*');
     
     // Check if identifier looks like an email
@@ -244,47 +245,68 @@ export class SupabaseAuthService {
     try {
       // First try to get existing profile
       const { data: existingData, error: selectError } = await this.supabase
-        .from('user_profiles')
+        .from('user_data')
         .select('*')
         .eq('id', profile.id)
         .single();
       
       console.log('📋 Existing profile check:', { existingData, selectError });
       
+      if (selectError && selectError.code !== 'PGRST116') {
+        console.error('❌ Select error:', selectError);
+        return { data: null, error: selectError };
+      }
+      
+      const profileData = {
+        full_name: profile.full_name,
+        username: profile.username,
+        email: profile.email,
+        contactNo: profile.contactNo,
+        address: profile.address,
+        street: profile.street,
+        city: profile.city,
+        state: profile.state,
+        country: profile.country,
+        pincode: profile.pincode,
+        photo: profile.photo,
+        education: profile.education,
+        degree: profile.degree,
+        institution: profile.institution,
+        graduationYear: profile.graduationYear,
+        role: profile.role,
+        is_dark_mode: profile.is_dark_mode,
+        language: profile.language,
+        updated_at: new Date().toISOString()
+      };
+      
       let result;
       if (existingData) {
         // Update existing profile
         result = await this.supabase
-          .from('user_profiles')
-          .update({
-            full_name: profile.full_name,
-            username: profile.username,
-            role: profile.role,
-            is_dark_mode: profile.is_dark_mode,
-            language: profile.language,
-            updated_at: new Date().toISOString()
-          })
+          .from('user_data')
+          .update(profileData)
           .eq('id', profile.id)
           .select();
       } else {
         // Insert new profile
         result = await this.supabase
-          .from('user_profiles')
+          .from('user_data')
           .insert({
             id: profile.id,
-            email: profile.email,
-            full_name: profile.full_name,
-            username: profile.username,
-            role: profile.role,
-            is_dark_mode: profile.is_dark_mode || false,
-            language: profile.language || 'en',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            ...profileData,
+            created_at: new Date().toISOString()
           })
           .select();
       }
       
       console.log('💾 Supabase operation result:', result);
+      
+      if (result.error) {
+        console.error('❌ Operation failed:', result.error);
+      } else {
+        console.log('✅ Success!');
+      }
+      
       return result;
     } catch (error) {
       console.error('❌ Supabase upsert error:', error);
@@ -295,7 +317,7 @@ export class SupabaseAuthService {
   // Update user profile
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<{ data: any; error: any }> {
     const { data, error } = await this.supabase
-      .from('user_profiles')
+      .from('user_data')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', userId)
       .select();
@@ -407,5 +429,39 @@ export class SupabaseAuthService {
       .eq('token', token);
     
     return { data, error };
+  }
+
+  // Get user settings
+  async getUserSettings(userEmail: string): Promise<{ data: any; error: any }> {
+    const { data, error } = await this.supabase
+      .from('user_settings')
+      .select('*')
+      .eq('user_email', userEmail)
+      .single();
+    return { data, error };
+  }
+
+  // Save user settings
+  async saveUserSettings(settings: any): Promise<{ data: any; error: any }> {
+    // Use original email from login to find record
+    const originalEmail = settings.user_email;
+    const { data: existing } = await this.getUserSettings(originalEmail);
+    
+    if (existing) {
+      // Update existing record
+      const { data, error } = await this.supabase
+        .from('user_settings')
+        .update({ ...settings, updated_at: new Date().toISOString() })
+        .eq('user_email', originalEmail)
+        .select();
+      return { data, error };
+    } else {
+      // Insert new record
+      const { data, error } = await this.supabase
+        .from('user_settings')
+        .insert({ ...settings, created_at: new Date().toISOString() })
+        .select();
+      return { data, error };
+    }
   }
 }

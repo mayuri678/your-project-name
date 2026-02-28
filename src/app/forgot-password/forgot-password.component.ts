@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
-import { EmailService } from '../services/email.service';
-import { SimpleEmailService } from '../services/simple-email.service';
+import { SupabaseAuthService } from '../services/supabase-auth.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -15,22 +14,13 @@ import { SimpleEmailService } from '../services/simple-email.service';
 })
 export class ForgotPasswordComponent {
   email: string = '';
-  otp: string = '';
-  newPassword: string = '';
-  confirmPassword: string = '';
-  
   isLoading: boolean = false;
-  otpVerified: boolean = false;
-  otpSent: boolean = false;
-  generatedOtp: string = '';
-  
   errorMessage: string = '';
   successMessage: string = '';
 
   constructor(
     private authService: AuthService,
-    private emailService: EmailService,
-    private simpleEmailService: SimpleEmailService,
+    private supabaseAuth: SupabaseAuthService,
     private router: Router
   ) {}
 
@@ -40,124 +30,59 @@ export class ForgotPasswordComponent {
       return;
     }
 
+    this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
     
-    // Generate OTP
-    this.generatedOtp = this.emailService.generateOTP();
-    this.emailService.storeOTP(this.email, this.generatedOtp);
-    
-    // Show on page
-    this.otpSent = true;
-    this.successMessage = `Your OTP: ${this.generatedOtp}`;
-    
-    console.log('🔑 OTP:', this.generatedOtp);
-  }
-
-  async verifyOtp(): Promise<void> {
-    if (!this.otp.trim()) {
-      this.errorMessage = 'OTP is required';
-      return;
-    }
-
-    this.isLoading = true;
-    this.errorMessage = '';
-    
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Send reset email via Supabase
+      const { error } = await this.supabaseAuth.sendPasswordResetEmail(this.email);
       
-      // Verify OTP using EmailService
-      const isValidOtp = this.emailService.verifyOTP(this.email, this.otp);
-      
-      if (isValidOtp) {
-        this.otpVerified = true;
-        this.successMessage = 'OTP verified successfully! You can now reset your password.';
-        console.log('✅ OTP verified for:', this.email);
+      if (error) {
+        this.errorMessage = error.message || 'Failed to send reset email';
       } else {
-        this.errorMessage = 'Invalid or expired OTP';
-        console.log('❌ Invalid OTP for:', this.email);
+        // Log request in database
+        await this.logResetRequest();
+        
+        this.successMessage = '✅ Password reset link sent to your email! Check your inbox.';
+        console.log('📧 Reset email sent to:', this.email);
+        
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 3000);
       }
     } catch (error) {
-      console.error('Error verifying OTP:', error);
-      this.errorMessage = 'Error verifying OTP';
+      console.error('Error:', error);
+      this.errorMessage = 'Error sending reset email';
     } finally {
       this.isLoading = false;
     }
   }
 
-  async resetPassword(): Promise<void> {
-    if (!this.validateForm()) return;
-
-    this.isLoading = true;
-    this.errorMessage = '';
-    
+  async logResetRequest(): Promise<void> {
     try {
-      console.log('🔄 Resetting password for:', this.email);
+      const userName = this.email.split('@')[0];
       
-      // Use AuthService changePassword method
-      const result = await this.authService.changePassword('', this.newPassword);
+      const { data, error } = await this.supabaseAuth.supabase
+        .from('password_reset_requests')
+        .insert({
+          email: this.email,
+          user_name: userName,
+          requested_at: new Date().toISOString(),
+          user_agent: navigator.userAgent,
+          ip_address: 'client',
+          used: false
+        })
+        .select();
       
-      if (result.success) {
-        this.successMessage = 'Password reset successfully! Redirecting to login...';
-        console.log('✅ Password reset successful for:', this.email);
-        
-        // Clear OTP after successful reset
-        this.emailService.clearOTP(this.email);
-        
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
+      if (error) {
+        console.error('❌ Failed to log:', error);
       } else {
-        // Fallback: Direct password update
-        const registeredUsers = this.authService.getAllUsers();
-        const userIndex = registeredUsers.findIndex(u => u.email === this.email);
-        
-        if (userIndex !== -1) {
-          registeredUsers[userIndex].password = this.newPassword;
-          localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-          this.successMessage = 'Password updated successfully! Redirecting to login...';
-        } else {
-          const newUser = {
-            email: this.email,
-            password: this.newPassword,
-            name: this.email.split('@')[0],
-            role: 'user' as 'user'
-          };
-          registeredUsers.push(newUser);
-          localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-          this.successMessage = 'Account created with new password! Redirecting to login...';
-        }
-        
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
+        console.log('✅ Reset request saved:', data);
       }
-      
     } catch (error) {
-      console.error('Error resetting password:', error);
-      this.errorMessage = 'Error updating password';
-    } finally {
-      this.isLoading = false;
+      console.error('❌ Error:', error);
     }
-  }
-
-  private validateForm(): boolean {
-    if (!this.newPassword || this.newPassword.length < 6) {
-      this.errorMessage = 'Password must be at least 6 characters';
-      return false;
-    }
-    
-    if (this.newPassword !== this.confirmPassword) {
-      this.errorMessage = 'Passwords do not match';
-      return false;
-    }
-    
-    if (!this.otpVerified) {
-      this.errorMessage = 'Please verify OTP first';
-      return false;
-    }
-    
-    return true;
   }
 
   goToLogin(): void {

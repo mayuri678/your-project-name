@@ -52,7 +52,9 @@ export class AdminService {
       };
       this.setCurrentAdmin(admin);
       
-      // Also login to Supabase for template creation
+      console.log('✅ Admin logged in successfully (mock):', admin);
+      
+      // Also try to login to Supabase for template creation
       this.supabaseService.login('admin@example.com', 'admin123').then(result => {
         console.log('Supabase login for admin:', result);
       }).catch(err => {
@@ -66,6 +68,7 @@ export class AdminService {
     return from(this.supabaseService.login(email, password)).pipe(
       map(result => {
         if (result.error || !result.data?.session?.user) {
+          console.log('❌ Admin login failed:', result.error);
           return false;
         }
 
@@ -80,10 +83,11 @@ export class AdminService {
           createdAt: new Date()
         };
         this.setCurrentAdmin(admin);
+        console.log('✅ Admin logged in successfully (Supabase):', admin);
         return true;
       }),
       catchError((err) => {
-        console.error('Supabase admin login failed:', err);
+        console.error('❌ Supabase admin login failed:', err);
         return of(false);
       })
     );

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { UserDataService } from '../services/user-data.service';
+import { SupabaseAuthService } from '../services/supabase-auth.service';
 import { HeaderComponent } from '../header/header.component';
 
 @Component({
@@ -25,6 +26,8 @@ export class SettingsComponent implements OnInit {
     linkedin: '',
     github: ''
   };
+
+  originalEmail: string = ''; // Track original login email
 
   preferences = {
     notifications: true,
@@ -166,6 +169,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private userDataService: UserDataService,
+    private supabaseAuthService: SupabaseAuthService,
     public router: Router
   ) {}
 
@@ -176,7 +180,46 @@ export class SettingsComponent implements OnInit {
       return;
     }
     this.loadUserData();
+    // Don't load from backend on init - let user see current values
+    // this.loadSettingsFromBackend();
     this.currentLanguage = this.preferences.language;
+  }
+
+  async loadSettingsFromBackend(): Promise<void> {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    try {
+      const { data, error } = await this.supabaseAuthService.getUserSettings(currentUser.email);
+      if (data && !error) {
+        this.userProfile.name = data.full_name || this.userProfile.name;
+        this.userProfile.phone = data.phone || '';
+        this.userProfile.address = data.address || '';
+        this.userProfile.bio = data.bio || '';
+        this.userProfile.website = data.website || '';
+        this.userProfile.linkedin = data.linkedin || '';
+        this.userProfile.github = data.github || '';
+        
+        this.preferences.notifications = data.notifications ?? true;
+        this.preferences.emailUpdates = data.email_updates ?? true;
+        this.preferences.darkMode = data.dark_mode ?? false;
+        this.preferences.language = data.language || 'en';
+        this.preferences.autoSave = data.auto_save ?? true;
+        this.preferences.templatePreview = data.template_preview ?? true;
+        
+        this.privacy.profileVisible = data.profile_visible ?? true;
+        this.privacy.showEmail = data.show_email ?? false;
+        this.privacy.showPhone = data.show_phone ?? false;
+        this.privacy.allowDownloads = data.allow_downloads ?? true;
+        this.privacy.shareAnalytics = data.share_analytics ?? false;
+        
+        this.accountInfo.memberSince = data.member_since ? new Date(data.member_since).toLocaleDateString() : this.accountInfo.memberSince;
+        this.accountInfo.totalResumes = data.total_resumes || 0;
+        this.accountInfo.accountType = data.account_type || 'Free';
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
   }
 
   loadUserData(): void {
@@ -184,6 +227,7 @@ export class SettingsComponent implements OnInit {
     if (currentUser) {
       this.userProfile.name = currentUser.name;
       this.userProfile.email = currentUser.email;
+      this.originalEmail = currentUser.email; // Save original email
       
       // Load profile data
       const profileData = this.userDataService.getUserData('profile');
@@ -224,27 +268,79 @@ export class SettingsComponent implements OnInit {
     this.accountInfo.accountType = this.authService.isAdmin() ? 'Admin' : 'Free';
   }
 
-  saveSettings(): void {
+  async saveSettings(): Promise<void> {
+    console.log('🔘 Save button clicked!');
+    const currentUser = this.authService.getCurrentUser();
+    console.log('👤 Current user:', currentUser);
+    
+    if (!currentUser) {
+      console.error('❌ No user logged in!');
+      this.errorMessage = 'Please login first.';
+      return;
+    }
+
+    this.currentLanguage = this.preferences.language;
+    
+    const settingsData = {
+      user_email: this.originalEmail, // Use original email for lookup
+      full_name: this.userProfile.name,
+      phone: this.userProfile.phone,
+      address: this.userProfile.address,
+      bio: this.userProfile.bio,
+      website: this.userProfile.website,
+      linkedin: this.userProfile.linkedin,
+      github: this.userProfile.github,
+      notifications: this.preferences.notifications,
+      email_updates: this.preferences.emailUpdates,
+      dark_mode: this.preferences.darkMode,
+      language: this.preferences.language,
+      auto_save: this.preferences.autoSave,
+      template_preview: this.preferences.templatePreview,
+      profile_visible: this.privacy.profileVisible,
+      show_email: this.privacy.showEmail,
+      show_phone: this.privacy.showPhone,
+      allow_downloads: this.privacy.allowDownloads,
+      share_analytics: this.privacy.shareAnalytics,
+      last_login: new Date().toISOString(),
+      total_resumes: this.accountInfo.totalResumes,
+      account_type: this.accountInfo.accountType
+    };
+    
+    console.log('💾 Settings data to save:', settingsData);
+    
+    // Always save to localStorage first
+    this.saveToLocalStorage();
+    console.log('✅ Saved to localStorage');
+    
+    try {
+      console.log('🔄 Calling backend...');
+      const { data, error } = await this.supabaseAuthService.saveUserSettings(settingsData);
+      console.log('📊 Backend response:', { data, error });
+      
+      if (error) {
+        console.warn('⚠️ Backend save failed:', error);
+        this.successMessage = 'Settings saved locally (backend unavailable).';
+      } else {
+        console.log('✅ Backend save successful!');
+        this.successMessage = this.getTranslation('saveChanges') + ' successfully!';
+      }
+    } catch (error) {
+      console.error('❌ Error saving settings:', error);
+      this.successMessage = 'Settings saved locally.';
+    }
+    
+    setTimeout(() => {
+      this.successMessage = '';
+    }, 3000);
+  }
+
+  private saveToLocalStorage(): void {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
-      // Update current language
-      this.currentLanguage = this.preferences.language;
-      
-      // Save each section separately using UserDataService
       this.userDataService.saveUserData('profile', this.userProfile);
       this.userDataService.saveUserData('preferences', this.preferences);
       this.userDataService.saveUserData('privacy', this.privacy);
-      
-      // Update last login time
       localStorage.setItem(`lastLogin_${currentUser.email}`, new Date().toLocaleDateString());
-      
-      this.successMessage = this.getTranslation('saveChanges') + ' successfully!';
-      this.errorMessage = '';
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 3000);
     }
   }
 
@@ -345,5 +441,11 @@ export class SettingsComponent implements OnInit {
       // Reload account info to update count
       this.loadAccountInfo(currentUser);
     }
+  }
+
+  // Test button to verify click events
+  testButton(): void {
+    console.log('🧪 TEST BUTTON CLICKED!');
+    alert('Test button works! If you see this, click events are working.');
   }
 }

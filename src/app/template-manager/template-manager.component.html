@@ -26,14 +26,14 @@
     </div>
     
     <!-- Created Templates View -->
-    <div *ngIf="showCreatedTemplates" class="created-templates">
+    <div *ngIf="showCreatedTemplates" class="created-templates" @fadeSlideIn>
       <div class="created-header">
         <h3>My Created Templates</h3>
         <button (click)="cancelAdd()" class="back-btn">← Back</button>
       </div>
       
-      <div class="created-list" *ngIf="createdTemplates.length > 0">
-        <div *ngFor="let template of createdTemplates" class="created-item">
+      <div class="created-list" *ngIf="createdTemplates.length > 0" @listAnimation>
+        <div *ngFor="let template of createdTemplates" class="created-item" @cardAnimation>
           <div class="template-info">
             <h4>{{template.name || 'Untitled Template'}}</h4>
             <p>Created: {{template.createdAt | date:'short'}}</p>
@@ -54,12 +54,12 @@
     </div>
     
     <!-- Template Viewer -->
-    <div *ngIf="showTemplateViewer" class="builder-overlay">
+    <div *ngIf="showTemplateViewer" class="builder-overlay" @fadeSlideIn>
       <app-template-viewer [template]="selectedTemplate" (close)="cancelAdd()" (edit)="editCreatedTemplate($event)"></app-template-viewer>
     </div>
     
     <!-- Template Builder -->
-    <div *ngIf="showTemplateBuilder" class="builder-overlay">
+    <div *ngIf="showTemplateBuilder" class="builder-overlay" @fadeSlideIn>
       <app-template-builder [editTemplateData]="editTemplateData" (close)="cancelAdd()" (templateSaved)="loadCreatedTemplates()"></app-template-builder>
     </div>
     
@@ -88,9 +88,9 @@
       </div>
     </div>
     
-    <div class="template-grid" *ngIf="!showTemplateBuilder && !showCreatedTemplates && !showTemplateViewer">
+    <div class="template-grid" *ngIf="!showTemplateBuilder && !showCreatedTemplates && !showTemplateViewer" @listAnimation>
       <!-- Add Template Form -->
-      <div class="add-template-form" *ngIf="showAddForm">
+      <div class="add-template-form" *ngIf="showAddForm" @fadeSlideIn>
         <h3>Create New Template</h3>
         <input type="text" [(ngModel)]="newTemplateName" placeholder="Template Name">
         <select [(ngModel)]="newTemplateCategory">
@@ -106,9 +106,42 @@
         </div>
       </div>
       
-      <div class="template-card" *ngFor="let template of filteredTemplates" (click)="editTemplate(template)">
+      <div class="template-card" *ngFor="let template of filteredTemplates" @cardAnimation
+           (click)="editTemplate(template)">
         <div class="template-thumbnail">
-          <img [src]="template.thumbnail" [alt]="template.name + ' template preview'">
+          <!-- इथे direct छोटं resume layout दाखवतो -->
+          <div class="auto-thumbnail" [ngClass]="getThumbnailClass(template)">
+            <div class="auto-thumb-header">
+              <div class="auto-thumb-title">{{ template.name }}</div>
+              <div class="auto-thumb-sub">{{ template.category }}</div>
+            </div>
+            <div class="auto-thumb-body">
+              <!-- Basic / default layout -->
+              <div class="line short"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+
+              <!-- Professional / Academic – दोन कॉलम -->
+              <div class="columns" *ngIf="template.category === 'Professional' || template.category === 'Academic'">
+                <div class="col"></div>
+                <div class="col"></div>
+              </div>
+
+              <!-- Creative – रंगीत blocks -->
+              <div class="creative-blocks" *ngIf="template.category === 'Creative'">
+                <div class="block"></div>
+                <div class="block"></div>
+                <div class="block small"></div>
+              </div>
+
+              <!-- Simple / Minimalist – single column साफसुथरा -->
+              <div class="minimal-blocks" *ngIf="template.category === 'Simple' || template.category === 'Minimalist'">
+                <div class="line"></div>
+                <div class="line short"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="template-actions">
             <button class="btn-download" (click)="downloadTemplate(template, $event)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -118,7 +151,7 @@
               </svg>
               Download
             </button>
-            <button class="btn-edit">
+            <button class="btn-edit" (click)="editTemplate(template); $event.stopPropagation()">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>

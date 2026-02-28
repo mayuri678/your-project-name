@@ -1,0 +1,64 @@
+<div class="max-w-[210mm] min-h-[297mm] mx-auto bg-white p-16 shadow-lg print:shadow-none print:p-0">
+  <!-- Header -->
+  <header class="text-center border-b-2 border-black pb-6 mb-8">
+    <h1 class="text-5xl font-bold uppercase tracking-wider mb-2">{{data.name}}</h1>
+    <p class="text-xl text-gray-700 mb-4">{{data.title}}</p>
+    <div class="flex justify-center gap-4 text-sm text-gray-600">
+      <span>{{data.email}}</span>
+      <span>|</span>
+      <span>{{data.phone}}</span>
+      <span>|</span>
+      <span>{{data.location}}</span>
+    </div>
+  </header>
+
+  <!-- Summary -->
+  <section class="mb-8" *ngIf="data.summary">
+    <h2 class="text-2xl font-bold uppercase border-b border-gray-400 pb-2 mb-4">Professional Summary</h2>
+    <p class="text-base leading-relaxed text-gray-800">{{data.summary}}</p>
+  </section>
+
+  <!-- Experience -->
+  <section class="mb-8" *ngIf="data.experience?.length">
+    <h2 class="text-2xl font-bold uppercase border-b border-gray-400 pb-2 mb-4">Work Experience</h2>
+    <div *ngFor="let exp of data.experience" class="mb-6">
+      <div class="flex justify-between items-baseline mb-1">
+        <h3 class="text-lg font-bold">{{exp.role}}</h3>
+        <span class="text-sm text-gray-600">{{exp.duration}}</span>
+      </div>
+      <p class="text-base text-gray-700 mb-2">{{exp.company}}</p>
+      <p class="text-sm text-gray-800 leading-relaxed">{{exp.description}}</p>
+    </div>
+  </section>
+
+  <!-- Education -->
+  <section class="mb-8" *ngIf="data.education?.length">
+    <h2 class="text-2xl font-bold uppercase border-b border-gray-400 pb-2 mb-4">Education</h2>
+    <div *ngFor="let edu of data.education" class="mb-4">
+      <div class="flex justify-between items-baseline">
+        <h3 class="text-lg font-bold">{{edu.degree}}</h3>
+        <span class="text-sm text-gray-600">{{edu.year}}</span>
+      </div>
+      <p class="text-base text-gray-700">{{edu.institution}}</p>
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section class="mb-8" *ngIf="data.skills?.length">
+    <h2 class="text-2xl font-bold uppercase border-b border-gray-400 pb-2 mb-4">Skills</h2>
+    <div class="flex flex-wrap gap-3">
+      <span *ngFor="let skill of data.skills" 
+            class="px-4 py-2 bg-gray-100 text-gray-800 text-sm font-medium rounded">
+        {{skill}}
+      </span>
+    </div>
+  </section>
+
+  <!-- Certifications -->
+  <section *ngIf="data.certifications?.length">
+    <h2 class="text-2xl font-bold uppercase border-b border-gray-400 pb-2 mb-4">Certifications</h2>
+    <ul class="list-disc list-inside space-y-2">
+      <li *ngFor="let cert of data.certifications" class="text-base text-gray-800">{{cert}}</li>
+    </ul>
+  </section>
+</div>

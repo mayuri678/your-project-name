@@ -67,18 +67,20 @@ export class EmailService {
     this.storeOTP(email, otpCode);
     
     try {
-      await this.http.post('https://api.web3forms.com/submit', {
-        access_key: 'YOUR_WEB3FORMS_ACCESS_KEY',
+      const response = await this.http.post('https://api.web3forms.com/submit', {
+        access_key: 'YOUR_WEB3FORMS_ACCESS_KEY', // 👉 Get free key from https://web3forms.com
         subject: '🔐 Your Password Reset OTP',
         from_name: 'Your Project Name',
-        to: email,
-        message: `Hi,\n\nYour OTP for password reset is:\n\n${otpCode}\n\nEnter this OTP on the website (same page where you requested it).\n\nDO NOT click any links. Just enter this OTP code.\n\nThis code expires in 5 minutes.`
+        email: email,
+        message: `Hi,\n\nYour OTP for password reset is:\n\n${otpCode}\n\nEnter this OTP on the password reset page.\n\nThis code expires in 5 minutes.\n\nIf you didn't request this, please ignore this email.`
       }).toPromise();
       
-      console.log('✅ OTP email sent:', otpCode);
+      console.log('✅ OTP email sent to:', email);
       return { success: true, otp: otpCode };
     } catch (error) {
-      console.log('📝 OTP (email failed):', otpCode);
+      console.error('❌ Failed to send OTP email:', error);
+      console.log('📝 OTP (for testing):', otpCode);
+      // Return success anyway for development
       return { success: true, otp: otpCode };
     }
   }

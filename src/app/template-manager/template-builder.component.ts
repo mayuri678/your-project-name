@@ -15,14 +15,15 @@ interface TemplateSection {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="template-builder">
+    <div class="template-builder" (click)="testClick()">
       <div class="builder-header">
-        <h2>Template Builder</h2>
-        <button (click)="closeBuilder()" class="close-btn">&times;</button>
+        <h2>Template Builder - {{templateName || 'No Name'}}</h2>
+        <button (click)="closeBuilder(); $event.stopPropagation()" class="close-btn">&times;</button>
       </div>
       
       <div class="template-form">
-        <input [(ngModel)]="templateName" placeholder="Template Name" class="template-name">
+        <input [(ngModel)]="templateName" placeholder="Template Name" class="template-name" (input)="onNameChange()">
+        <p style="color: blue;">Current name: {{templateName}}</p>
         
         <div class="add-section">
           <select [(ngModel)]="selectedSectionType">
@@ -115,8 +116,9 @@ interface TemplateSection {
         </div>
         
         <div class="actions">
-          <button (click)="saveTemplate()" class="save-btn">Save Template</button>
-          <button (click)="closeBuilder()" class="cancel-btn">Cancel</button>
+          <button (click)="testSave(); $event.stopPropagation()" style="background: green; color: white; padding: 10px; margin: 5px;">TEST SAVE</button>
+          <button (click)="saveTemplate(); $event.stopPropagation()" class="save-btn">Save Template</button>
+          <button (click)="closeBuilder(); $event.stopPropagation()" class="cancel-btn">Cancel</button>
         </div>
       </div>
     </div>
@@ -361,25 +363,82 @@ export class TemplateBuilderComponent implements OnInit {
     if (section) section.data.splice(index, 1);
   }
 
+  testClick() {
+    console.log('🟢 Template builder clicked!');
+  }
+
+  onNameChange() {
+    console.log('🟢 Name changed:', this.templateName);
+  }
+
+  testSave() {
+    console.log('🟢 TEST SAVE clicked!');
+    console.log('🟢 Template name:', this.templateName);
+    alert('TEST: Name = ' + this.templateName);
+  }
+
   saveTemplate() {
-    if (!this.templateName.trim()) {
-      alert('Please enter template name');
+    console.log('🔵 [1] Save button clicked');
+    console.log('🔵 [2] Template name:', this.templateName);
+    console.log('🔵 [3] Template name length:', this.templateName?.length);
+    console.log('🔵 [4] Sections:', this.sections);
+    
+    if (!this.templateName || this.templateName.trim() === '') {
+      console.log('❌ [5] Template name is empty or whitespace');
+      alert('कृपया template चे नाव टाका');
       return;
     }
     
-    const template = {
-      name: this.templateName,
-      sections: this.sections,
-      createdAt: new Date().toISOString()
-    };
+    console.log('✅ [6] Template name validation passed');
     
-    const templateId = this.editingTemplateId || `my_template_${Date.now()}`;
-    localStorage.setItem(templateId, JSON.stringify(template));
-    console.log('Template saved with ID:', templateId, template);
-    
-    alert('Template saved successfully!');
-    this.templateSaved.emit();
-    this.closeBuilder();
+    try {
+      console.log('🔵 [7] Creating template object...');
+      
+      const template = {
+        name: this.templateName.trim(),
+        sections: JSON.parse(JSON.stringify(this.sections)),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log('🔵 [8] Template object created:', template);
+      
+      const templateId = this.editingTemplateId || `my_template_${Date.now()}`;
+      console.log('🔵 [9] Template ID:', templateId);
+      
+      const templateJson = JSON.stringify(template);
+      console.log('🔵 [10] Template JSON length:', templateJson.length);
+      
+      console.log('🔵 [11] Saving to localStorage...');
+      localStorage.setItem(templateId, templateJson);
+      
+      console.log('🔵 [12] Verifying save...');
+      const saved = localStorage.getItem(templateId);
+      console.log('🔵 [13] Saved data exists:', !!saved);
+      console.log('🔵 [14] Saved data length:', saved?.length);
+      
+      if (!saved) {
+        throw new Error('Failed to save to localStorage');
+      }
+      
+      console.log('✅ [15] Template saved successfully!');
+      
+      alert('✅ Template save झाले! \nName: ' + template.name + '\nID: ' + templateId);
+      
+      console.log('🔵 [16] Emitting templateSaved event...');
+      this.templateSaved.emit();
+      
+      console.log('🔵 [17] Closing builder...');
+      this.closeBuilder();
+      
+      console.log('✅ [18] Save process completed!');
+      
+    } catch (error: any) {
+      console.error('❌ [ERROR] Error saving template:', error);
+      console.error('❌ Error message:', error?.message);
+      console.error('❌ Error stack:', error?.stack);
+      alert('❌ Error: ' + (error?.message || 'Unknown error'));
+    }
   }
 
   closeBuilder() {

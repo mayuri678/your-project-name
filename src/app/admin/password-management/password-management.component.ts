@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
+import { PasswordHistoryService } from '../../services/password-history.service';
 
 interface User {
   id: number;
@@ -34,7 +36,7 @@ interface Template {
 @Component({
   selector: 'app-password-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './password-management.component.html',
   styleUrls: ['./password-management.component.css']
 })
@@ -109,15 +111,21 @@ Admin Team`
     requireSpecialChars: false
   };
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private passwordHistory: PasswordHistoryService
+  ) {}
 
   ngOnInit() {
     this.isDarkMode = localStorage.getItem('adminDarkMode') === 'true';
     this.loadUsers();
     this.loadTemplates();
-    setTimeout(() => {
+    this.loadPasswordRequests();
+    
+    // Refresh every 30 seconds
+    setInterval(() => {
       this.loadPasswordRequests();
-    }, 1000);
+    }, 30000);
   }
 
   loadUsers() {
@@ -149,46 +157,26 @@ Admin Team`
 
   async loadPasswordRequests() {
     try {
-      // Load password reset requests from Supabase
+      // Use existing method from SupabaseService
       const result = await this.supabaseService.getPasswordResetRequests();
       
       if (result.data && result.data.length > 0) {
-        this.passwordRequests = result.data.map((request: any) => ({
-          id: request.id,
-          userId: request.id,
-          userName: request.username || request.email.split('@')[0],
+        this.passwordRequests = result.data.map((request: any, index: number) => ({
+          id: request.id || index + 1,
+          userId: request.id || index + 1,
+          userName: request.user_name || request.email.split('@')[0],
           userEmail: request.email,
           requestDate: new Date(request.requested_at),
-          status: 'pending' as 'pending',
+          status: request.used ? 'completed' : 'pending',
           resetToken: undefined
         }));
+        console.log('✅ Loaded', this.passwordRequests.length, 'password reset requests');
       } else {
-        // Fallback to demo data if no requests found
-        this.passwordRequests = [
-          {
-            id: 1,
-            userId: 1,
-            userName: 'राहुल शर्मा',
-            userEmail: 'rahul@email.com',
-            requestDate: new Date('2024-01-15'),
-            status: 'pending' as 'pending',
-            resetToken: 'abc123'
-          },
-          {
-            id: 2,
-            userId: 2,
-            userName: 'प्रिया पटेल',
-            userEmail: 'priya@email.com',
-            requestDate: new Date('2024-01-14'),
-            status: 'completed' as 'completed'
-          }
-        ].filter(request => 
-          this.users.some(user => user.email === request.userEmail)
-        );
+        console.log('📝 No password reset requests found');
+        this.passwordRequests = [];
       }
     } catch (error) {
-      console.error('Error loading password requests:', error);
-      // Use demo data on error
+      console.error('❌ Error:', error);
       this.passwordRequests = [];
     }
   }
@@ -229,14 +217,19 @@ Admin Team`
       if (resetResult.success) {
         alert(`✅ Password reset email sent to ${this.resetForm.email}\n\nThe user will receive an email with a reset link.`);
         
-        // Update request status
         const request = this.passwordRequests.find(r => r.userEmail === this.resetForm.email && r.status === 'pending');
         if (request) {
           request.status = 'completed';
         }
         
-        // Log the password reset request
         await this.supabaseService.logPasswordChangeActivity(this.resetForm.email, 'admin_reset', 'admin@example.com');
+        this.passwordHistory.logPasswordChange({
+          userId: request?.userId.toString() || '',
+          userEmail: this.resetForm.email,
+          userName: request?.userName || this.resetForm.email,
+          changeType: 'admin_reset',
+          changedBy: 'admin@example.com'
+        });
         
         this.closeResetModal();
         return;
@@ -256,8 +249,14 @@ Admin Team`
           request.status = 'completed';
         }
         
-        // Log the password change
         await this.supabaseService.logPasswordChangeActivity(this.resetForm.email, 'admin_reset', 'admin@example.com');
+        this.passwordHistory.logPasswordChange({
+          userId: request?.userId.toString() || '',
+          userEmail: this.resetForm.email,
+          userName: request?.userName || this.resetForm.email,
+          changeType: 'admin_reset',
+          changedBy: 'admin@example.com'
+        });
       } else {
         alert(`❌ Error: ${result.error}`);
       }

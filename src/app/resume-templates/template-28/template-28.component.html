@@ -1,0 +1,41 @@
+<div class="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg print:shadow-none flex">
+  <aside class="w-1/3 bg-fuchsia-600 text-white p-8">
+    <div class="mb-8" *ngIf="data.photo">
+      <img [src]="data.photo" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white">
+    </div>
+    <h1 class="text-3xl font-bold mb-2">{{data.name}}</h1>
+    <p class="text-lg mb-6 opacity-90">{{data.title}}</p>
+    <div class="space-y-3 text-sm mb-8">
+      <p>📧 {{data.email}}</p>
+      <p>📱 {{data.phone}}</p>
+      <p>📍 {{data.location}}</p>
+    </div>
+    <section class="mb-6" *ngIf="data.skills?.length">
+      <h2 class="text-xl font-bold mb-3 border-b border-white/30 pb-2">Skills</h2>
+      <div class="space-y-2">
+        <span *ngFor="let skill of data.skills" class="block text-sm">• {{skill}}</span>
+      </div>
+    </section>
+  </aside>
+  <main class="w-2/3 p-8">
+    <section class="mb-6" *ngIf="data.summary">
+      <h2 class="text-2xl font-bold text-fuchsia-600 mb-3">Summary</h2>
+      <p class="text-gray-700">{{data.summary}}</p>
+    </section>
+    <section class="mb-6" *ngIf="data.experience?.length">
+      <h2 class="text-2xl font-bold text-fuchsia-600 mb-3">Experience</h2>
+      <div *ngFor="let exp of data.experience" class="mb-4">
+        <h3 class="text-lg font-bold">{{exp.role}}</h3>
+        <p class="text-gray-600">{{exp.company}} | {{exp.duration}}</p>
+        <p class="text-sm text-gray-700 mt-1">{{exp.description}}</p>
+      </div>
+    </section>
+    <section class="mb-6" *ngIf="data.education?.length">
+      <h2 class="text-2xl font-bold text-fuchsia-600 mb-3">Education</h2>
+      <div *ngFor="let edu of data.education" class="mb-3">
+        <h3 class="font-bold">{{edu.degree}}</h3>
+        <p class="text-gray-600">{{edu.institution}} | {{edu.year}}</p>
+      </div>
+    </section>
+  </main>
+</div>

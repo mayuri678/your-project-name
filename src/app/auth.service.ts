@@ -16,22 +16,22 @@ export interface UserAccount {
 }
 
 export interface UserProfile {
-  username: string;
-  email: string;
-  contactNo: string;
-  notification: boolean;
-  address: string;
-  street: string;
-  city: string;
-  state: string;
-  country: string;
-  pincode: string;
-  location: string;
-  photo: string;
-  education: string;
-  degree: string;
-  institution: string;
-  graduationYear: string;
+  username?: string;
+  email?: string;
+  contactNo?: string;
+  notification?: boolean;
+  address?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  location?: string;
+  photo?: string;
+  education?: string;
+  degree?: string;
+  institution?: string;
+  graduationYear?: string;
   role?: string;
   is_dark_mode?: boolean;
   language?: string;
@@ -92,7 +92,7 @@ export class AuthService {
     }
   }
 
-  register(email: string, password: string, name?: string, role: 'admin' | 'user' = 'user'): boolean {
+  async register(email: string, password: string, name?: string, role: 'admin' | 'user' = 'user'): Promise<boolean> {
     if (!this.isBrowser()) return false;
     const registeredUsers = this.getRegisteredUsers();
     if (registeredUsers.some(u => u.email === email)) return false;
@@ -100,6 +100,26 @@ export class AuthService {
     const userName = name || (email.includes('@') ? email.split('@')[0] : email);
     registeredUsers.push({ email, password, name: userName, role });
     this.saveRegisteredUsers(registeredUsers);
+    
+    // Save to Supabase
+    try {
+      const uniqueId = email.replace(/[@.]/g, '_').toLowerCase();
+      const profileData = {
+        id: uniqueId,
+        email: email,
+        full_name: userName,
+        username: userName,
+        role: role,
+        is_dark_mode: false,
+        language: 'en'
+      };
+      
+      await this.supabaseAuthService.upsertUserProfile(profileData);
+      console.log('✅ User registered and saved to Supabase');
+    } catch (error) {
+      console.error('❌ Supabase save failed during registration:', error);
+    }
+    
     return true;
   }
 
@@ -112,7 +132,7 @@ export class AuthService {
     
     const registeredUsers = this.getRegisteredUsers();
     console.log('🔍 Looking for user:', email, 'in', registeredUsers.length, 'registered users');
-    console.log('📋 Available users:', registeredUsers.map(u => ({ email: u.email, role: u.role })));
+    console.log('📋 Available users:', registeredUsers.map(u => ({ email: u.email, password: u.password, role: u.role })));
     
     const user = registeredUsers.find(u => u.email === email);
     
@@ -121,9 +141,13 @@ export class AuthService {
       return false;
     }
     
+    console.log('🔍 Found user:', user.email, 'Checking password...');
+    console.log('Expected password:', user.password);
+    console.log('Provided password:', password);
+    console.log('Passwords match:', user.password === password);
+    
     if (user.password !== password) {
       console.log('❌ Login failed: Wrong password for:', email);
-      console.log('Expected:', user.password, 'Got:', password);
       return false;
     }
     

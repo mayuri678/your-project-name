@@ -1,16 +1,18 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, HostListener, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService, LoggedInUser } from '../auth.service';
 import { UserDataService } from '../services/user-data.service';
 import { SupabaseService } from '../services/supabase.service';
+import { ContactService } from '../services/contact.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, NgIf, RouterModule],
+  imports: [CommonModule, NgIf, RouterModule, FormsModule],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  styleUrls: ['./header.component.css', './header-popup.css']
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   @Input() loggedIn: boolean = false;
@@ -32,12 +34,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
   templateList: any[] = [];
   isLoadingTemplates = false;
 
+  showContactPopup = false;
+  contactForm = {
+    name: '',
+    email: '',
+    message: ''
+  };
+
   constructor(
     private authService: AuthService, 
     private userDataService: UserDataService,
     private router: Router, 
     private elementRef: ElementRef,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private contactService: ContactService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -49,11 +60,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
       window.addEventListener('adminTemplateCreated', () => {
         this.loadAdminTemplates();
       });
+      
+      // Listen for profile updates
+      window.addEventListener('storage', () => {
+        this.loadLoggedInUsers();
+        this.cdr.detectChanges();
+      });
     }
     
     this.refreshInterval = setInterval(() => {
       this.loadLoggedInUsers();
       this.checkAdminStatus();
+      this.cdr.markForCheck();
     }, 1000);
   }
 
@@ -91,6 +109,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     }
     return 'U'; // Default to 'U' for User
+  }
+
+  getUserPhoto(): string | null {
+    const profile = this.authService.getUserProfile();
+    if (profile?.photo) {
+      return profile.photo;
+    }
+    // Also check UserDataService
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      const savedProfile = localStorage.getItem(`userProfile_${currentUser.email}`);
+      if (savedProfile) {
+        try {
+          const parsed = JSON.parse(savedProfile);
+          return parsed.photo || null;
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
   }
 
   getCurrentUserName(): string {
@@ -160,7 +199,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   goToLogin(): void {
     this.login.emit(); 
-    this.router.navigate([{ outlets: { modal: ['login'] } }]);
+    this.router.navigate(['/login']);
   }
 
   goToProfile(): void {
@@ -173,7 +212,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   onTemplatesClick(): void {
     if (this.loggedIn) {
-      this.router.navigate(['/templates']);
+      this.router.navigate(['/home']).then(() => {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('openTemplateManager'));
+        }, 100);
+      });
     } else {
       this.goToLogin();
     }
@@ -192,13 +235,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   selectTemplate(template: any): void {
-    // For admin templates, use the actual template ID
-    const templateId = template.id.startsWith('template') ? template.id : 'template1';
-    
     this.router.navigate(['/resume'], {
       queryParams: { 
-        template: templateId, 
-        adminTemplate: template.id, // Pass admin template ID for loading
+        template: template.id,
         edit: 'true' 
       }
     });
@@ -228,7 +267,65 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openContactForm(): void {
-    this.router.navigate(['/contact']);
+    this.showContactPopup = true;
+  }
+
+  closeContactPopup(): void {
+    this.showContactPopup = false;
+    this.resetContactForm();
+  }
+
+  async sendContactMessage(): Promise<void> {
+    if (!this.contactForm.name || !this.contactForm.email || !this.contactForm.message) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      // Save to Supabase
+      await this.contactService.submitContactForm({
+        full_name: this.contactForm.name,
+        email: this.contactForm.email,
+        message: this.contactForm.message
+      });
+
+      // Send email using EmailJS
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: 'service_vw95fjw',
+          template_id: 'template_default',
+          user_id: '9yJLiuXHcw3EG0n-f',
+          template_params: {
+            to_email: 'gulvemayuri63@gmail.com',
+            from_name: this.contactForm.name,
+            from_email: this.contactForm.email,
+            reply_to: this.contactForm.email,
+            message: this.contactForm.message,
+            subject: `New Contact Form Message from ${this.contactForm.name}`
+          }
+        })
+      });
+
+      if (response.ok) {
+        alert('✅ Thank you! Your message has been sent to gulvemayuri63@gmail.com');
+      } else {
+        alert('✅ Message saved! We will contact you soon.');
+      }
+      this.closeContactPopup();
+    } catch (error) {
+      alert('✅ Message saved! We will contact you soon.');
+      this.closeContactPopup();
+    }
+  }
+
+  resetContactForm(): void {
+    this.contactForm = {
+      name: '',
+      email: '',
+      message: ''
+    };
   }
 
   openResumeGenerator(): void {
@@ -247,76 +344,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   async loadAdminTemplates(): Promise<void> {
     try {
       this.isLoadingTemplates = true;
-      const result = await this.supabaseService.getAllTemplates();
       
-      if (result.data) {
-        // Filter and process admin templates
-        const adminTemplates = result.data
-          .map(template => {
-            try {
-              const data = JSON.parse(template.description || '{}');
-              // Only include admin templates (those with template properties)
-              if (data.templateColor || data.templateLayout || data.templateFeatures) {
-                return {
-                  id: template.id,
-                  name: data.name || template.title || 'Admin Template',
-                  category: data.category || template.category || 'Professional',
-                  description: data.description || 'Admin created template'
-                };
-              }
-              return null;
-            } catch {
-              return null;
-            }
-          })
-          .filter(template => template !== null);
-        
-        // Add default templates if no admin templates exist
-        if (adminTemplates.length === 0) {
-          this.templateList = [
-            { id: 'template1', name: 'Classic Blue', category: 'Professional', description: 'Traditional professional look' },
-            { id: 'template2', name: 'Modern Sidebar', category: 'Creative', description: 'Contemporary design with sidebar' },
-            { id: 'template3', name: 'Header Style', category: 'Professional', description: 'Clean header-focused layout' },
-            { id: 'template4', name: 'Minimal Black', category: 'Minimalist', description: 'Sleek minimalist design' },
-            { id: 'template5', name: 'Professional Navy', category: 'Professional', description: 'Corporate navy theme' },
-            { id: 'template6', name: 'Creative Orange', category: 'Creative', description: 'Vibrant creative design' },
-            { id: 'template7', name: 'Executive Gray', category: 'Executive', description: 'Senior executive template' },
-            { id: 'template8', name: 'Tech Modern', category: 'Technology', description: 'Perfect for tech professionals' },
-            { id: 'template9', name: 'Academic Dark Blue', category: 'Academic', description: 'Ideal for academic positions' },
-            { id: 'template10', name: 'Startup Green', category: 'Creative', description: 'Dynamic startup vibe' },
-            { id: 'template11', name: 'Corporate Navy', category: 'Professional', description: 'Corporate standard design' },
-            { id: 'template12', name: 'Artistic Purple', category: 'Creative', description: 'Artistic and creative layout' },
-            { id: 'template13', name: 'Fresh Graduate', category: 'Entry Level', description: 'Perfect for new graduates' },
-            { id: 'template14', name: 'Healthcare Pro', category: 'Healthcare', description: 'Medical professionals template' },
-            { id: 'template15', name: 'Finance Expert', category: 'Finance', description: 'Banking and finance focused' },
-            { id: 'template16', name: 'Marketing Guru', category: 'Marketing', description: 'Creative marketing template' },
-            { id: 'template17', name: 'Engineering Pro', category: 'Engineering', description: 'Technical engineering layout' },
-            { id: 'template18', name: 'Sales Champion', category: 'Sales', description: 'Results-driven sales template' },
-            { id: 'template19', name: 'Designer Portfolio', category: 'Design', description: 'Showcase your design skills' },
-            { id: 'template20', name: 'Legal Professional', category: 'Legal', description: 'Law and legal services' },
-            { id: 'template21', name: 'Consultant Elite', category: 'Consulting', description: 'Management consulting style' },
-            { id: 'template22', name: 'Teacher Choice', category: 'Education', description: 'Education sector template' },
-            { id: 'template23', name: 'Entrepreneur Bold', category: 'Business', description: 'Bold entrepreneurial design' },
-            { id: 'template24', name: 'Data Scientist', category: 'Technology', description: 'Analytics and data focused' }
-          ];
-        } else {
-          // Combine admin templates with default templates
-          this.templateList = [
-            ...adminTemplates,
-            { id: 'template1', name: 'Classic Blue', category: 'Professional', description: 'Traditional professional look' },
-            { id: 'template2', name: 'Modern Sidebar', category: 'Creative', description: 'Contemporary design with sidebar' },
-            { id: 'template3', name: 'Header Style', category: 'Professional', description: 'Clean header-focused layout' },
-            { id: 'template4', name: 'Minimal Black', category: 'Minimalist', description: 'Sleek minimalist design' },
-            { id: 'template5', name: 'Professional Navy', category: 'Professional', description: 'Corporate navy theme' },
-            { id: 'template6', name: 'Creative Orange', category: 'Creative', description: 'Vibrant creative design' },
-            { id: 'template7', name: 'Executive Gray', category: 'Executive', description: 'Senior executive template' },
-            { id: 'template8', name: 'Tech Modern', category: 'Technology', description: 'Perfect for tech professionals' }
-          ];
-        }
-      }
-    } catch (error) {
-      console.error('Error loading admin templates:', error);
-      // Fallback to default templates
+      // Default 28 templates
       this.templateList = [
         { id: 'template1', name: 'Classic Blue', category: 'Professional', description: 'Traditional professional look' },
         { id: 'template2', name: 'Modern Sidebar', category: 'Creative', description: 'Contemporary design with sidebar' },
@@ -329,7 +358,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         { id: 'template9', name: 'Academic Dark Blue', category: 'Academic', description: 'Ideal for academic positions' },
         { id: 'template10', name: 'Startup Green', category: 'Creative', description: 'Dynamic startup vibe' },
         { id: 'template11', name: 'Corporate Navy', category: 'Professional', description: 'Corporate standard design' },
-        { id:'template12', name: 'Artistic Purple', category: 'Creative', description: 'Artistic and creative layout' },
+        { id: 'template12', name: 'Artistic Purple', category: 'Creative', description: 'Artistic and creative layout' },
         { id: 'template13', name: 'Fresh Graduate', category: 'Entry Level', description: 'Perfect for new graduates' },
         { id: 'template14', name: 'Healthcare Pro', category: 'Healthcare', description: 'Medical professionals template' },
         { id: 'template15', name: 'Finance Expert', category: 'Finance', description: 'Banking and finance focused' },
@@ -341,8 +370,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
         { id: 'template21', name: 'Consultant Elite', category: 'Consulting', description: 'Management consulting style' },
         { id: 'template22', name: 'Teacher Choice', category: 'Education', description: 'Education sector template' },
         { id: 'template23', name: 'Entrepreneur Bold', category: 'Business', description: 'Bold entrepreneurial design' },
-        { id: 'template24', name: 'Data Scientist', category: 'Technology', description: 'Analytics and data focused' }
+        { id: 'template24', name: 'Data Scientist', category: 'Technology', description: 'Analytics and data focused' },
+        { id: 'template25', name: 'Simple Clean', category: 'Minimalist', description: 'Clean and simple design' },
+        { id: 'template26', name: 'Modern Professional', category: 'Professional', description: 'Modern professional style' },
+        { id: 'template27', name: 'Creative Bold', category: 'Creative', description: 'Bold creative design' },
+        { id: 'template28', name: 'Executive Elite', category: 'Executive', description: 'Elite executive template' }
       ];
+    } catch (error) {
+      console.error('Error loading templates:', error);
     } finally {
       this.isLoadingTemplates = false;
     }

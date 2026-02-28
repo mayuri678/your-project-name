@@ -1901,3 +1901,449 @@ p {
     display: none !important;
   }
 }
+
+/* Template 3: Clean Header Style */
+.template3 {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0c4a6e;
+}
+
+.template3 .header {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 16px 16px 0 0;
+  margin: -40px -40px 30px -40px;
+}
+
+.template3 h3 {
+  color: #0c4a6e;
+}
+
+/* Template 4: Minimal Black */
+.template4 {
+  background: #ffffff;
+  color: #1f2937;
+  border: 2px solid #000000;
+}
+
+.template4 .header {
+  border-bottom: 3px solid #000000;
+}
+
+.template4 h3 {
+  color: #000000;
+}
+
+.template4 section {
+  border-left: 4px solid #000000;
+}
+
+/* Template 5: Professional Navy */
+.template5 {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  color: white;
+}
+
+.template5 .template5-main {
+  display: flex;
+  min-height: 100vh;
+}
+
+.template5-details {
+  width: 70%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template5-sidebar {
+  width: 30%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 6: Creative Orange */
+.template6 {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+  color: white;
+}
+
+.template6 .header {
+  background: rgba(255,255,255,0.95);
+  color: #1f2937;
+  border-radius: 16px;
+  padding: 30px;
+  margin: -20px -20px 30px -20px;
+}
+
+/* Template 7: Executive Gray */
+.template7 {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+.template7 section {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Template 8: Tech Modern */
+.template8 {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.template8 .template8-main {
+  display: flex;
+}
+
+.template8-details {
+  width: 65%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template8-sidebar {
+  width: 35%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 9: Academic Dark Blue */
+.template9 {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  color: white;
+}
+
+.template9 .header {
+  background: rgba(255,255,255,0.95);
+  color: #1f2937;
+  border-radius: 16px;
+  padding: 30px;
+}
+
+/* Template 10: Startup Green */
+.template10 {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+}
+
+.template10 .template10-main {
+  display: flex;
+}
+
+.template10-details {
+  width: 70%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template10-sidebar {
+  width: 30%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 11: Corporate Navy */
+.template11 {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+}
+
+.template11 section {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Template 12: Artistic Purple */
+.template12 {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  color: white;
+}
+
+.template12 .header {
+  background: rgba(255,255,255,0.95);
+  color: #1f2937;
+  border-radius: 16px;
+  padding: 30px;
+}
+
+/* Template 13: Fresh Graduate */
+.template13 {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  color: white;
+}
+
+.template13 section {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Template 14: Healthcare Pro */
+.template14 {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  color: white;
+}
+
+.template14 .template14-main {
+  display: flex;
+}
+
+.template14-details {
+  width: 65%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template14-sidebar {
+  width: 35%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 15: Finance Expert */
+.template15 {
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  color: white;
+}
+
+.template15 .header {
+  background: rgba(255,255,255,0.95);
+  color: #1f2937;
+  border-radius: 16px;
+  padding: 30px;
+}
+
+/* Template 16: Marketing Guru */
+.template16 {
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+  color: white;
+}
+
+.template16 section {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Template 17: Engineering Pro */
+.template17 {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  color: white;
+}
+
+.template17 .template17-main {
+  display: flex;
+}
+
+.template17-details {
+  width: 70%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template17-sidebar {
+  width: 30%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 18: Sales Champion */
+.template18 {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.template18 section {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Template 19: Designer Portfolio */
+.template19 {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.template19 .header {
+  background: rgba(255,255,255,0.95);
+  color: #1f2937;
+  border-radius: 16px;
+  padding: 30px;
+}
+
+/* Template 20: Legal Professional */
+.template20 {
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+  color: white;
+}
+
+.template20 .template20-main {
+  display: flex;
+}
+
+.template20-details {
+  width: 65%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template20-sidebar {
+  width: 35%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 21: Consultant Elite */
+.template21 {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+}
+
+.template21 section {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Template 22: Teacher Choice */
+.template22 {
+  background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+  color: white;
+}
+
+.template22 .template22-main {
+  display: flex;
+}
+
+.template22-details {
+  width: 70%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template22-sidebar {
+  width: 30%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 23: Entrepreneur Bold */
+.template23 {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+}
+
+.template23 .header {
+  background: rgba(255,255,255,0.95);
+  color: #1f2937;
+  border-radius: 16px;
+  padding: 30px;
+}
+
+/* Template 24: Data Scientist */
+.template24 {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: white;
+}
+
+.template24 .template24-main {
+  display: flex;
+}
+
+.template24-details {
+  width: 65%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template24-sidebar {
+  width: 35%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 25: Simple Clean */
+.template25 {
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+}
+
+.template25 section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+/* Template 26: Modern Professional */
+.template26 {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  color: white;
+}
+
+.template26 .template26-main {
+  display: flex;
+}
+
+.template26-details {
+  width: 70%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template26-sidebar {
+  width: 30%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 27: Creative Bold */
+.template27 {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+}
+
+.template27 .template27-main {
+  display: flex;
+}
+
+.template27-details {
+  width: 65%;
+  padding: 40px;
+  background: white;
+  color: #1f2937;
+}
+
+.template27-sidebar {
+  width: 35%;
+  background: rgba(255,255,255,0.1);
+  padding: 40px 30px;
+  color: white;
+}
+
+/* Template 28: Executive Elite */
+.template28 {
+  background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
+  color: white;
+}
+
+.template28 section {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}

@@ -37,6 +37,7 @@ export class ContactComponent implements OnInit {
       return;
     }
 
+    // Save to Supabase
     const result = await this.contactService.submitContactForm({
       full_name: this.name,
       email: this.email,
@@ -44,7 +45,15 @@ export class ContactComponent implements OnInit {
     });
 
     if (result.success) {
-      alert('Thank you! Your message has been sent successfully.');
+      // Open email client
+      const to = 'gulvemayuri63@gmail.com';
+      const subject = encodeURIComponent('Website Contact Enquiry');
+      const body = encodeURIComponent(
+        `Name: ${this.name}\nEmail: ${this.email}\n\nMessage:\n${this.message}`
+      );
+      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+      
+      alert('Thank you! Your message has been saved.');
       this.router.navigate(['/']);
     } else {
       alert(`Error: ${result.error || 'Failed to send message. Please try again.'}`);

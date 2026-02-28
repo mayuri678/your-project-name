@@ -1,10 +1,11 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../services/supabase.service';
 import { TemplateBuilderComponent } from './template-builder.component';
 import { TemplateViewerComponent } from './template-viewer.component';
+import { TemplateService } from '../template.service';
 
 interface Template {
   id: string;
@@ -26,9 +27,8 @@ export class TemplateManagerComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() templateSelected = new EventEmitter<string>();
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private supabaseService: SupabaseService, private router: Router, private templateService: TemplateService) {}
 
-  // Add created templates array
   createdTemplates: any[] = [];
   showCreatedTemplates = false;
   showTemplateViewer = false;
@@ -37,188 +37,76 @@ export class TemplateManagerComponent implements OnInit {
 
   templates: Template[] = [
     {
+      id: 'basic-resume',
+      name: 'Basic Resume',
+      category: 'Simple',
+      thumbnail: 'https://via.placeholder.com/300x400/667eea/ffffff?text=Basic+Resume',
+      downloadUrl: '/resume-template.html',
+      lastModified: new Date()
+    },
+    {
       id: 'executive',
       name: 'Executive',
       category: 'Professional',
-      thumbnail: 'https://resumegenius.com/wp-content/uploads/Executive-Resume-Template.png',
-      downloadUrl: 'https://resumegenius.com/resume/executive-resume-templates',
+      thumbnail: 'https://via.placeholder.com/300x400/764ba2/ffffff?text=Executive',
+      downloadUrl: '#',
       lastModified: new Date('2023-11-20')
     },
     {
       id: 'modern-minimalist',
       name: 'Modern Minimalist',
       category: 'Minimalist',
-      thumbnail: 'https://cdn-images.zety.com/templates/zety/valera-17-classy-single.png',
-      downloadUrl: 'https://zety.com/resume-templates',
+      thumbnail: 'https://via.placeholder.com/300x400/f093fb/ffffff?text=Modern+Minimalist',
+      downloadUrl: '#',
       lastModified: new Date('2023-11-18')
     },
     {
       id: 'creative-portfolio',
       name: 'Creative Portfolio',
       category: 'Creative',
-      thumbnail: 'https://www.resume.com/hs-fs/hubfs/creative-resume-templates.jpg',
-      downloadUrl: 'https://www.resume.com/career-advice/resumes/creative-resume-templates/',
+      thumbnail: 'https://via.placeholder.com/300x400/4facfe/ffffff?text=Creative+Portfolio',
+      downloadUrl: '#',
       lastModified: new Date('2023-11-15')
     },
     {
       id: 'modern-chronological',
       name: 'Modern Chronological',
       category: 'Professional',
-      thumbnail: 'https://www.myperfectresume.com/wp-content/uploads/2022/08/chronological-resume-template.jpg',
-      downloadUrl: 'https://www.myperfectresume.com/resume-templates/chronological',
+      thumbnail: 'https://via.placeholder.com/300x400/00f2fe/ffffff?text=Modern+Chronological',
+      downloadUrl: '#',
       lastModified: new Date('2023-11-10')
     },
     {
       id: 'functional-resume',
       name: 'Functional Resume',
       category: 'Professional',
-      thumbnail: 'https://resumegenius.com/wp-content/uploads/Functional-Resume-Template.png',
-      downloadUrl: 'https://resumegenius.com/resume/functional-resume-templates',
+      thumbnail: 'https://via.placeholder.com/300x400/43e97b/ffffff?text=Functional+Resume',
+      downloadUrl: '#',
       lastModified: new Date('2023-11-05')
     },
     {
       id: 'combination-resume',
       name: 'Combination Resume',
       category: 'Professional',
-      thumbnail: 'https://cdn-images.zety.com/templates/zety/berlin-17-classy-single.png',
-      downloadUrl: 'https://zety.com/resume-templates',
+      thumbnail: 'https://via.placeholder.com/300x400/38f9d7/ffffff?text=Combination+Resume',
+      downloadUrl: '#',
       lastModified: new Date('2023-11-01')
     },
     {
       id: 'academic-cv',
       name: 'Academic CV',
       category: 'Academic',
-      thumbnail: 'https://www.overleaf.com/learn/latex/Articles/Free_Online_Introduction_to_LaTeX_Part_3/Example_of_a_CV_in_LaTeX',
-      downloadUrl: 'https://www.overleaf.com/latex/templates/tagged/cv',
+      thumbnail: 'https://via.placeholder.com/300x400/fa709a/ffffff?text=Academic+CV',
+      downloadUrl: '#',
       lastModified: new Date('2023-10-28')
     },
     {
       id: 'infographic-resume',
       name: 'Infographic Resume',
       category: 'Creative',
-      thumbnail: 'https://venngage-wordpress.s3.amazonaws.com/uploads/2019/01/Simple-Professional-Resume-Template.png',
-      downloadUrl: 'https://venngage.com/blog/infographic-resume/',
+      thumbnail: 'https://via.placeholder.com/300x400/fee140/ffffff?text=Infographic+Resume',
+      downloadUrl: '#',
       lastModified: new Date('2023-10-25')
-    },
-    {
-      id: 'executive',
-      name: 'Executive',
-      category: 'Professional',
-      thumbnail: 'assets/images/templates/executive.jpg',
-      downloadUrl: '/api/templates/executive',
-      lastModified: new Date('2023-10-28')
-    },
-    {
-      id: 'modern-tech',
-      name: 'Tech Professional',
-      category: 'Technology',
-      thumbnail: 'assets/images/templates/tech.jpg',
-      downloadUrl: '/api/templates/tech',
-      lastModified: new Date('2023-10-25')
-    },
-    {
-      id: 'academic',
-      name: 'Academic CV',
-      category: 'Education',
-      thumbnail: 'assets/images/templates/academic.jpg',
-      downloadUrl: '/api/templates/academic',
-      lastModified: new Date('2023-10-20')
-    },
-    {
-      id: 'timeline',
-      name: 'Timeline',
-      category: 'Creative',
-      thumbnail: 'assets/images/templates/timeline.jpg',
-      downloadUrl: '/api/templates/timeline',
-      lastModified: new Date('2023-10-18')
-    },
-    {
-      id: 'corporate',
-      name: 'Corporate',
-      category: 'Professional',
-      thumbnail: 'assets/images/templates/corporate.jpg',
-      downloadUrl: '/api/templates/corporate',
-      lastModified: new Date('2023-10-15')
-    },
-    {
-      id: 'creative-colorful',
-      name: 'Colorful',
-      category: 'Creative',
-      thumbnail: 'assets/images/templates/colorful.jpg',
-      downloadUrl: '/api/templates/colorful',
-      lastModified: new Date('2023-10-10')
-    },
-    {
-      id: 'modern-minimal',
-      name: 'Modern Minimal',
-      category: 'Simple',
-      thumbnail: 'assets/images/templates/modern-minimal.jpg',
-      downloadUrl: '/api/templates/modern-minimal',
-      lastModified: new Date('2023-10-05')
-    },
-    {
-      id: 'professional-blue',
-      name: 'Professional Blue',
-      category: 'Professional',
-      thumbnail: 'assets/images/templates/professional-blue.jpg',
-      downloadUrl: '/api/templates/professional-blue',
-      lastModified: new Date('2023-10-01')
-    },
-    {
-      id: 'designer',
-      name: 'Designer Portfolio',
-      category: 'Creative',
-      thumbnail: 'assets/images/templates/designer.jpg',
-      downloadUrl: '/api/templates/designer',
-      lastModified: new Date('2023-09-28')
-    },
-    {
-      id: 'modern-red',
-      name: 'Modern Red',
-      category: 'Professional',
-      thumbnail: 'assets/images/templates/modern-red.jpg',
-      downloadUrl: '/api/templates/modern-red',
-      lastModified: new Date('2023-09-25')
-    },
-    {
-      id: 'classic',
-      name: 'Classic',
-      category: 'Simple',
-      thumbnail: 'assets/images/templates/classic.jpg',
-      downloadUrl: '/api/templates/classic',
-      lastModified: new Date('2023-09-20')
-    },
-    {
-      id: 'modern-green',
-      name: 'Modern Green',
-      category: 'Professional',
-      thumbnail: 'assets/images/templates/modern-green.jpg',
-      downloadUrl: '/api/templates/modern-green',
-      lastModified: new Date('2023-09-15')
-    },
-    {
-      id: 'executive',
-      name: 'Executive',
-      category: 'Professional',
-      thumbnail: 'assets/images/templates/executive.jpg',
-      downloadUrl: '/api/templates/executive',
-      lastModified: new Date('2023-10-28')
-    },
-    {
-      id: 'timeless',
-      name: 'Timeless Classic',
-      category: 'Traditional',
-      thumbnail: 'assets/images/templates/timeless.jpg',
-      downloadUrl: '/api/templates/timeless',
-      lastModified: new Date('2023-09-10')
-    },
-    {
-      id: 'modern-blue',
-      name: 'Modern Blue',
-      category: 'Professional',
-      thumbnail: 'assets/images/templates/modern-blue.jpg',
-      downloadUrl: '/api/templates/modern-blue',
-      lastModified: new Date('2023-11-05')
     }
   ];
 
@@ -227,7 +115,6 @@ export class TemplateManagerComponent implements OnInit {
   selectedCategory: string = 'all';
   searchQuery: string = '';
   
-  // Add template form properties
   showAddForm: boolean = false;
   showTemplateBuilder: boolean = false;
   newTemplateName: string = '';
@@ -242,37 +129,26 @@ export class TemplateManagerComponent implements OnInit {
 
   loadCreatedTemplates(): void {
     this.createdTemplates = [];
-    console.log('Loading templates from localStorage...');
-    
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      console.log('Checking key:', key);
-      
       if (key?.startsWith('my_template_') || key?.startsWith('template_')) {
         try {
           const templateData = localStorage.getItem(key);
-          console.log('Template data for', key, ':', templateData);
-          
           if (templateData) {
             const template = JSON.parse(templateData);
             this.createdTemplates.push({ ...template, id: key });
-            console.log('Added template:', template);
           }
         } catch (e) {
           console.error('Error parsing template:', e);
         }
       }
     }
-    
-    console.log('Total created templates:', this.createdTemplates.length);
   }
 
   filterTemplates(): void {
     this.filteredTemplates = this.templates.filter(template => {
-      const matchesCategory =
-        this.selectedCategory === 'all' || template.category === this.selectedCategory;
-      const matchesSearch =
-        template.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+      const matchesCategory = this.selectedCategory === 'all' || template.category === this.selectedCategory;
+      const matchesSearch = template.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         template.category.toLowerCase().includes(this.searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
@@ -290,7 +166,6 @@ export class TemplateManagerComponent implements OnInit {
 
   downloadTemplate(template: Template, event: Event): void {
     event.stopPropagation();
-    console.log('Downloading template:', template.name);
     const link = document.createElement('a');
     link.href = template.downloadUrl;
     link.download = `${template.name.replace(/\s+/g, '-').toLowerCase()}.docx`;
@@ -300,21 +175,42 @@ export class TemplateManagerComponent implements OnInit {
   }
 
   async editTemplate(template: Template): Promise<void> {
+    // Template persist करा localStorage मध्ये
+    this.templateService.saveSelectedTemplate({
+      id: template.id,
+      name: template.name,
+      style: template.category as any,
+      color: this.getCategoryColor(template.category),
+      thumbnail: template.category.toLowerCase()
+    });
+    
     await this.saveTemplateData(template.id, { selectedTemplate: template });
     this.templateSelected.emit(template.id);
     this.close.emit();
+    
+    this.router.navigate(['/resume-builder'], {
+      queryParams: { template: template.id }
+    });
   }
 
-  // Check if template is available (not already saved by user)
+  private getCategoryColor(category: string): string {
+    const colors: {[key: string]: string} = {
+      'Professional': '#3b5998',
+      'Modern': '#4285f4',
+      'Creative': '#00c853',
+      'Simple': '#607d8b',
+      'Minimalist': '#9e9e9e',
+      'Academic': '#5e35b1'
+    };
+    return colors[category] || '#667eea';
+  }
+
   async isTemplateAvailable(templateId: string): Promise<boolean> {
     try {
       const userEmail = localStorage.getItem('currentUserEmail');
       if (!userEmail) return true;
-
       const { data } = await this.supabaseService.getUserTemplates();
       const userTemplates = data || [];
-      
-      // Check if user already has this template saved
       return !userTemplates.some((t: any) => {
         try {
           const templateData = JSON.parse(t.description);
@@ -330,13 +226,11 @@ export class TemplateManagerComponent implements OnInit {
 
   private async saveTemplateData(templateId: string, content: any): Promise<void> {
     try {
-      // Add original template ID to content for tracking
       const enhancedContent = {
         ...content,
         originalTemplateId: templateId,
         savedAt: new Date().toISOString()
       };
-      
       const result = await this.supabaseService.saveTemplate({
         templateId,
         content: enhancedContent
@@ -362,14 +256,35 @@ export class TemplateManagerComponent implements OnInit {
   addQuickTemplate(): void {
     this.showAddForm = true;
   }
+
+  handleThumbnailError(event: Event, template: Template): void {
+    // जर बाहेरच्या URL ची image load झाली नाही तर broken icon लपवा
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      img.style.display = 'none';
+    }
+    // thumbnail काढून टाकल्याने autoPreview fallback दिसेल
+    template.thumbnail = '';
+  }
+
+  getThumbnailClass(template: Template): string {
+    switch (template.category) {
+      case 'Professional':
+        return 'thumb-professional';
+      case 'Creative':
+        return 'thumb-creative';
+      case 'Minimalist':
+      case 'Simple':
+        return 'thumb-minimal';
+      case 'Academic':
+        return 'thumb-academic';
+      default:
+        return 'thumb-default';
+    }
+  }
   
   createTemplate(): void {
-    console.log('Creating template with name:', this.newTemplateName);
-    if (!this.newTemplateName.trim()) {
-      console.log('No name provided');
-      return;
-    }
-    
+    if (!this.newTemplateName.trim()) return;
     const newTemplate: Template = {
       id: `template-${Date.now()}`,
       name: this.newTemplateName,
@@ -378,12 +293,9 @@ export class TemplateManagerComponent implements OnInit {
       downloadUrl: '',
       lastModified: new Date()
     };
-    
-    console.log('New template created:', newTemplate);
     this.templates.unshift(newTemplate);
     this.filterTemplates();
     this.cancelAdd();
-    console.log('Template added to list');
   }
   
   cancelAdd(): void {
@@ -414,10 +326,8 @@ export class TemplateManagerComponent implements OnInit {
   }
 
   viewTemplate(template: any): void {
-    console.log('View button clicked for template:', template.name);
     this.selectedTemplate = template;
     this.showCreatedTemplates = false;
     this.showTemplateViewer = true;
-    console.log('Template viewer should show now');
   }
 }

@@ -20,30 +20,40 @@ export class AdminLoginComponent {
   constructor(
     private adminService: AdminService,
     private router: Router
-  ) {}
+  ) {
+    // Check if already logged in
+    if (this.adminService.isAdminLoggedIn()) {
+      console.log('Admin already logged in, redirecting to dashboard');
+      this.router.navigate(['/admin/dashboard']);
+    }
+  }
 
   onSubmit(): void {
     if (!this.email || !this.password) {
-      this.errorMessage = 'Please enter both email and password';
+      this.errorMessage = 'कृपया email और password दोनों दर्ज करें';
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
+    console.log('Attempting admin login with:', this.email);
+
     this.adminService.adminLogin(this.email, this.password).subscribe({
       next: (success) => {
         this.isLoading = false;
         if (success) {
+          console.log('✅ Login successful, redirecting to dashboard');
           this.router.navigate(['/admin/dashboard']);
         } else {
-          this.errorMessage = 'Invalid credentials';
+          console.log('❌ Login failed: Invalid credentials');
+          this.errorMessage = 'गलत email या password';
         }
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = 'Login failed. Please try again.';
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
+        this.errorMessage = 'Login विफल रहा। कृपया पुनः प्रयास करें।';
       }
     });
   }

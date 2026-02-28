@@ -22,7 +22,7 @@
           </p>
 
           <div class="resume-actions">
-            <button type="button" class="cta-btn primary" (click)="openResumeOptions()">
+            <button type="button" class="cta-btn primary" (click)="router.navigate(['/loading'])">
               <span class="btn-icon">📄</span>
               Create Resume
             </button>
@@ -102,135 +102,22 @@
 
 </main>
 
-<!-- Resume Options Modal -->
-<div *ngIf="showResumeOptions" class="resume-options-overlay" (click)="closeResumeOptions()">
-  <div class="resume-options-modal" (click)="$event.stopPropagation()">
-
-    <div class="resume-options-header">
-      <h2>Create Your Resume</h2>
-      <button class="close-modal-btn" (click)="closeResumeOptions()">×</button>
-    </div>
-
-    <div class="resume-options-content">
-
-      <!-- Design Resume Card -->
-      <div class="resume-option-card" (click)="designResume()">
-        <div class="option-icon">🎨</div>
-        <h3>Design Resume</h3>
-        <p>Use our resume builder to create a professional resume with customizable templates</p>
-
-        <div class="option-features">
-          <span class="feature-badge">✓ Customizable</span>
-          <span class="feature-badge">✓ Professional</span>
-          <span class="feature-badge">✓ Easy to Use</span>
-        </div>
-
-        <button class="option-btn primary-option" (click)="designResume(); $event.stopPropagation()">
-          ✨ Start Designing Now
-        </button>
-      </div>
-
-      <!-- GOOGLE TEMPLATES CARD (restored) -->
-      <div class="resume-option-card" (click)="getGoogleTemplates()">
-        <div class="option-icon">📚</div>
-        <h3>Google Templates</h3>
-        <p>Browse and download resume templates from Google Docs</p>
-
-        <div class="option-features">
-          <span class="feature-badge">✓ Free Templates</span>
-          <span class="feature-badge">✓ Google Docs</span>
-          <span class="feature-badge">✓ Various Styles</span>
-        </div>
-
-        <button class="option-btn secondary-option" (click)="getGoogleTemplates(); $event.stopPropagation()">
-          Browse Templates
-        </button>
-      </div>
-
-      <!-- MS Word Editor Card -->
-      <div class="resume-option-card">
-        <div class="option-icon">📝</div>
-        <h3>MS Word Editor</h3>
-        <p>Minimal Microsoft Word-like editor with authentic styling and A4 layout</p>
-
-        <div class="option-features">
-          <span class="feature-badge">✓ Word Interface</span>
-          <span class="feature-badge">✓ A4 Layout</span>
-          <span class="feature-badge">✓ Rich Text</span>
-        </div>
-
-        <button class="option-btn primary-option" (click)="openMsWordEditor()">
-          🚀 Open MS Editor
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
 <!-- Learn More Modal -->
-<div *ngIf="showLearnMore" class="learn-more-overlay" (click)="closeLearnMore()">
-  <div class="learn-more-modal" (click)="$event.stopPropagation()">
+<app-learn-more-modal 
+  *ngIf="showLearnMore" 
+  (close)="closeLearnMore()" 
+  (openResumeOptions)="closeLearnMore(); openResumeOptions()">
+</app-learn-more-modal>
 
-    <div class="learn-more-header">
-      <div class="header-content">
-        <h2>Why Choose Resume Builder?</h2>
-        <p class="header-subtitle">Create professional resumes that get you noticed</p>
-      </div>
+<!-- Resume Options Modal -->
+<app-resume-options-modal 
+  *ngIf="showResumeOptions" 
+  (close)="closeResumeOptions()">
+</app-resume-options-modal>
 
-      <button class="close-modal-btn" (click)="closeLearnMore()" aria-label="Close">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-
-    <div class="learn-more-content">
-
-      <div class="features-grid-new">
-
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-              <path d="M2 17l10 5 10-5"></path>
-              <path d="M2 12l10 5 10-5"></path>
-            </svg>
-          </div>
-          <h3>28+ Professional Templates</h3>
-          <p>Choose from ATS-friendly templates</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            </svg>
-          </div>
-          <h3>Easy Editing</h3>
-          <p>No design skills needed</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            </svg>
-          </div>
-          <h3>Download as PDF</h3>
-          <p>High-quality PDF export</p>
-        </div>
-
-      </div>
-
-      <div class="cta-section-new">
-        <h3>Ready to Build Your Perfect Resume?</h3>
-        <button class="cta-button-new" (click)="closeLearnMore(); openResumeOptions()">
-          <span>Get Started Free</span>
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
+<!-- Template Manager Modal -->
+<app-template-manager 
+  *ngIf="showTemplateManager" 
+  (close)="closeTemplateManager()"
+  (templateSelected)="onTemplateSelected($event)">
+</app-template-manager>
