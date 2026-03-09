@@ -1,0 +1,346 @@
+<!-- EXAMPLE: Template 1 - Classic Professional Layout -->
+<!-- File: src/app/resume-templates/template-01/template-01.component.html -->
+
+<div class="resume-template-01">
+  <header class="header">
+    <h1>{{ data.name }}</h1>
+    <h2>{{ data.title }}</h2>
+    <div class="contact-info">
+      <span>{{ data.email }}</span> | 
+      <span>{{ data.phone }}</span> | 
+      <span>{{ data.location }}</span>
+    </div>
+  </header>
+
+  <section class="summary">
+    <h3>Professional Summary</h3>
+    <p>{{ data.summary }}</p>
+  </section>
+
+  <section class="experience">
+    <h3>Experience</h3>
+    <div *ngFor="let exp of data.experience" class="experience-item">
+      <h4>{{ exp.role }} - {{ exp.company }}</h4>
+      <p class="duration">{{ exp.duration }}</p>
+      <p>{{ exp.description }}</p>
+    </div>
+  </section>
+
+  <section class="education">
+    <h3>Education</h3>
+    <div *ngFor="let edu of data.education" class="education-item">
+      <h4>{{ edu.degree }}</h4>
+      <p>{{ edu.institution }} - {{ edu.year }}</p>
+    </div>
+  </section>
+
+  <section class="skills">
+    <h3>Skills</h3>
+    <div class="skills-list">
+      <span *ngFor="let skill of data.skills" class="skill-tag">{{ skill }}</span>
+    </div>
+  </section>
+</div>
+
+<style>
+  .resume-template-01 {
+    font-family: 'Times New Roman', serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    background: white;
+    color: #333;
+  }
+
+  .header {
+    text-align: center;
+    border-bottom: 3px solid #2c3e50;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+  }
+
+  .header h1 {
+    font-size: 32px;
+    margin: 0;
+    color: #2c3e50;
+  }
+
+  .header h2 {
+    font-size: 18px;
+    color: #7f8c8d;
+    margin: 10px 0;
+  }
+
+  section {
+    margin-bottom: 25px;
+  }
+
+  h3 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+  }
+
+  .skill-tag {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 5px 15px;
+    margin: 5px;
+    border-radius: 3px;
+  }
+</style>
+
+<!-- ============================================ -->
+
+<!-- EXAMPLE: Template 2 - Modern Two-Column Layout -->
+<!-- File: src/app/resume-templates/template-2/template-2.component.html -->
+
+<div class="resume-template-02">
+  <div class="sidebar">
+    <div class="profile-photo" *ngIf="data.photo">
+      <img [src]="data.photo" alt="Profile">
+    </div>
+    
+    <div class="contact-section">
+      <h3>Contact</h3>
+      <p>{{ data.email }}</p>
+      <p>{{ data.phone }}</p>
+      <p>{{ data.location }}</p>
+    </div>
+
+    <div class="skills-section">
+      <h3>Skills</h3>
+      <div *ngFor="let skill of data.skills" class="skill-item">
+        {{ skill }}
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <header>
+      <h1>{{ data.name }}</h1>
+      <h2>{{ data.title }}</h2>
+    </header>
+
+    <section class="summary">
+      <h3>About Me</h3>
+      <p>{{ data.summary }}</p>
+    </section>
+
+    <section class="experience">
+      <h3>Work Experience</h3>
+      <div *ngFor="let exp of data.experience" class="exp-item">
+        <h4>{{ exp.role }}</h4>
+        <p class="company">{{ exp.company }} | {{ exp.duration }}</p>
+        <p>{{ exp.description }}</p>
+      </div>
+    </section>
+
+    <section class="education">
+      <h3>Education</h3>
+      <div *ngFor="let edu of data.education">
+        <h4>{{ edu.degree }}</h4>
+        <p>{{ edu.institution }} - {{ edu.year }}</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<style>
+  .resume-template-02 {
+    display: flex;
+    font-family: 'Arial', sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+  }
+
+  .sidebar {
+    width: 300px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+  }
+
+  .profile-photo img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid white;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 40px;
+  }
+
+  .main-content h1 {
+    font-size: 36px;
+    color: #667eea;
+    margin: 0;
+  }
+
+  .main-content h2 {
+    font-size: 20px;
+    color: #666;
+    margin: 10px 0 30px 0;
+  }
+
+  .main-content h3 {
+    color: #667eea;
+    border-left: 4px solid #667eea;
+    padding-left: 15px;
+    margin-bottom: 20px;
+  }
+
+  .sidebar h3 {
+    border-bottom: 2px solid white;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+
+  .skill-item {
+    background: rgba(255,255,255,0.2);
+    padding: 8px 12px;
+    margin: 8px 0;
+    border-radius: 5px;
+  }
+</style>
+
+<!-- ============================================ -->
+
+<!-- EXAMPLE: Template 3 - Creative Card Layout -->
+<!-- File: src/app/resume-templates/template-3/template-3.component.html -->
+
+<div class="resume-template-03">
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1>{{ data.name }}</h1>
+      <h2>{{ data.title }}</h2>
+      <p class="tagline">{{ data.summary }}</p>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="card contact-card">
+      <h3>📧 Contact</h3>
+      <p>{{ data.email }}</p>
+      <p>{{ data.phone }}</p>
+      <p>{{ data.location }}</p>
+    </div>
+
+    <div class="card skills-card">
+      <h3>💡 Skills</h3>
+      <div class="skills-grid">
+        <span *ngFor="let skill of data.skills" class="skill-badge">
+          {{ skill }}
+        </span>
+      </div>
+    </div>
+
+    <div class="card experience-card full-width">
+      <h3>💼 Experience</h3>
+      <div *ngFor="let exp of data.experience" class="timeline-item">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <h4>{{ exp.role }}</h4>
+          <p class="company-name">{{ exp.company }}</p>
+          <p class="duration">{{ exp.duration }}</p>
+          <p>{{ exp.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card education-card full-width">
+      <h3>🎓 Education</h3>
+      <div *ngFor="let edu of data.education" class="edu-item">
+        <h4>{{ edu.degree }}</h4>
+        <p>{{ edu.institution }} - {{ edu.year }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .resume-template-03 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #f5f5f5;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+    color: white;
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  .hero-section h1 {
+    font-size: 48px;
+    margin: 0;
+  }
+
+  .hero-section h2 {
+    font-size: 24px;
+    margin: 10px 0;
+    opacity: 0.9;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 30px;
+  }
+
+  .card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .card h3 {
+    color: #00c853;
+    margin-top: 0;
+    font-size: 20px;
+  }
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
+
+  .skill-badge {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #00c853;
+    padding: 8px 16px;
+    margin: 5px;
+    border-radius: 20px;
+    font-size: 14px;
+  }
+
+  .timeline-item {
+    display: flex;
+    margin-bottom: 25px;
+    position: relative;
+  }
+
+  .timeline-marker {
+    width: 12px;
+    height: 12px;
+    background: #00c853;
+    border-radius: 50%;
+    margin-right: 20px;
+    margin-top: 5px;
+  }
+
+  .timeline-content h4 {
+    color: #00c853;
+    margin: 0 0 5px 0;
+  }
+</style>

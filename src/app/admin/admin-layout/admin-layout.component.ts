@@ -31,6 +31,6 @@ export class AdminLayoutComponent implements OnInit {
 
   logout(): void {
     this.adminService.adminLogout();
-    this.router.navigate(['/admin/login']);
+    this.router.navigate(['/home']);
   }
 }

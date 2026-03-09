@@ -1,0 +1,295 @@
+# System Architecture Diagram
+
+## Complete Multi-Template Resume System
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                            USER INTERFACE LAYER                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────┐
+    │   HOME PAGE      │
+    │  home.component  │
+    │                  │
+    │  [Create Resume] │◄─── User clicks button
+    └────────┬─────────┘
+             │
+             │ Opens modal/navigates
+             ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │         TEMPLATE SELECTION                               │
+    │    template-manager.component.ts                         │
+    │                                                          │
+    │  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐       │
+    │  │Template│  │Template│  │Template│  │Template│  ...  │
+    │  │   1    │  │   2    │  │   3    │  │   4    │       │
+    │  │Classic │  │Modern  │  │Creative│  │Elegant │       │
+    │  └───┬────┘  └────────┘  └────────┘  └────────┘       │
+    │      │                                                  │
+    │      │ User selects Template 1                         │
+    └──────┼──────────────────────────────────────────────────┘
+           │
+           │ Navigate with templateId
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │         RESUME BUILDER                                   │
+    │    resume-builder.component.ts                           │
+    │    URL: /resume-builder?templateId=1                     │
+    │                                                          │
+    │  ┌─────────────────┐         ┌──────────────────────┐  │
+    │  │                 │         │                      │  │
+    │  │  EDITOR PANEL   │         │   PREVIEW PANEL      │  │
+    │  │                 │         │                      │  │
+    │  │  Name: [____]   │         │  ┌────────────────┐ │  │
+    │  │  Email: [____]  │◄───────►│  │                │ │  │
+    │  │  Phone: [____]  │  Data   │  │  Template 1    │ │  │
+    │  │  Skills: [____] │  Binding│  │  Component     │ │  │
+    │  │                 │         │  │  (Dynamic)     │ │  │
+    │  │  [Add Skill]    │         │  │                │ │  │
+    │  │  [Add Exp]      │         │  │  Renders with  │ │  │
+    │  │                 │         │  │  unique layout │ │  │
+    │  │  [Save]         │         │  │                │ │  │
+    │  │  [Download PDF] │         │  └────────────────┘ │  │
+    │  │                 │         │  #templateContainer  │  │
+    │  └─────────────────┘         └──────────────────────┘  │
+    └──────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                           SERVICE LAYER                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────┐
+    │     TEMPLATE REGISTRY SERVICE                            │
+    │     template-registry.service.ts                         │
+    │                                                          │
+    │  templates: TemplateInfo[] = [                          │
+    │    { id: 1, component: ResumeTemplate01Component },     │
+    │    { id: 2, component: ResumeTemplate2Component },      │
+    │    { id: 3, component: ResumeTemplate3Component },      │
+    │    ...                                                   │
+    │    { id: 55, component: ResumeTemplate55Component }     │
+    │  ]                                                       │
+    │                                                          │
+    │  Methods:                                                │
+    │  - getAllTemplates()                                     │
+    │  - getTemplateById(id)                                   │
+    │  - getTemplatesByCategory(category)                      │
+    └──────────────────────────────────────────────────────────┘
+                            │
+                            │ Returns component reference
+                            ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │     SUPABASE TEMPLATE SERVICE                            │
+    │     supabase-template.service.ts                         │
+    │                                                          │
+    │  Methods:                                                │
+    │  - getAllTemplates()          ← Fetch from DB           │
+    │  - saveUserResume(resume)     ← Save to DB              │
+    │  - getUserResumes()           ← Load user's resumes     │
+    │  - getResumeById(id)          ← Load specific resume    │
+    │  - deleteResume(id)           ← Delete resume           │
+    └──────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                         COMPONENT LAYER                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+    │  Template 1  │  │  Template 2  │  │  Template 3  │  ...
+    │  Component   │  │  Component   │  │  Component   │
+    │              │  │              │  │              │
+    │  @Input()    │  │  @Input()    │  │  @Input()    │
+    │  data        │  │  data        │  │  data        │
+    │              │  │              │  │              │
+    │  Classic     │  │  Modern      │  │  Creative    │
+    │  Layout      │  │  Two-Column  │  │  Card Grid   │
+    │  Serif Font  │  │  Sans-Serif  │  │  Colorful    │
+    │  B&W Colors  │  │  Gradient    │  │  Icons       │
+    └──────────────┘  └──────────────┘  └──────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                          DATA LAYER                                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────┐
+    │                    SUPABASE DATABASE                     │
+    │                                                          │
+    │  ┌────────────────────────────────────────────────┐    │
+    │  │  templates                                      │    │
+    │  ├────────────────────────────────────────────────┤    │
+    │  │  id  │ template_id │ name      │ category      │    │
+    │  ├────────────────────────────────────────────────┤    │
+    │  │  1   │     1       │ Classic   │ Professional  │    │
+    │  │  2   │     2       │ Modern    │ Modern        │    │
+    │  │  3   │     3       │ Creative  │ Creative      │    │
+    │  │  ... │    ...      │ ...       │ ...           │    │
+    │  └────────────────────────────────────────────────┘    │
+    │                                                          │
+    │  ┌────────────────────────────────────────────────┐    │
+    │  │  user_resumes                                   │    │
+    │  ├────────────────────────────────────────────────┤    │
+    │  │  id (UUID)                                      │    │
+    │  │  user_id (UUID)                                 │    │
+    │  │  template_id (INTEGER) ──┐                     │    │
+    │  │  resume_name (VARCHAR)   │                     │    │
+    │  │  resume_data (JSONB) ────┼─► {                │    │
+    │  │  status (VARCHAR)        │     name: "John",   │    │
+    │  │  created_at              │     email: "...",   │    │
+    │  │  updated_at              │     skills: [...],  │    │
+    │  │                          │     experience: [...] │  │
+    │  │                          └─► }                 │    │
+    │  └────────────────────────────────────────────────┘    │
+    └──────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                         DATA FLOW DIAGRAM                                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    USER ACTION                    SYSTEM RESPONSE
+    
+    1. Click "Create Resume"  →    Open template selection
+                                   ↓
+    2. Browse templates       →    Display all 55 templates
+                                   ↓
+    3. Click Template 5       →    Navigate to:
+                                   /resume-builder?templateId=5
+                                   ↓
+    4. Resume Builder loads   →    Read templateId from URL
+                                   ↓
+                              →    Query TemplateRegistry
+                                   ↓
+                              →    Get Template5Component
+                                   ↓
+                              →    Create component dynamically
+                                   ↓
+                              →    Render Template 5 layout
+                                   ↓
+    5. Fill in form data      →    Update resumeData object
+                                   ↓
+                              →    Pass data to template
+                                   ↓
+                              →    Template re-renders
+                                   ↓
+    6. Click "Save"           →    Send to Supabase:
+                                   {
+                                     user_id: "abc",
+                                     template_id: 5,
+                                     resume_data: {...}
+                                   }
+                                   ↓
+    7. Click "Download PDF"   →    Generate PDF from template
+                                   ↓
+                              →    Download file
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                    DYNAMIC COMPONENT LOADING                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Step 1: Get Template ID from URL
+    ┌─────────────────────────────────────┐
+    │ URL: /resume-builder?templateId=5   │
+    └──────────────┬──────────────────────┘
+                   │
+                   ▼
+    Step 2: Query Template Registry
+    ┌─────────────────────────────────────┐
+    │ templateRegistry.getTemplateById(5) │
+    └──────────────┬──────────────────────┘
+                   │
+                   ▼
+    Step 3: Get Component Reference
+    ┌─────────────────────────────────────┐
+    │ Returns: {                          │
+    │   id: 5,                            │
+    │   name: "Elegant Red",              │
+    │   component: ResumeTemplate5Component│
+    │ }                                   │
+    └──────────────┬──────────────────────┘
+                   │
+                   ▼
+    Step 4: Create Component Dynamically
+    ┌─────────────────────────────────────┐
+    │ const ref = container.createComponent│
+    │   (ResumeTemplate5Component);       │
+    └──────────────┬──────────────────────┘
+                   │
+                   ▼
+    Step 5: Pass Data to Component
+    ┌─────────────────────────────────────┐
+    │ ref.instance.data = resumeData;     │
+    └──────────────┬──────────────────────┘
+                   │
+                   ▼
+    Step 6: Trigger Change Detection
+    ┌─────────────────────────────────────┐
+    │ ref.changeDetectorRef.detectChanges()│
+    └──────────────┬──────────────────────┘
+                   │
+                   ▼
+    Step 7: Template Renders
+    ┌─────────────────────────────────────┐
+    │  ┌───────────────────────────────┐ │
+    │  │                               │ │
+    │  │   Template 5 Unique Layout    │ │
+    │  │                               │ │
+    │  │   Name: {{ data.name }}       │ │
+    │  │   Email: {{ data.email }}     │ │
+    │  │   Skills: {{ data.skills }}   │ │
+    │  │                               │ │
+    │  └───────────────────────────────┘ │
+    └─────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                      TEMPLATE UNIQUENESS                                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Template 1              Template 2              Template 3
+    ┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+    │ ┌─────────┐ │        │ ┌───┬─────┐ │        │ ┌───┬───┐   │
+    │ │ Header  │ │        │ │ S │ Main│ │        │ │ 1 │ 2 │   │
+    │ └─────────┘ │        │ │ i │     │ │        │ ├───┼───┤   │
+    │ ┌─────────┐ │        │ │ d │     │ │        │ │ 3 │ 4 │   │
+    │ │ Summary │ │        │ │ e │     │ │        │ ├───┴───┤   │
+    │ └─────────┘ │        │ │ b │     │ │        │ │   5   │   │
+    │ ┌─────────┐ │        │ │ a │     │ │        │ └───────┘   │
+    │ │  Work   │ │        │ │ r │     │ │        │             │
+    │ └─────────┘ │        │ └───┴─────┘ │        │  Card Grid  │
+    │             │        │             │        │             │
+    │ Single Col  │        │ Two Column  │        │  Creative   │
+    │ Traditional │        │   Modern    │        │   Layout    │
+    └─────────────┘        └─────────────┘        └─────────────┘
+
+    Same Data, Different Presentation!
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                         KEY TAKEAWAYS                                       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ✅ Each template is a separate Angular component
+    ✅ Templates are loaded dynamically based on user selection
+    ✅ Template ID is passed via URL query parameter
+    ✅ All templates share the same ResumeData interface
+    ✅ Each template has unique HTML and CSS
+    ✅ Template Registry maps IDs to components
+    ✅ Supabase stores template selection with resume data
+    ✅ ViewContainerRef enables dynamic component loading
+    ✅ Change detection updates template when data changes
+    ✅ Users can switch templates without losing data
+
+```

@@ -97,11 +97,29 @@ export class AdminService {
     this.currentAdminSubject.next(null);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('currentAdmin');
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
     }
   }
 
   isAdminLoggedIn(): boolean {
-    return this.currentAdminSubject.value !== null;
+    if (this.currentAdminSubject.value !== null) {
+      return true;
+    }
+    // Check localStorage as fallback
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('currentAdmin');
+      if (stored) {
+        try {
+          const admin = JSON.parse(stored);
+          this.currentAdminSubject.next(admin);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+    }
+    return false;
   }
 
   getCurrentAdmin(): AdminUser | null {
@@ -130,6 +148,8 @@ export class AdminService {
     this.currentAdminSubject.next(admin);
     if (typeof window !== 'undefined') {
       localStorage.setItem('currentAdmin', JSON.stringify(admin));
+      localStorage.setItem('adminToken', 'admin-token-' + admin.id);
+      localStorage.setItem('adminUser', JSON.stringify(admin));
     }
   }
 

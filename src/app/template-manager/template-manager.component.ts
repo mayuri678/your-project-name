@@ -1,333 +1,271 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { SupabaseService } from '../services/supabase.service';
-import { TemplateBuilderComponent } from './template-builder.component';
-import { TemplateViewerComponent } from './template-viewer.component';
-import { TemplateService } from '../template.service';
-
-interface Template {
-  id: string;
-  name: string;
-  category: string;
-  thumbnail: string;
-  downloadUrl: string;
-  lastModified: Date;
-}
+import { Router } from '@angular/router';
+import { TemplateRegistryService, TemplateInfo } from '../resume-templates/template-registry.service';
 
 @Component({
   selector: 'app-template-manager',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TemplateBuilderComponent, TemplateViewerComponent],
-  templateUrl: './template-manager.component.html',
-  styleUrls: ['./template-manager.component.css']
+  imports: [CommonModule],
+  template: `
+    <div class="modal-overlay" (click)="close()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Select Resume Template</h2>
+          <button class="close-btn" (click)="close()">&times;</button>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+          <button 
+            *ngFor="let category of categories" 
+            [class.active]="selectedCategory === category"
+            (click)="filterByCategory(category)">
+            {{ category }}
+          </button>
+        </div>
+
+        <!-- Templates Grid -->
+        <div class="templates-grid">
+          <div 
+            *ngFor="let template of filteredTemplates" 
+            class="template-card"
+            (click)="selectTemplate(template.id)">
+            <div class="template-preview" [style.background]="getGradient(template.id)">
+              <div class="template-id">{{ template.id }}</div>
+              <div class="template-name">{{ template.name }}</div>
+            </div>
+            <div class="template-footer">
+              <span class="category">{{ template.category }}</span>
+              <button class="use-btn">Use Template</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 2rem;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 1200px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: #333;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      color: #666;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .close-btn:hover {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .category-tabs button {
+      padding: 0.5rem 1rem;
+      border: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .category-tabs button:hover {
+      border-color: #4285f4;
+    }
+
+    .category-tabs button.active {
+      background: #4285f4;
+      color: white;
+      border-color: #4285f4;
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .template-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .template-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      border-color: #4285f4;
+    }
+
+    .template-preview {
+      height: 250px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      position: relative;
+    }
+
+    .template-id {
+      font-size: 2.5rem;
+      font-weight: bold;
+      opacity: 0.95;
+    }
+
+    .template-name {
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      text-align: center;
+      padding: 0 1rem;
+      font-weight: 500;
+    }
+
+    .template-footer {
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fafafa;
+    }
+
+    .category {
+      font-size: 0.8rem;
+      color: #666;
+      background: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 12px;
+    }
+
+    .use-btn {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    .use-btn:hover {
+      background: #3367d6;
+    }
+  `]
 })
 export class TemplateManagerComponent implements OnInit {
-  @Output() close = new EventEmitter<void>();
-  @Output() templateSelected = new EventEmitter<string>();
+  @Output() closeModal = new EventEmitter<void>();
+  @Output() templateSelected = new EventEmitter<number>();
 
-  constructor(private supabaseService: SupabaseService, private router: Router, private templateService: TemplateService) {}
+  templates: TemplateInfo[] = [];
+  filteredTemplates: TemplateInfo[] = [];
+  categories: string[] = ['All'];
+  selectedCategory: string = 'All';
 
-  createdTemplates: any[] = [];
-  showCreatedTemplates = false;
-  showTemplateViewer = false;
-  selectedTemplate: any = null;
-  editTemplateData: any = null;
+  constructor(
+    private router: Router,
+    private templateRegistry: TemplateRegistryService
+  ) {}
 
-  templates: Template[] = [
-    {
-      id: 'basic-resume',
-      name: 'Basic Resume',
-      category: 'Simple',
-      thumbnail: 'https://via.placeholder.com/300x400/667eea/ffffff?text=Basic+Resume',
-      downloadUrl: '/resume-template.html',
-      lastModified: new Date()
-    },
-    {
-      id: 'executive',
-      name: 'Executive',
-      category: 'Professional',
-      thumbnail: 'https://via.placeholder.com/300x400/764ba2/ffffff?text=Executive',
-      downloadUrl: '#',
-      lastModified: new Date('2023-11-20')
-    },
-    {
-      id: 'modern-minimalist',
-      name: 'Modern Minimalist',
-      category: 'Minimalist',
-      thumbnail: 'https://via.placeholder.com/300x400/f093fb/ffffff?text=Modern+Minimalist',
-      downloadUrl: '#',
-      lastModified: new Date('2023-11-18')
-    },
-    {
-      id: 'creative-portfolio',
-      name: 'Creative Portfolio',
-      category: 'Creative',
-      thumbnail: 'https://via.placeholder.com/300x400/4facfe/ffffff?text=Creative+Portfolio',
-      downloadUrl: '#',
-      lastModified: new Date('2023-11-15')
-    },
-    {
-      id: 'modern-chronological',
-      name: 'Modern Chronological',
-      category: 'Professional',
-      thumbnail: 'https://via.placeholder.com/300x400/00f2fe/ffffff?text=Modern+Chronological',
-      downloadUrl: '#',
-      lastModified: new Date('2023-11-10')
-    },
-    {
-      id: 'functional-resume',
-      name: 'Functional Resume',
-      category: 'Professional',
-      thumbnail: 'https://via.placeholder.com/300x400/43e97b/ffffff?text=Functional+Resume',
-      downloadUrl: '#',
-      lastModified: new Date('2023-11-05')
-    },
-    {
-      id: 'combination-resume',
-      name: 'Combination Resume',
-      category: 'Professional',
-      thumbnail: 'https://via.placeholder.com/300x400/38f9d7/ffffff?text=Combination+Resume',
-      downloadUrl: '#',
-      lastModified: new Date('2023-11-01')
-    },
-    {
-      id: 'academic-cv',
-      name: 'Academic CV',
-      category: 'Academic',
-      thumbnail: 'https://via.placeholder.com/300x400/fa709a/ffffff?text=Academic+CV',
-      downloadUrl: '#',
-      lastModified: new Date('2023-10-28')
-    },
-    {
-      id: 'infographic-resume',
-      name: 'Infographic Resume',
-      category: 'Creative',
-      thumbnail: 'https://via.placeholder.com/300x400/fee140/ffffff?text=Infographic+Resume',
-      downloadUrl: '#',
-      lastModified: new Date('2023-10-25')
-    }
-  ];
-
-  filteredTemplates: Template[] = [];
-  categories: string[] = [];
-  selectedCategory: string = 'all';
-  searchQuery: string = '';
-  
-  showAddForm: boolean = false;
-  showTemplateBuilder: boolean = false;
-  newTemplateName: string = '';
-  newTemplateCategory: string = 'Professional';
-  newTemplateThumbnail: string = '';
-
-  ngOnInit(): void {
-    this.filteredTemplates = [...this.templates];
-    this.categories = ['all', ...new Set(this.templates.map(t => t.category))];
-    this.loadCreatedTemplates();
+  ngOnInit() {
+    this.loadTemplates();
   }
 
-  loadCreatedTemplates(): void {
-    this.createdTemplates = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('my_template_') || key?.startsWith('template_')) {
-        try {
-          const templateData = localStorage.getItem(key);
-          if (templateData) {
-            const template = JSON.parse(templateData);
-            this.createdTemplates.push({ ...template, id: key });
-          }
-        } catch (e) {
-          console.error('Error parsing template:', e);
-        }
-      }
-    }
+  loadTemplates() {
+    this.templates = this.templateRegistry.getAllTemplates();
+    this.filteredTemplates = this.templates;
+    this.categories = ['All', ...this.templateRegistry.getCategories()];
   }
 
-  filterTemplates(): void {
-    this.filteredTemplates = this.templates.filter(template => {
-      const matchesCategory = this.selectedCategory === 'all' || template.category === this.selectedCategory;
-      const matchesSearch = template.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        template.category.toLowerCase().includes(this.searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }
-
-  onCategoryChange(category: string): void {
+  filterByCategory(category: string) {
     this.selectedCategory = category;
-    this.filterTemplates();
+    if (category === 'All') {
+      this.filteredTemplates = this.templates;
+    } else {
+      this.filteredTemplates = this.templates.filter(t => t.category === category);
+    }
   }
 
-  onSearchChange(event: Event): void {
-    this.searchQuery = (event.target as HTMLInputElement).value;
-    this.filterTemplates();
-  }
-
-  downloadTemplate(template: Template, event: Event): void {
-    event.stopPropagation();
-    const link = document.createElement('a');
-    link.href = template.downloadUrl;
-    link.download = `${template.name.replace(/\s+/g, '-').toLowerCase()}.docx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  async editTemplate(template: Template): Promise<void> {
-    // Template persist करा localStorage मध्ये
-    this.templateService.saveSelectedTemplate({
-      id: template.id,
-      name: template.name,
-      style: template.category as any,
-      color: this.getCategoryColor(template.category),
-      thumbnail: template.category.toLowerCase()
-    });
-    
-    await this.saveTemplateData(template.id, { selectedTemplate: template });
-    this.templateSelected.emit(template.id);
-    this.close.emit();
-    
+  selectTemplate(templateId: number) {
+    this.templateSelected.emit(templateId);
     this.router.navigate(['/resume-builder'], {
-      queryParams: { template: template.id }
+      queryParams: { templateId: templateId }
     });
   }
 
-  private getCategoryColor(category: string): string {
-    const colors: {[key: string]: string} = {
-      'Professional': '#3b5998',
-      'Modern': '#4285f4',
-      'Creative': '#00c853',
-      'Simple': '#607d8b',
-      'Minimalist': '#9e9e9e',
-      'Academic': '#5e35b1'
-    };
-    return colors[category] || '#667eea';
+  close() {
+    this.closeModal.emit();
   }
 
-  async isTemplateAvailable(templateId: string): Promise<boolean> {
-    try {
-      const userEmail = localStorage.getItem('currentUserEmail');
-      if (!userEmail) return true;
-      const { data } = await this.supabaseService.getUserTemplates();
-      const userTemplates = data || [];
-      return !userTemplates.some((t: any) => {
-        try {
-          const templateData = JSON.parse(t.description);
-          return templateData.originalTemplateId === templateId;
-        } catch {
-          return false;
-        }
-      });
-    } catch {
-      return true;
-    }
-  }
-
-  private async saveTemplateData(templateId: string, content: any): Promise<void> {
-    try {
-      const enhancedContent = {
-        ...content,
-        originalTemplateId: templateId,
-        savedAt: new Date().toISOString()
-      };
-      const result = await this.supabaseService.saveTemplate({
-        templateId,
-        content: enhancedContent
-      });
-      if (result.error) {
-        console.error('Failed to save template:', result.error);
-      }
-    } catch (error) {
-      console.error('Error saving template:', error);
-    }
-  }
-
-  addTemplate(): void {
-    this.editTemplateData = null;
-    this.showTemplateBuilder = true;
-  }
-
-  viewCreatedTemplates(): void {
-    this.loadCreatedTemplates();
-    this.showCreatedTemplates = true;
-  }
-
-  addQuickTemplate(): void {
-    this.showAddForm = true;
-  }
-
-  handleThumbnailError(event: Event, template: Template): void {
-    // जर बाहेरच्या URL ची image load झाली नाही तर broken icon लपवा
-    const img = event.target as HTMLImageElement;
-    if (img) {
-      img.style.display = 'none';
-    }
-    // thumbnail काढून टाकल्याने autoPreview fallback दिसेल
-    template.thumbnail = '';
-  }
-
-  getThumbnailClass(template: Template): string {
-    switch (template.category) {
-      case 'Professional':
-        return 'thumb-professional';
-      case 'Creative':
-        return 'thumb-creative';
-      case 'Minimalist':
-      case 'Simple':
-        return 'thumb-minimal';
-      case 'Academic':
-        return 'thumb-academic';
-      default:
-        return 'thumb-default';
-    }
-  }
-  
-  createTemplate(): void {
-    if (!this.newTemplateName.trim()) return;
-    const newTemplate: Template = {
-      id: `template-${Date.now()}`,
-      name: this.newTemplateName,
-      category: this.newTemplateCategory,
-      thumbnail: this.newTemplateThumbnail || 'assets/images/templates/default.jpg',
-      downloadUrl: '',
-      lastModified: new Date()
-    };
-    this.templates.unshift(newTemplate);
-    this.filterTemplates();
-    this.cancelAdd();
-  }
-  
-  cancelAdd(): void {
-    this.showAddForm = false;
-    this.showTemplateBuilder = false;
-    this.showCreatedTemplates = false;
-    this.showTemplateViewer = false;
-    this.editTemplateData = null;
-    this.selectedTemplate = null;
-    this.newTemplateName = '';
-    this.newTemplateCategory = 'Professional';
-    this.newTemplateThumbnail = '';
-  }
-
-  closeManager(): void {
-    this.close.emit();
-  }
-
-  deleteCreatedTemplate(templateId: string): void {
-    localStorage.removeItem(templateId);
-    this.loadCreatedTemplates();
-  }
-
-  editCreatedTemplate(template: any): void {
-    this.editTemplateData = template;
-    this.showCreatedTemplates = false;
-    this.showTemplateBuilder = true;
-  }
-
-  viewTemplate(template: any): void {
-    this.selectedTemplate = template;
-    this.showCreatedTemplates = false;
-    this.showTemplateViewer = true;
+  getGradient(id: number): string {
+    const gradients = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)'
+    ];
+    return gradients[id % gradients.length];
   }
 }

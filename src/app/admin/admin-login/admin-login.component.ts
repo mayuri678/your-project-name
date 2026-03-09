@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,20 +11,21 @@ import { AdminService } from '../../services/admin.service';
   templateUrl: './admin-login.component.html',
   styleUrls: ['./admin-login.component.css']
 })
-export class AdminLoginComponent {
+export class AdminLoginComponent implements OnInit {
   email = '';
   password = '';
   isLoading = false;
   errorMessage = '';
 
   constructor(
-    private adminService: AdminService,
+    public adminService: AdminService,
     private router: Router
-  ) {
-    // Check if already logged in
+  ) {}
+
+  ngOnInit(): void {
     if (this.adminService.isAdminLoggedIn()) {
-      console.log('Admin already logged in, redirecting to dashboard');
-      this.router.navigate(['/admin/dashboard']);
+      this.router.navigate(['/home']);
+      return;
     }
   }
 
@@ -37,22 +38,17 @@ export class AdminLoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    console.log('Attempting admin login with:', this.email);
-
     this.adminService.adminLogin(this.email, this.password).subscribe({
       next: (success) => {
         this.isLoading = false;
         if (success) {
-          console.log('✅ Login successful, redirecting to dashboard');
           this.router.navigate(['/admin/dashboard']);
         } else {
-          console.log('❌ Login failed: Invalid credentials');
           this.errorMessage = 'गलत email या password';
         }
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('❌ Login error:', error);
         this.errorMessage = 'Login विफल रहा। कृपया पुनः प्रयास करें।';
       }
     });

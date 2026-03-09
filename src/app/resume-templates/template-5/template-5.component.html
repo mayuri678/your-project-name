@@ -1,42 +1,221 @@
-<div class="max-w-[210mm] min-h-[297mm] mx-auto bg-white p-12 shadow-lg print:shadow-none">
-  <header class="bg-red-600 text-white p-8 -mx-12 -mt-12 mb-8">
-    <h1 class="text-4xl font-bold mb-2">{{data.name}}</h1>
-    <p class="text-xl mb-4">{{data.title}}</p>
-    <div class="flex gap-4 text-sm">
-      <span>{{data.email}}</span>
-      <span>{{data.phone}}</span>
-      <span>{{data.location}}</span>
+<div class="bold-template">
+  <div class="header-section">
+    <div class="header-left">
+      <div class="photo-wrapper" *ngIf="data.photo">
+        <img [src]="data.photo" alt="Profile">
+      </div>
     </div>
-  </header>
-  <section class="mb-6" *ngIf="data.summary">
-    <h2 class="text-2xl font-bold text-red-600 border-b-2 border-red-600 pb-2 mb-3">Summary</h2>
-    <p class="text-gray-700">{{data.summary}}</p>
-  </section>
-  <section class="mb-6" *ngIf="data.experience?.length">
-    <h2 class="text-2xl font-bold text-red-600 border-b-2 border-red-600 pb-2 mb-3">Experience</h2>
-    <div *ngFor="let exp of data.experience" class="mb-4">
-      <div class="flex justify-between">
-        <h3 class="text-lg font-bold">{{exp.role}}</h3>
-        <span class="text-gray-600">{{exp.duration}}</span>
+    <div class="header-right">
+      <h1>{{data.name}}</h1>
+      <h2>{{data.title}}</h2>
+      <div class="contacts">
+        <span *ngIf="data.email">✉ {{data.email}}</span>
+        <span *ngIf="data.phone">☎ {{data.phone}}</span>
+        <span *ngIf="data.location">⌖ {{data.location}}</span>
       </div>
-      <p class="text-gray-600 mb-1">{{exp.company}}</p>
-      <p class="text-sm text-gray-700">{{exp.description}}</p>
     </div>
-  </section>
-  <div class="grid grid-cols-2 gap-6">
-    <section *ngIf="data.education?.length">
-      <h2 class="text-xl font-bold text-red-600 border-b border-red-600 pb-2 mb-3">Education</h2>
-      <div *ngFor="let edu of data.education" class="mb-3">
-        <h3 class="font-bold">{{edu.degree}}</h3>
-        <p class="text-sm text-gray-600">{{edu.institution}}</p>
-        <p class="text-sm text-gray-500">{{edu.year}}</p>
-      </div>
+  </div>
+
+  <div class="content-wrapper">
+    <section *ngIf="data.summary" class="summary-section">
+      <h3>Professional Summary</h3>
+      <p>{{data.summary}}</p>
     </section>
-    <section *ngIf="data.skills?.length">
-      <h2 class="text-xl font-bold text-red-600 border-b border-red-600 pb-2 mb-3">Skills</h2>
-      <div class="flex flex-wrap gap-2">
-        <span *ngFor="let skill of data.skills" class="px-3 py-1 bg-red-600 text-white text-xs rounded-full">{{skill}}</span>
+
+    <div class="two-column">
+      <div class="main-col">
+        <section *ngIf="data.experience?.length">
+          <h3>Work Experience</h3>
+          <div *ngFor="let exp of data.experience" class="item">
+            <div class="item-header">
+              <h4>{{exp.role}}</h4>
+              <span class="date">{{exp.duration}}</span>
+            </div>
+            <p class="subtitle">{{exp.company}}</p>
+            <p class="description">{{exp.description}}</p>
+          </div>
+        </section>
+
+        <section *ngIf="data.education?.length">
+          <h3>Education</h3>
+          <div *ngFor="let edu of data.education" class="item">
+            <h4>{{edu.degree}}</h4>
+            <p class="subtitle">{{edu.institution}} • {{edu.year}}</p>
+          </div>
+        </section>
       </div>
-    </section>
+
+      <div class="side-col">
+        <section *ngIf="data.skills?.length">
+          <h3>Skills</h3>
+          <div class="skill-list">
+            <span *ngFor="let skill of data.skills" class="skill-badge">{{skill}}</span>
+          </div>
+        </section>
+
+        <section *ngIf="data.certifications?.length">
+          <h3>Certifications</h3>
+          <ul>
+            <li *ngFor="let cert of data.certifications">{{cert}}</li>
+          </ul>
+        </section>
+      </div>
+    </div>
   </div>
 </div>
+
+<style>
+.bold-template {
+  max-width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: white;
+  font-family: 'Arial', sans-serif;
+}
+
+.header-section {
+  display: flex;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+  padding: 40px;
+  gap: 30px;
+}
+
+.photo-wrapper {
+  width: 110px;
+  height: 110px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 4px solid white;
+}
+
+.photo-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-right {
+  flex: 1;
+}
+
+.header-right h1 {
+  font-size: 38px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.header-right h2 {
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0 0 15px 0;
+  opacity: 0.95;
+}
+
+.contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 14px;
+}
+
+.content-wrapper {
+  padding: 40px;
+}
+
+.summary-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+section {
+  margin-bottom: 30px;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 0 0 20px 0;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #dc2626;
+  text-transform: uppercase;
+}
+
+.item {
+  margin-bottom: 25px;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+h4 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.date {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #dc2626;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4b5563;
+  margin: 0;
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skill-badge {
+  padding: 10px 15px;
+  background: #dc2626;
+  color: white;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul li {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  font-size: 13px;
+  color: #4b5563;
+}
+</style>

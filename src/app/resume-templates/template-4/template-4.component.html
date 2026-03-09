@@ -1,41 +1,166 @@
-<div class="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg print:shadow-none flex">
-  <aside class="w-1/3 bg-purple-600 text-white p-8">
-    <div class="mb-8" *ngIf="data.photo">
-      <img [src]="data.photo" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white">
+<div class="elegant-template">
+  <div class="top-bar"></div>
+  
+  <div class="header-area">
+    <div class="photo-section" *ngIf="data.photo">
+      <img [src]="data.photo" alt="Profile">
     </div>
-    <h1 class="text-3xl font-bold mb-2">{{data.name}}</h1>
-    <p class="text-lg mb-6 opacity-90">{{data.title}}</p>
-    <div class="space-y-3 text-sm mb-8">
-      <p>📧 {{data.email}}</p>
-      <p>📱 {{data.phone}}</p>
-      <p>📍 {{data.location}}</p>
+    <div class="name-section">
+      <h1>{{data.name}}</h1>
+      <h2>{{data.title}}</h2>
     </div>
-    <section class="mb-6" *ngIf="data.skills?.length">
-      <h2 class="text-xl font-bold mb-3 border-b border-white/30 pb-2">Skills</h2>
-      <div class="space-y-2">
-        <span *ngFor="let skill of data.skills" class="block text-sm">• {{skill}}</span>
-      </div>
-    </section>
-  </aside>
-  <main class="w-2/3 p-8">
-    <section class="mb-6" *ngIf="data.summary">
-      <h2 class="text-2xl font-bold text-purple-600 mb-3">Summary</h2>
-      <p class="text-gray-700">{{data.summary}}</p>
-    </section>
-    <section class="mb-6" *ngIf="data.experience?.length">
-      <h2 class="text-2xl font-bold text-purple-600 mb-3">Experience</h2>
-      <div *ngFor="let exp of data.experience" class="mb-4">
-        <h3 class="text-lg font-bold">{{exp.role}}</h3>
-        <p class="text-gray-600">{{exp.company}} | {{exp.duration}}</p>
-        <p class="text-sm text-gray-700 mt-1">{{exp.description}}</p>
-      </div>
-    </section>
-    <section class="mb-6" *ngIf="data.education?.length">
-      <h2 class="text-2xl font-bold text-purple-600 mb-3">Education</h2>
-      <div *ngFor="let edu of data.education" class="mb-3">
-        <h3 class="font-bold">{{edu.degree}}</h3>
-        <p class="text-gray-600">{{edu.institution}} | {{edu.year}}</p>
-      </div>
-    </section>
-  </main>
+  </div>
+
+  <div class="contact-strip">
+    <span *ngIf="data.email">{{data.email}}</span>
+    <span *ngIf="data.phone">{{data.phone}}</span>
+    <span *ngIf="data.location">{{data.location}}</span>
+  </div>
+
+  <div class="main-grid">
+    <div class="left-side">
+      <section *ngIf="data.summary">
+        <h3>Profile</h3>
+        <p>{{data.summary}}</p>
+      </section>
+
+      <section *ngIf="data.experience?.length">
+        <h3>Experience</h3>
+        <div *ngFor="let exp of data.experience" class="exp-block">
+          <h4>{{exp.role}}</h4>
+          <p class="company">{{exp.company}} | {{exp.duration}}</p>
+          <p>{{exp.description}}</p>
+        </div>
+      </section>
+
+      <section *ngIf="data.education?.length">
+        <h3>Education</h3>
+        <div *ngFor="let edu of data.education" class="edu-block">
+          <h4>{{edu.degree}}</h4>
+          <p>{{edu.institution}} | {{edu.year}}</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="right-side">
+      <section *ngIf="data.skills?.length">
+        <h3>Skills</h3>
+        <div *ngFor="let skill of data.skills" class="skill">{{skill}}</div>
+      </section>
+
+      <section *ngIf="data.certifications?.length">
+        <h3>Certifications</h3>
+        <div *ngFor="let cert of data.certifications" class="cert">{{cert}}</div>
+      </section>
+    </div>
+  </div>
 </div>
+
+<style>
+.elegant-template {
+  max-width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: white;
+  font-family: 'Georgia', serif;
+}
+
+.top-bar {
+  height: 15px;
+  background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%);
+}
+
+.header-area {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 40px;
+  background: #faf5ff;
+}
+
+.photo-section img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #7c3aed;
+  object-fit: cover;
+}
+
+.name-section h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin: 0 0 8px 0;
+}
+
+.name-section h2 {
+  font-size: 20px;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+}
+
+.contact-strip {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 20px;
+  background: #7c3aed;
+  color: white;
+  font-size: 14px;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  padding: 40px;
+}
+
+section {
+  margin-bottom: 30px;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #7c3aed;
+}
+
+.exp-block, .edu-block {
+  margin-bottom: 20px;
+}
+
+h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 5px 0;
+}
+
+.company {
+  font-size: 14px;
+  color: #7c3aed;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4b5563;
+  margin: 0;
+}
+
+.skill, .cert {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  background: #faf5ff;
+  border-left: 3px solid #7c3aed;
+  font-size: 14px;
+  color: #4b5563;
+}
+</style>

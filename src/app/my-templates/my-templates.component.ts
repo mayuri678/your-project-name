@@ -35,8 +35,9 @@ export class MyTemplatesComponent implements OnInit {
 
   async ngOnInit() {
     console.log('🔍 MyTemplates component initialized');
-    this.isLoggedIn = this.authService.isLoggedIn();
-    console.log('✅ Login status:', this.isLoggedIn);
+    const adminToken = localStorage.getItem('adminToken');
+    this.isLoggedIn = this.authService.isLoggedIn() || !!adminToken;
+    console.log('✅ Login status:', this.isLoggedIn, 'Admin:', !!adminToken);
     if (this.isLoggedIn) {
       this.clearPreviousTemplates();
       await this.loadTemplates();
@@ -49,80 +50,75 @@ export class MyTemplatesComponent implements OnInit {
   async loadTemplates() {
     console.log('📦 Loading templates...');
     try {
-      const localTemplates = JSON.parse(localStorage.getItem('myTemplates') || '[]');
-      console.log('💾 Local templates:', localTemplates.length);
-      
-      const userResult = await this.supabaseService.getUserTemplates();
-      let userTemplates = userResult.data || [];
-      console.log('👤 User templates from Supabase:', userTemplates.length);
-      
-      const adminResult = await this.supabaseService.getAllTemplates();
-      let adminTemplates = adminResult.data || [];
-      console.log('👑 Admin templates from Supabase:', adminTemplates.length);
-      
-      const allTemplates = [...localTemplates, ...userTemplates, ...adminTemplates];
-      const uniqueTemplates = allTemplates.filter((template, index, self) => 
-        index === self.findIndex(t => t.id === template.id)
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        'https://kwlaqovlzhxghwtilxxu.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3bGFxb3Zsemh4Z2h3dGlseHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MjQ0MzMsImV4cCI6MjA3ODUwMDQzM30.L2jcB8zc2sN1GH3F9CNhKLbaD2jAFs_iGmcFSYA6vQA'
       );
       
-      const processedTemplates = uniqueTemplates.map(template => {
-        try {
-          const data = template.content ? { content: template.content } : JSON.parse(template.description || '{}');
-          return {
-            ...template,
-            parsedData: data,
-            displayName: template.name || data.name || data.templateName || template.title || 'Untitled Resume',
-            isAdminTemplate: !!(data.templateColor || data.templateLayout || data.templateFeatures),
-            isLocalTemplate: !!template.content
-          };
-        } catch {
-          return {
-            ...template,
-            parsedData: {},
-            displayName: template.name || template.title || 'Untitled Resume',
-            isAdminTemplate: false,
-            isLocalTemplate: !!template.content
-          };
-        }
-      });
+      const { data: user } = await supabase.auth.getUser();
+      const adminToken = localStorage.getItem('adminToken');
       
-      this.templates = processedTemplates;
-      console.log('✅ Total templates loaded:', this.templates.length);
-      console.log('📋 Templates:', this.templates);
+      if (user.user) {
+        // Load from Supabase for logged in users
+        const { data, error } = await supabase
+          .from('user_resumes')
+          .select('*')
+          .eq('user_id', user.user.id)
+          .order('updated_at', { ascending: false });
+        
+        if (error) {
+          console.error('Error loading resumes:', error);
+        } else {
+          this.templates = (data || []).map(resume => ({
+            id: resume.id,
+            name: resume.resume_name,
+            template_id: resume.template_id,
+            resume_data: resume.resume_data,
+            status: resume.status,
+            created_at: resume.created_at,
+            updated_at: resume.updated_at
+          }));
+          console.log('✅ Loaded resumes from Supabase:', this.templates.length);
+        }
+      } else if (adminToken) {
+        // Load from localStorage for admin
+        const localResumes = JSON.parse(localStorage.getItem('localResumes') || '[]');
+        this.templates = localResumes.map((resume: any) => ({
+          id: resume.id,
+          name: resume.resume_name,
+          template_id: resume.template_id,
+          resume_data: resume.resume_data,
+          status: resume.status || 'draft',
+          created_at: resume.created_at,
+          updated_at: resume.updated_at
+        }));
+        console.log('✅ Loaded resumes from localStorage:', this.templates.length);
+      }
     } catch (error) {
-      console.error('❌ Error loading templates:', error);
+      console.error('❌ Error:', error);
     } finally {
       this.loading = false;
     }
   }
 
   viewTemplate(template: any) {
-    // Navigate to resume editor with the template data
-    this.router.navigate(['/resume'], {
+    this.router.navigate(['/resume-builder'], {
       queryParams: {
-        template: template.category || 'template1',
-        loadData: template.id,
-        edit: 'true'
+        templateId: template.template_id,
+        resumeId: template.id
       }
     });
   }
 
   editTemplate(template: any) {
-    try {
-      const templateData = JSON.parse(template.description);
-      this.editingTemplate = {
-        id: template.id,
-        name: this.getTemplateName(template),
-        category: template.category || 'Professional',
-        color: templateData.templateColor || 'Blue',
-        layout: templateData.templateLayout || '1 Column',
-        templateFeatures: templateData.templateFeatures || []
-      };
-      this.showEditForm = true;
-    } catch (error) {
-      console.error('Error parsing template data:', error);
-      alert('Error loading template for editing');
-    }
+    // Navigate to resume builder in edit mode
+    this.router.navigate(['/resume-builder'], {
+      queryParams: {
+        templateId: template.template_id,
+        resumeId: template.id
+      }
+    });
   }
 
   async updateTemplate() {
@@ -202,16 +198,39 @@ export class MyTemplatesComponent implements OnInit {
   }
 
   async deleteTemplate(template: any) {
-    if (confirm('Are you sure you want to delete this template?')) {
+    if (confirm('Are you sure you want to delete this resume?')) {
       try {
-        const result = await this.supabaseService.deleteTemplate(template.id);
-        if (result.error) {
-          alert('Failed to delete template');
-        } else {
+        const adminToken = localStorage.getItem('adminToken');
+        
+        if (adminToken) {
+          // Delete from localStorage for admin
+          const localResumes = JSON.parse(localStorage.getItem('localResumes') || '[]');
+          const filtered = localResumes.filter((r: any) => r.id !== template.id);
+          localStorage.setItem('localResumes', JSON.stringify(filtered));
           this.templates = this.templates.filter(t => t.id !== template.id);
+          alert('✅ Resume deleted!');
+        } else {
+          // Delete from Supabase for regular users
+          const { createClient } = await import('@supabase/supabase-js');
+          const supabase = createClient(
+            'https://kwlaqovlzhxghwtilxxu.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3bGFxb3Zsemh4Z2h3dGlseHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MjQ0MzMsImV4cCI6MjA3ODUwMDQzM30.L2jcB8zc2sN1GH3F9CNhKLbaD2jAFs_iGmcFSYA6vQA'
+          );
+          
+          const { error } = await supabase
+            .from('user_resumes')
+            .delete()
+            .eq('id', template.id);
+          
+          if (error) {
+            alert('Failed to delete resume');
+          } else {
+            this.templates = this.templates.filter(t => t.id !== template.id);
+            alert('✅ Resume deleted!');
+          }
         }
       } catch (error) {
-        alert('Error deleting template');
+        alert('Error deleting resume');
       }
     }
   }
@@ -229,17 +248,7 @@ export class MyTemplatesComponent implements OnInit {
   }
 
   getTemplateName(template: any): string {
-    // Use the processed display name if available
-    if (template.displayName) {
-      return template.displayName;
-    }
-    
-    try {
-      const templateData = JSON.parse(template.description || '{}');
-      return templateData.name || templateData.templateName || template.title || 'Untitled Resume';
-    } catch (error) {
-      return template.title || 'Untitled Resume';
-    }
+    return template.name || template.resume_name || 'Untitled Resume';
   }
 
   private clearPreviousTemplates(): void {

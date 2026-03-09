@@ -147,15 +147,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showTemplateManager = false;
   }
 
-  onTemplateSelected(templateId: string): void {
-    const template = this.templateService.getTemplateById(templateId);
-    if (template) {
-      this.templateService.saveSelectedTemplate(template);
-      this.showTemplateManager = false;
-      this.router.navigate(['/resume-builder'], { 
-        queryParams: { template: templateId } 
-      });
-    }
+  onTemplateSelected(templateId: number): void {
+    this.showTemplateManager = false;
+    // Navigate with template ID
+    this.router.navigate(['/resume-builder'], { 
+      queryParams: { templateId: templateId } 
+    });
   }
 
   goToLogin(): void {
