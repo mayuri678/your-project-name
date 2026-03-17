@@ -1,0 +1,128 @@
+<div class="panel-page">
+  <div class="page-header">
+    <div>
+      <h1>Notifications</h1>
+      <p>Send and manage in-app and email notifications</p>
+    </div>
+    <div class="header-actions">
+      <span class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }} unread</span>
+      <button class="btn-refresh" (click)="loadNotifications()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'list'" (click)="activeTab = 'list'">📋 All Notifications</button>
+    <button class="tab-btn" [class.active]="activeTab === 'send'" (click)="activeTab = 'send'">✉️ Send Notification</button>
+  </div>
+
+  <div class="error-banner" *ngIf="error">⚠️ {{ error }}</div>
+  <div class="success-banner" *ngIf="successMsg">✅ {{ successMsg }}</div>
+
+  <!-- Send Form -->
+  <div *ngIf="activeTab === 'send'">
+    <div class="settings-card">
+      <h2>Send Notification</h2>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="form.broadcast" />
+          &nbsp;Broadcast to ALL users (announcement)
+        </label>
+      </div>
+
+      <div class="form-group" *ngIf="!form.broadcast">
+        <label>Target User</label>
+        <select [(ngModel)]="form.user_id" class="form-control">
+          <option value="">— Select user —</option>
+          <option *ngFor="let u of users" [value]="u.id">{{ u.email }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" [(ngModel)]="form.title" class="form-control" placeholder="Notification title" />
+      </div>
+
+      <div class="form-group">
+        <label>Message *</label>
+        <textarea [(ngModel)]="form.message" class="form-control" rows="4" placeholder="Notification message..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type</label>
+          <select [(ngModel)]="form.type" class="form-control">
+            <option *ngFor="let t of typeOptions" [value]="t">{{ t | titlecase }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Channel</label>
+          <select [(ngModel)]="form.channel" class="form-control">
+            <option value="in_app">In-App</option>
+            <option value="email">Email</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" (click)="sendNotification()" [disabled]="sending">
+          {{ sending ? 'Sending...' : (form.broadcast ? '📢 Broadcast' : '✉️ Send') }}
+        </button>
+        <button class="btn-cancel" (click)="resetForm()" style="margin-left: 10px;">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications List -->
+  <div *ngIf="activeTab === 'list'">
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading notifications...</p>
+    </div>
+
+    <div class="table-wrapper" *ngIf="!loading">
+      <table class="data-table" *ngIf="notifications.length > 0; else emptyNotif">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>User</th>
+            <th>Type</th>
+            <th>Channel</th>
+            <th>Status</th>
+            <th>Sent At</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let n of notifications" [class.unread-row]="!n.is_read">
+            <td>
+              <div class="notif-title">{{ n.title }}</div>
+              <div class="notif-msg">{{ n.message }}</div>
+            </td>
+            <td>{{ n.user_email || 'All Users' }}</td>
+            <td><span class="badge" [ngClass]="getTypeClass(n.type)">{{ n.type }}</span></td>
+            <td><span class="badge badge-secondary">{{ n.channel }}</span></td>
+            <td>
+              <span class="badge" [ngClass]="n.is_read ? 'badge-success' : 'badge-warning'">
+                {{ n.is_read ? 'Read' : 'Unread' }}
+              </span>
+            </td>
+            <td class="date-cell">{{ n.sent_at | date:'mediumDate' }}</td>
+            <td>
+              <button class="btn-delete" (click)="deleteNotification(n.id)" title="Delete">🗑</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #emptyNotif>
+        <div class="empty-state">
+          <div class="empty-icon">🔔</div>
+          <p>No notifications yet</p>
+          <small>Use the Send tab to create notifications</small>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

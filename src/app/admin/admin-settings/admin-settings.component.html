@@ -1,0 +1,103 @@
+<div class="panel-page">
+  <div class="page-header">
+    <div>
+      <h1>Settings</h1>
+      <p>Configure website, email templates, and export options</p>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading settings...</p>
+  </div>
+
+  <div class="error-banner" *ngIf="error && !loading">⚠️ {{ error }}</div>
+  <div class="success-banner" *ngIf="successMsg">✅ {{ successMsg }}</div>
+
+  <div class="settings-layout" *ngIf="!loading">
+    <!-- Sidebar -->
+    <nav class="settings-nav">
+      <button
+        *ngFor="let group of groups"
+        class="settings-nav-btn"
+        [class.active]="activeGroup === group.label.toLowerCase()"
+        (click)="activeGroup = group.label.toLowerCase()"
+      >
+        <span>{{ group.icon }}</span>
+        {{ group.label }}
+      </button>
+    </nav>
+
+    <!-- Content -->
+    <div class="settings-content">
+      <div class="settings-card">
+        <h2>{{ groups | settingsGroupLabel:activeGroup }}</h2>
+
+        <div *ngFor="let key of activeKeys">
+          <!-- Logo upload special case -->
+          <div class="form-group" *ngIf="key === 'site_logo'">
+            <label>{{ getLabel(key) }}</label>
+            <div class="logo-upload-area">
+              <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo preview" class="logo-preview" />
+              <div *ngIf="!logoPreview" class="logo-placeholder">No logo set</div>
+              <input type="file" accept="image/*" (change)="onLogoFileChange($event)" class="file-input" id="logo-upload" />
+              <label for="logo-upload" class="btn-upload">📁 Upload Logo</label>
+            </div>
+            <input
+              type="text"
+              [(ngModel)]="editValues[key]"
+              class="form-control"
+              placeholder="Or paste logo URL..."
+              style="margin-top: 8px;"
+            />
+          </div>
+
+          <!-- Boolean toggle -->
+          <div class="form-group" *ngIf="key !== 'site_logo' && isToggle(key)">
+            <label>{{ getLabel(key) }}</label>
+            <div class="toggle-row">
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="editValues[key] === 'true'"
+                  (change)="editValues[key] = $any($event.target).checked ? 'true' : 'false'"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-label">{{ editValues[key] === 'true' ? 'Enabled' : 'Disabled' }}</span>
+            </div>
+          </div>
+
+          <!-- Select -->
+          <div class="form-group" *ngIf="key !== 'site_logo' && !isToggle(key) && isSelect(key)">
+            <label>{{ getLabel(key) }}</label>
+            <select [(ngModel)]="editValues[key]" class="form-control">
+              <option value="A4">A4</option>
+              <option value="Letter">Letter</option>
+              <option value="Legal">Legal</option>
+            </select>
+          </div>
+
+          <!-- Textarea -->
+          <div class="form-group" *ngIf="key !== 'site_logo' && !isToggle(key) && !isSelect(key) && isTextarea(key)">
+            <label>{{ getLabel(key) }}</label>
+            <textarea [(ngModel)]="editValues[key]" class="form-control template-editor" rows="8"></textarea>
+            <small class="hint">Use &#123;&#123;site_name&#125;&#125;, &#123;&#123;otp&#125;&#125; as placeholders</small>
+          </div>
+
+          <!-- Text input -->
+          <div class="form-group" *ngIf="key !== 'site_logo' && !isToggle(key) && !isSelect(key) && !isTextarea(key)">
+            <label>{{ getLabel(key) }}</label>
+            <input type="text" [(ngModel)]="editValues[key]" class="form-control" [placeholder]="getLabel(key)" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-primary" (click)="saveGroup()" [disabled]="saving">
+            {{ saving ? 'Saving...' : '💾 Save Settings' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

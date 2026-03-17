@@ -34,7 +34,11 @@ export const routes: Routes = [
       { path: 'password-management', loadComponent: () => import('./admin/password-management/password-management.component').then(m => m.PasswordManagementComponent) },
       { path: 'template-management', loadComponent: () => import('./admin/template-management/template-management.component').then(m => m.TemplateManagementComponent) },
       { path: 'analytics', loadComponent: () => import('./admin/analytics/analytics.component').then(m => m.AnalyticsComponent) },
-      { path: 'feedback', loadComponent: () => import('./admin/feedback-management/feedback-management.component').then(m => m.FeedbackManagementComponent) }
+      { path: 'feedback', loadComponent: () => import('./admin/feedback-management/feedback-management.component').then(m => m.FeedbackManagementComponent) },
+      { path: 'resume-management', loadComponent: () => import('./admin/resume-management/resume-management.component').then(m => m.ResumeManagementComponent) },
+      { path: 'download-tracking', loadComponent: () => import('./admin/download-tracking/download-tracking.component').then(m => m.DownloadTrackingComponent) },
+      { path: 'notifications', loadComponent: () => import('./admin/admin-notifications/admin-notifications.component').then(m => m.AdminNotificationsComponent) },
+      { path: 'settings', loadComponent: () => import('./admin/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent) }
     ]
   },
   
@@ -44,7 +48,8 @@ export const routes: Routes = [
   { path: 'resume-builder', component: ResumeBuilderComponent },
   { path: 'profile', loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent) },
   { path: 'settings', loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent) },
-  { path: 'templates', loadComponent: () => import('./template-manager/template-manager.component').then(m => m.TemplateManagerComponent) },
+  { path: 'templates', loadComponent: () => import('./templates-page/templates-page.component').then(m => m.TemplatesPageComponent) },
+  { path: 'create-resume', loadComponent: () => import('./create-resume/create-resume.component').then(m => m.CreateResumeComponent) },
   { path: 'my-templates', loadComponent: () => import('./my-templates/my-templates.component').then(m => m.MyTemplatesComponent) },
   { path: '**', redirectTo: '/home' }
 ];

@@ -1,0 +1,35 @@
+<app-header [loggedIn]="loggedIn" (logout)="logout()"></app-header>
+
+<main class="templates-container">
+  <div class="templates-header">
+    <h1>Choose Your Resume Template</h1>
+    <p>Select from 55 professionally designed templates</p>
+  </div>
+
+  <!-- Category Filter -->
+  <div class="category-filter">
+    <div class="filter-label">Filter by Category:</div>
+    <div class="category-buttons">
+      <button *ngFor="let category of categories"
+              class="category-btn"
+              [class.active]="selectedCategory === category"
+              (click)="selectCategory(category)">
+        {{ category }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Templates Grid -->
+  <div class="templates-grid">
+    <app-template-preview-card
+      *ngFor="let template of filteredTemplates"
+      [template]="template"
+      (selected)="selectTemplate($event)">
+    </app-template-preview-card>
+  </div>
+
+  <!-- No Results Message -->
+  <div *ngIf="filteredTemplates.length === 0" class="no-results">
+    <p>No templates found in this category.</p>
+  </div>
+</main>

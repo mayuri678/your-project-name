@@ -19,7 +19,15 @@
         <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required />
       </div>
 
-      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+        <div class="error-help" *ngIf="errorMessage.includes('User already registered')">
+          <p><strong>Already have an account?</strong></p>
+          <button type="button" class="link-button" (click)="goToLogin()">
+            Click here to Login
+          </button>
+        </div>
+      </div>
       <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
 
       <button type="submit" class="btn-primary" [disabled]="loading">

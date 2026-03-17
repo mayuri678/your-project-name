@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="./template-cards.css">
 <app-header [loggedIn]="loggedIn" (logout)="logout()"></app-header>
 
 <main>
@@ -114,10 +115,3 @@
   *ngIf="showResumeOptions" 
   (close)="closeResumeOptions()">
 </app-resume-options-modal>
-
-<!-- Template Manager Modal -->
-<app-template-manager 
-  *ngIf="showTemplateManager" 
-  (close)="closeTemplateManager()"
-  (templateSelected)="onTemplateSelected($event)">
-</app-template-manager>

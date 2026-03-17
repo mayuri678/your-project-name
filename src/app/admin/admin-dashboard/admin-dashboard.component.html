@@ -1,17 +1,23 @@
 <div class="dashboard-content">
   <header class="content-header">
     <h1>Dashboard Overview</h1>
-    <p>Welcome back, {{ currentAdmin?.name }}! Here's what's happening with your platform.</p>
+    <p>Welcome back, <strong>{{ currentAdmin?.name }}</strong>! Here's your platform at a glance.</p>
   </header>
 
-  <!-- Stats Cards -->
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="!stats">
+    <div class="spinner"></div>
+    <p>Loading stats...</p>
+  </div>
+
+  <!-- Stats Grid -->
   <div class="stats-grid" *ngIf="stats">
     <div class="stat-card users">
       <div class="stat-icon">👥</div>
       <div class="stat-content">
         <h3>{{ stats.users.total }}</h3>
         <p>Total Users</p>
-        <span class="stat-change positive">+{{ stats.users.new }} new</span>
+        <span class="stat-change positive">+{{ stats.users.new }} new this month</span>
       </div>
     </div>
 
@@ -24,6 +30,24 @@
       </div>
     </div>
 
+    <div class="stat-card resumes">
+      <div class="stat-icon">📋</div>
+      <div class="stat-content">
+        <h3>{{ stats.resumes?.total ?? 0 }}</h3>
+        <p>Total Resumes</p>
+        <span class="stat-detail">{{ stats.resumes?.featured ?? 0 }} featured</span>
+      </div>
+    </div>
+
+    <div class="stat-card downloads">
+      <div class="stat-icon">⬇️</div>
+      <div class="stat-content">
+        <h3>{{ stats.templates.downloads }}</h3>
+        <p>Total Downloads</p>
+        <span class="stat-detail">{{ stats.revenue.subscriptions }} active subs</span>
+      </div>
+    </div>
+
     <div class="stat-card revenue">
       <div class="stat-icon">💰</div>
       <div class="stat-content">
@@ -33,64 +57,69 @@
       </div>
     </div>
 
-    <div class="stat-card downloads">
-      <div class="stat-icon">⬇️</div>
+    <div class="stat-card notifications">
+      <div class="stat-icon">🔔</div>
       <div class="stat-content">
-        <h3>{{ stats.templates.downloads }}</h3>
-        <p>Total Downloads</p>
-        <span class="stat-detail">{{ stats.revenue.subscriptions }} active subscriptions</span>
+        <h3>{{ stats.notifications?.unread ?? 0 }}</h3>
+        <p>Unread Notifications</p>
+        <span class="stat-detail">{{ stats.feedback.pending }} pending feedback</span>
       </div>
     </div>
   </div>
 
   <!-- Quick Actions -->
-  <div class="quick-actions">
+  <div class="quick-actions" *ngIf="stats">
     <h2>Quick Actions</h2>
     <div class="actions-grid">
-      <button class="action-btn" [routerLink]="['/admin/users']">
+      <a class="action-btn" routerLink="/admin/user-management">
         <i class="icon">👤</i>
-        <span>Add New User</span>
-      </button>
-      <button class="action-btn" [routerLink]="['/admin/templates']">
+        <span>Manage Users</span>
+      </a>
+      <a class="action-btn" routerLink="/admin/resume-management">
+        <i class="icon">📋</i>
+        <span>View Resumes</span>
+      </a>
+      <a class="action-btn" routerLink="/admin/template-management">
         <i class="icon">➕</i>
         <span>Create Template</span>
-      </button>
-      <button class="action-btn" [routerLink]="['/admin/subscriptions']">
-        <i class="icon">💳</i>
-        <span>Manage Plans</span>
-      </button>
-      <button class="action-btn" [routerLink]="['/admin/feedback']">
-        <i class="icon">💬</i>
-        <span>Review Feedback</span>
-        <span class="badge" *ngIf="stats && stats.feedback.pending > 0">{{ stats.feedback.pending }}</span>
-      </button>
+      </a>
+      <a class="action-btn" routerLink="/admin/download-tracking">
+        <i class="icon">📊</i>
+        <span>Download Stats</span>
+      </a>
+      <a class="action-btn" routerLink="/admin/notifications">
+        <i class="icon">✉️</i>
+        <span>Send Notification</span>
+        <span class="badge" *ngIf="stats.notifications?.unread && stats.notifications!.unread > 0">
+          {{ stats.notifications!.unread }}
+        </span>
+      </a>
+      <a class="action-btn" routerLink="/admin/settings">
+        <i class="icon">⚙️</i>
+        <span>Settings</span>
+      </a>
     </div>
   </div>
 
   <!-- Recent Activity -->
-  <div class="recent-activity">
-    <h2>Recent Activity</h2>
-    <div class="activity-list">
-      <div class="activity-item">
-        <div class="activity-icon">👤</div>
-        <div class="activity-content">
-          <p><strong>New user registered:</strong> john.doe@example.com</p>
-          <span class="activity-time">2 minutes ago</span>
-        </div>
+  <div class="recent-activity" *ngIf="stats">
+    <h2>Platform Summary</h2>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <span class="summary-label">Active Users</span>
+        <span class="summary-value">{{ stats.users.active }}</span>
       </div>
-      <div class="activity-item">
-        <div class="activity-icon">📄</div>
-        <div class="activity-content">
-          <p><strong>Template downloaded:</strong> Professional Resume Template</p>
-          <span class="activity-time">5 minutes ago</span>
-        </div>
+      <div class="summary-item">
+        <span class="summary-label">Feedback Resolved</span>
+        <span class="summary-value">{{ stats.feedback.resolved }}</span>
       </div>
-      <div class="activity-item">
-        <div class="activity-icon">💳</div>
-        <div class="activity-content">
-          <p><strong>New subscription:</strong> Premium Plan purchased</p>
-          <span class="activity-time">15 minutes ago</span>
-        </div>
+      <div class="summary-item">
+        <span class="summary-label">Feedback Pending</span>
+        <span class="summary-value pending">{{ stats.feedback.pending }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Monthly Revenue</span>
+        <span class="summary-value">${{ stats.revenue.monthly }}</span>
       </div>
     </div>
   </div>

@@ -35,17 +35,22 @@ export interface UserProfile {
   providedIn: 'root'
 })
 export class SupabaseAuthService {
-  public supabase: SupabaseClient;
+  public supabase!: SupabaseClient;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   private sessionSubject = new BehaviorSubject<Session | null>(null);
+  private static instance: SupabaseAuthService;
 
   constructor() {
+    if (SupabaseAuthService.instance) {
+      return SupabaseAuthService.instance;
+    }
+    
     this.supabase = createClient(
       'https://kwlaqovlzhxghwtilxxu.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3bGFxb3Zsemh4Z2h3dGlseHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MjQ0MzMsImV4cCI6MjA3ODUwMDQzM30.L2jcB8zc2sN1GH3F9CNhKLbaD2jAFs_iGmcFSYA6vQA'
     );
     
-    // Initialize session
+    SupabaseAuthService.instance = this;
     this.initializeAuth();
   }
 
@@ -154,9 +159,35 @@ export class SupabaseAuthService {
     } else {
       console.log('✅ Password reset email sent successfully');
       console.log('🔗 Reset link will redirect to:', `${window.location.origin}/reset-password`);
+      
+      // Log password reset request to backend
+      await this.logPasswordResetRequest(email);
     }
     
     return { data, error };
+  }
+
+  // Log password reset request
+  private async logPasswordResetRequest(email: string) {
+    try {
+      const { error } = await this.supabase
+        .from('password_reset_requests')
+        .insert({
+          email,
+          requested_at: new Date().toISOString(),
+          status: 'sent',
+          user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : 'Unknown',
+          ip_address: 'client'
+        });
+      
+      if (error) {
+        console.log('Password reset request logging skipped (table may not exist):', error.message);
+      } else {
+        console.log('✅ Password reset request logged to backend');
+      }
+    } catch (error: any) {
+      console.log('Password reset request logging skipped:', error.message);
+    }
   }
 
   // Update password using Supabase Auth

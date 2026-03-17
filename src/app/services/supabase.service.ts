@@ -913,6 +913,230 @@ export class SupabaseService {
     }
   }
 
+  // ============================================================
+  // 🔹 RESUMES
+  // ============================================================
+  async getAllResumes() {
+    try {
+      const { data, error } = await this.supabase
+        .from('resumes')
+        .select('*, users(email, full_name)')
+        .order('created_at', { ascending: false });
+      if (error) { console.warn('resumes table:', error.message); return { data: [], error: null }; }
+      return { data: data || [], error: null };
+    } catch (error: any) {
+      return { data: [], error: null };
+    }
+  }
+
+  async deleteResume(id: string) {
+    try {
+      const { data, error } = await this.supabase.from('resumes').delete().eq('id', id);
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async toggleResumeFeatured(id: string, isFeatured: boolean) {
+    try {
+      const { data, error } = await this.supabase
+        .from('resumes')
+        .update({ is_featured: isFeatured })
+        .eq('id', id)
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async updateResumeAtsScore(id: string, score: number) {
+    try {
+      const { data, error } = await this.supabase
+        .from('resumes')
+        .update({ ats_score: score })
+        .eq('id', id)
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  // ============================================================
+  // 🔹 DOWNLOADS
+  // ============================================================
+  async getAllDownloads() {
+    try {
+      const { data, error } = await this.supabase
+        .from('downloads')
+        .select('*, users(email, full_name)')
+        .order('downloaded_at', { ascending: false });
+      if (error) { console.warn('downloads table:', error.message); return { data: [], error: null }; }
+      return { data: data || [], error: null };
+    } catch (error: any) {
+      return { data: [], error: null };
+    }
+  }
+
+  async trackDownload(userId: string, resumeId: string | null, templateId: string | null, format: string = 'pdf') {
+    try {
+      const { data, error } = await this.supabase
+        .from('downloads')
+        .insert({ user_id: userId, resume_id: resumeId, template_id: templateId, format })
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async getDownloadStats() {
+    try {
+      const { data, error } = await this.supabase
+        .from('downloads')
+        .select('user_id, users(email), downloaded_at')
+        .order('downloaded_at', { ascending: false });
+      if (error) { return { data: [], error: null }; }
+      return { data: data || [], error: null };
+    } catch (error: any) {
+      return { data: [], error: null };
+    }
+  }
+
+  // ============================================================
+  // 🔹 SETTINGS
+  // ============================================================
+  async getAllSettings() {
+    try {
+      const { data, error } = await this.supabase
+        .from('settings')
+        .select('*')
+        .order('key', { ascending: true });
+      if (error) { console.warn('settings table:', error.message); return { data: [], error: null }; }
+      return { data: data || [], error: null };
+    } catch (error: any) {
+      return { data: [], error: null };
+    }
+  }
+
+  async updateSetting(key: string, value: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from('settings')
+        .update({ value, updated_at: new Date().toISOString() })
+        .eq('key', key)
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async upsertSetting(key: string, value: string, type: string = 'string', description?: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from('settings')
+        .upsert({ key, value, type, description, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  // ============================================================
+  // 🔹 NOTIFICATIONS
+  // ============================================================
+  async getAllNotifications() {
+    try {
+      const { data, error } = await this.supabase
+        .from('notifications')
+        .select('*, users(email, full_name)')
+        .order('sent_at', { ascending: false });
+      if (error) { console.warn('notifications table:', error.message); return { data: [], error: null }; }
+      return { data: data || [], error: null };
+    } catch (error: any) {
+      return { data: [], error: null };
+    }
+  }
+
+  async sendNotification(notification: {
+    user_id?: string;
+    title: string;
+    message: string;
+    type: string;
+    channel: string;
+  }) {
+    try {
+      const { data, error } = await this.supabase
+        .from('notifications')
+        .insert(notification)
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async sendBroadcastNotification(notification: { title: string; message: string; type: string; channel: string }) {
+    try {
+      const { data: users } = await this.supabase.from('users').select('id');
+      if (!users || users.length === 0) return { data: null, error: null };
+      const rows = users.map(u => ({ ...notification, user_id: u.id }));
+      const { data, error } = await this.supabase.from('notifications').insert(rows).select();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async deleteNotification(id: string) {
+    try {
+      const { data, error } = await this.supabase.from('notifications').delete().eq('id', id);
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  // ============================================================
+  // 🔹 TEMPLATE PREVIEW UPLOAD (Storage)
+  // ============================================================
+  async uploadTemplatePreview(file: File, templateId: string): Promise<{ url: string | null; error: any }> {
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `template-previews/${templateId}.${ext}`;
+      const { error: uploadError } = await this.supabase.storage
+        .from('templates')
+        .upload(path, file, { upsert: true });
+      if (uploadError) return { url: null, error: uploadError };
+      const { data } = this.supabase.storage.from('templates').getPublicUrl(path);
+      return { url: data.publicUrl, error: null };
+    } catch (error: any) {
+      return { url: null, error };
+    }
+  }
+
+  // ============================================================
+  // 🔹 DASHBOARD STATS VIEW
+  // ============================================================
+  async getDashboardStatsFromView() {
+    try {
+      const { data, error } = await this.supabase.from('admin_dashboard_stats').select('*').single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
   // 🔹 User Profile Management
   async getUserProfile(email: string) {
     try {

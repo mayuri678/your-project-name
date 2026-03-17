@@ -5,15 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
 import { LearnMoreModalComponent } from '../learn-more-modal/learn-more-modal.component';
 import { ResumeOptionsModalComponent } from '../resume-options-modal/resume-options-modal.component';
-import { TemplateManagerComponent } from '../template-manager/template-manager.component';
 
 import { AuthService } from '../auth.service';
-import { TemplateService } from '../template.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, CommonModule, FormsModule, HeaderComponent, LearnMoreModalComponent, ResumeOptionsModalComponent, TemplateManagerComponent],
+  imports: [RouterModule, CommonModule, FormsModule, HeaderComponent, LearnMoreModalComponent, ResumeOptionsModalComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -21,7 +19,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   loggedIn: boolean = false;
   showResumeOptions: boolean = false;
   showLearnMore: boolean = false;
-  showTemplateManager: boolean = false;
   typedName: string = '';
 
   typingComplete: boolean = false;
@@ -31,7 +28,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private typingIndex = 0;
   private typingTimer: any;
 
-  constructor(public router: Router, private authService: AuthService, private templateService: TemplateService) {}
+  constructor(public router: Router, private authService: AuthService) {}
 
   ngOnInit() {
     this.updateLoginStatus();
@@ -41,13 +38,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     setInterval(() => {
       this.updateLoginStatus();
     }, 1000);
-    
-    // Listen for template manager open event
-    if (typeof window !== 'undefined') {
-      window.addEventListener('openTemplateManager', () => {
-        this.openTemplateManager();
-      });
-    }
   }
 
   updateLoginStatus(): void {
@@ -90,7 +80,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   openResumeOptions(): void {
-    this.showResumeOptions = true;
+    this.router.navigate(['/templates']);
   }
 
   private beginTypingAnimation(): void {
@@ -132,27 +122,21 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToTemplates(): void {
-    this.showTemplateManager = true;
+    this.router.navigate(['/templates']);
   }
 
   goToResumeEditor(): void {
-    this.showTemplateManager = true;
+    this.router.navigate(['/templates']);
   }
 
   openTemplateManager(): void {
-    this.showTemplateManager = true;
+    this.router.navigate(['/create-resume']);
   }
 
   closeTemplateManager(): void {
-    this.showTemplateManager = false;
   }
 
   onTemplateSelected(templateId: number): void {
-    this.showTemplateManager = false;
-    // Navigate with template ID
-    this.router.navigate(['/resume-builder'], { 
-      queryParams: { templateId: templateId } 
-    });
   }
 
   goToLogin(): void {

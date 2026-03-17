@@ -1,0 +1,18 @@
+<app-header [loggedIn]="loggedIn" (logout)="logout()"></app-header>
+
+<main class="create-resume-container">
+  <div class="create-resume-content">
+    <div class="create-resume-header">
+      <h1>Choose Your Resume Template</h1>
+      <p>Select from our professionally designed templates to get started</p>
+    </div>
+
+    <div class="templates-grid">
+      <app-template-card-enhanced 
+        *ngFor="let template of templates" 
+        [template]="template"
+        (selected)="selectTemplate($event)">
+      </app-template-card-enhanced>
+    </div>
+  </div>
+</main>

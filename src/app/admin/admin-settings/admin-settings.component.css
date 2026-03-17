@@ -1,0 +1,168 @@
+@import '../resume-management/resume-management.component.css';
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.settings-nav {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #374151;
+  text-align: left;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.settings-nav-btn:hover { background: #f3f4f6; }
+.settings-nav-btn.active { background: #eef2ff; color: #6366f1; font-weight: 600; }
+
+.settings-content { flex: 1; }
+
+.settings-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.settings-card h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.form-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.template-editor {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  min-height: 160px;
+}
+
+.hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+/* Logo upload */
+.logo-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 2px dashed #e5e7eb;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.logo-preview {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.logo-placeholder {
+  width: 64px;
+  height: 64px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.file-input { display: none; }
+
+.btn-upload {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #374151;
+  transition: background 0.2s;
+}
+.btn-upload:hover { background: #e5e7eb; }
+
+/* Toggle switch */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #e5e7eb;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider { background: #6366f1; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+.toggle-label { font-size: 0.9rem; color: #374151; }
+
+@media (max-width: 640px) {
+  .settings-layout { grid-template-columns: 1fr; }
+  .settings-nav { flex-direction: row; flex-wrap: wrap; }
+}

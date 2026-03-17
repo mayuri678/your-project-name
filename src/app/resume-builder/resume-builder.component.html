@@ -83,7 +83,12 @@
   </div>
 
   <div class="builder-preview">
-    <h3>Live Preview - Template {{selectedTemplateId}}</h3>
+    <div class="preview-header">
+      <button class="back-btn" (click)="goBackToTemplates()" title="Back to Templates">
+        <span class="back-arrow">←</span> Back to Templates
+      </button>
+      <h3>Live Preview - Template {{selectedTemplateId}}</h3>
+    </div>
     <div class="template-preview-container">
       <ng-container #templateContainer></ng-container>
     </div>

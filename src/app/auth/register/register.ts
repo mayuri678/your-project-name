@@ -39,18 +39,28 @@ export class Register {
     try {
       const { data, error } = await this.supabaseAuth.signUp(this.email, this.password);
 
+      console.log('🔍 Supabase SignUp Response:', { data, error });
+
       if (error) {
         console.log('Registration error:', error.message);
         if (error.message.toLowerCase().includes('already') || error.message.toLowerCase().includes('exist')) {
-          this.errorMessage = 'This email is already registered. Please login instead.';
+          this.errorMessage = 'User already registered';
         } else {
           this.errorMessage = error.message;
         }
       } else {
-        this.successMessage = 'Registration successful! Redirecting to login...';
-        setTimeout(() => this.router.navigate(['/auth/login']), 2000);
+        this.successMessage = 'Registration successful! Logging you in...';
+        
+        setTimeout(async () => {
+          const loginResult = await this.supabaseAuth.signIn(this.email, this.password);
+          if (loginResult.data.user) {
+            console.log('✅ Auto-login successful after registration');
+            this.router.navigate(['/home'], { replaceUrl: true });
+          }
+        }, 1000);
       }
     } catch (error: any) {
+      console.error('🔍 Supabase SignUp Exception:', error);
       this.errorMessage = 'Registration failed. Please try again.';
     } finally {
       this.loading = false;

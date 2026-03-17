@@ -11,33 +11,8 @@
     <nav class="header-nav">
       <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
       <a class="nav-link" routerLink="/about" routerLinkActive="active">About</a>
+      <a class="nav-link" routerLink="/templates" routerLinkActive="active">Templates</a>
       <a class="nav-link" routerLink="/my-templates" routerLinkActive="active">My Templates</a>
-      <div class="templates-dropdown">
-        <a class="nav-link" (click)="toggleTemplates()">Templates ▼</a>
-        <div class="templates-menu" *ngIf="isTemplatesOpen" (mouseleave)="closeTemplates()">
-          <div class="templates-header">
-            <h3>Choose Template</h3>
-            <button class="close-templates-btn" (click)="closeTemplates()">×</button>
-          </div>
-          <div class="templates-grid">
-            <button class="template-item" *ngFor="let template of templateList" (click)="selectTemplate(template); closeTemplates()">
-              <div class="template-preview">
-                <div class="template-icon">📄</div>
-                <div class="template-info">
-                  <div class="template-name">{{ template.name }}</div>
-                  <div class="template-category">{{ template.category }}</div>
-                  <div class="template-description">{{ template.description }}</div>
-                </div>
-              </div>
-            </button>
-          </div>
-          <div class="templates-footer">
-            <button class="view-all-btn" (click)="onTemplatesClick(); closeTemplates()">
-              View All Templates →
-            </button>
-          </div>
-        </div>
-      </div>
     </nav>
 
     <!-- Right: Contact and Account -->

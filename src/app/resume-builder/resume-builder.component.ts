@@ -382,4 +382,8 @@ export class ResumeBuilderComponent implements OnInit, AfterViewInit {
       this.loadTemplate();
     }
   }
+
+  goBackToTemplates(): void {
+    this.router.navigate(['/templates']);
+  }
 }

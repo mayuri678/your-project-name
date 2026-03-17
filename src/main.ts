@@ -9,15 +9,14 @@ if (typeof window !== 'undefined') {
     if (error && (
       error.name === 'NavigatorLockAcquireTimeoutError' ||
       error.message?.includes('NavigatorLockAcquireTimeoutError') ||
-      error.message?.includes('lock:sb-')
+      error.message?.includes('lock:sb-') ||
+      error.message?.includes('Multiple GoTrueClient')
     )) {
-      // Suppress this error - it's handled internally by Supabase
       event.preventDefault();
       event.stopPropagation();
     }
   }, { capture: true });
 
-  // Suppress console errors for lock manager (only for specific errors)
   const originalError = console.error;
   const originalWarn = console.warn;
   
@@ -25,8 +24,9 @@ if (typeof window !== 'undefined') {
     const errorString = String(args[0] || '');
     if (errorString.includes('NavigatorLockAcquireTimeoutError') || 
         errorString.includes('lock:sb-') ||
+        errorString.includes('Multiple GoTrueClient') ||
         (args[0]?.name === 'NavigatorLockAcquireTimeoutError')) {
-      return; // Suppress lock manager errors silently
+      return;
     }
     originalError.apply(console, args);
   };
@@ -34,8 +34,9 @@ if (typeof window !== 'undefined') {
   console.warn = (...args: any[]) => {
     const errorString = String(args[0] || '');
     if (errorString.includes('NavigatorLockAcquireTimeoutError') || 
-        errorString.includes('lock:sb-')) {
-      return; // Suppress lock manager warnings
+        errorString.includes('lock:sb-') ||
+        errorString.includes('Multiple GoTrueClient')) {
+      return;
     }
     originalWarn.apply(console, args);
   };
@@ -43,10 +44,9 @@ if (typeof window !== 'undefined') {
 
 bootstrapApplication(AppComponent, appConfig)
 .catch(err => {
-  // Don't log NavigatorLockAcquireTimeoutError
   if (!err?.name?.includes('NavigatorLockAcquireTimeoutError') && 
-      !err?.message?.includes('lock:sb-')) {
+      !err?.message?.includes('lock:sb-') &&
+      !err?.message?.includes('Multiple GoTrueClient')) {
     console.error(err);
   }
 });
-

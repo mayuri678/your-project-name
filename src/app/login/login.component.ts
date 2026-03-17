@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
   otpSent: boolean = false;
   isLoading: boolean = false;
 
-  // 👉 popup बंद करण्यासाठी event emitter
+  // 👉 popup stop event emitter
   @Output() close = new EventEmitter<void>();
 
   constructor(
@@ -47,13 +47,15 @@ export class LoginComponent implements OnInit {
     this.successMessage = '';
   }
 
-  // 🔹 Register new user - registers in Supabase
+  // 🔹 Register new user - registers only in Supabase
   async onRegister(): Promise<void> {
     this.errorMessage = '';
     this.successMessage = '';
+    this.isLoading = true;
 
     if (!this.email.trim() || !this.password.trim()) {
       this.errorMessage = 'Please enter both email and password';
+      this.isLoading = false;
       return;
     }
 
@@ -61,36 +63,59 @@ export class LoginComponent implements OnInit {
     const passwordTrimmed = this.password.trim();
     const nameTrimmed = this.name.trim() || (emailTrimmed.includes('@') ? emailTrimmed.split('@')[0] : emailTrimmed);
 
-    // Register in Supabase
-    const { data, error } = await this.supabaseAuthService.signUp(emailTrimmed, passwordTrimmed);
-    
-    if (error) {
-      this.errorMessage = error.message || 'Registration failed. Please try again.';
-      return;
-    }
-    
-    if (data.user) {
-      this.successMessage = 'Account created successfully! Logging you in...';
-      console.log('✅ Registration completed in Supabase');
+    try {
+      // Register in Supabase only
+      const { data, error } = await this.supabaseAuthService.signUp(emailTrimmed, passwordTrimmed);
       
-      // Auto-login
-      setTimeout(async () => {
-        const loginResult = await this.supabaseAuthService.signIn(emailTrimmed, passwordTrimmed);
-        if (loginResult.data.user) {
+      if (error) {
+        console.log('❌ Supabase registration error:', error.message);
+        this.errorMessage = error.message || 'Registration failed';
+        this.isLoading = false;
+        return;
+      }
+      
+      if (data.user) {
+        console.log('✅ Supabase registration successful:', data.user.id);
+        
+        // Create user profile in Supabase
+        const uniqueId = emailTrimmed.replace(/[@.]/g, '_').toLowerCase();
+        await this.supabaseAuthService.upsertUserProfile({
+          id: uniqueId,
+          email: emailTrimmed,
+          full_name: nameTrimmed,
+          username: nameTrimmed,
+          role: 'user',
+          is_dark_mode: false,
+          language: 'en'
+        });
+        
+        this.successMessage = 'Account created successfully! Logging you in...';
+        console.log('✅ Registration completed');
+        
+        setTimeout(async () => {
+          // Set current user in localStorage for session
           this.authService.setCurrentUser(emailTrimmed, nameTrimmed, 'user');
+          this.authService.addLoggedInUser(emailTrimmed, nameTrimmed);
+          await this.supabaseAuthService.saveLoginHistory(emailTrimmed, 'supabase_auth');
           this.router.navigate(['/home'], { replaceUrl: true });
-        }
-      }, 1000);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      this.errorMessage = 'Registration failed. Please try again.';
+      this.isLoading = false;
     }
   }
 
-  // 🔹 Login - uses Supabase authentication
+  // 🔹 Login - uses Supabase authentication only
   async onLogin(): Promise<void> {
     this.errorMessage = '';
     this.successMessage = '';
+    this.isLoading = true;
 
     if (!this.email.trim() || !this.password.trim()) {
       this.errorMessage = 'Please enter email and password';
+      this.isLoading = false;
       return;
     }
 
@@ -107,31 +132,32 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    // Supabase login (primary)
-    const { data, error } = await this.supabaseAuthService.signIn(emailTrimmed, passwordTrimmed);
-    
-    if (!error && data.user) {
-      console.log('✅ Supabase login successful');
-      const userName = data.user.user_metadata?.['full_name'] || emailTrimmed.split('@')[0];
-      const userRole = data.user.user_metadata?.['role'] || 'user';
-      this.authService.setCurrentUser(emailTrimmed, userName, userRole);
-      this.successMessage = 'Login successful!';
-      setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
-      return;
+    try {
+      // Login via Supabase
+      const { data, error } = await this.supabaseAuthService.signIn(emailTrimmed, passwordTrimmed);
+      
+      if (error) {
+        console.log('❌ Supabase login failed:', error.message);
+        this.errorMessage = 'Invalid email or password';
+        this.isLoading = false;
+        return;
+      }
+      
+      if (data.user) {
+        console.log('✅ Supabase login successful');
+        // Set current user in localStorage for session
+        this.authService.setCurrentUser(emailTrimmed, emailTrimmed.split('@')[0], 'user');
+        this.authService.addLoggedInUser(emailTrimmed, emailTrimmed.split('@')[0]);
+        await this.supabaseAuthService.saveLoginHistory(emailTrimmed, 'supabase_auth');
+        this.successMessage = 'Login successful!';
+        setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
+      }
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      this.errorMessage = 'Invalid email or password';
+    } finally {
+      this.isLoading = false;
     }
-
-    // Local fallback
-    const localLoginSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
-    if (localLoginSuccess) {
-      console.log('✅ Local login successful');
-      this.successMessage = 'Login successful!';
-      setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
-      return;
-    }
-
-    // Failed
-    this.errorMessage = 'Invalid email or password';
-    console.log('❌ Login failed:', error?.message || 'Invalid credentials');
   }
 
   // 🔹 Toggle between login and register modes

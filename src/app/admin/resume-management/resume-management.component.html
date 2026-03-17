@@ -1,0 +1,118 @@
+<div class="panel-page">
+  <div class="page-header">
+    <div>
+      <h1>Resume Management</h1>
+      <p>View, feature, score, and delete user resumes</p>
+    </div>
+    <button class="btn-refresh" (click)="loadResumes()">↻ Refresh</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <input
+      type="text"
+      placeholder="Search by title, user..."
+      [(ngModel)]="searchQuery"
+      (input)="applyFilters()"
+      class="search-input"
+    />
+    <select [(ngModel)]="filterStatus" (change)="applyFilters()" class="filter-select">
+      <option value="all">All Status</option>
+      <option value="draft">Draft</option>
+      <option value="published">Published</option>
+      <option value="archived">Archived</option>
+    </select>
+    <span class="result-count">{{ filteredResumes.length }} resumes</span>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading resumes...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error && !loading">
+    <span>⚠️ {{ error }}</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper" *ngIf="!loading && !error">
+    <table class="data-table" *ngIf="filteredResumes.length > 0; else emptyState">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>User</th>
+          <th>Status</th>
+          <th>ATS Score</th>
+          <th>Featured</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resume of filteredResumes">
+          <td>
+            <div class="resume-title">{{ resume.title }}</div>
+            <div class="resume-template" *ngIf="resume.template_id">Template: {{ resume.template_id }}</div>
+          </td>
+          <td>
+            <div class="user-name">{{ resume.user_name }}</div>
+            <div class="user-email">{{ resume.user_email }}</div>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getStatusClass(resume.status)">{{ resume.status }}</span>
+          </td>
+          <td>
+            <div class="ats-cell">
+              <span class="ats-score" [ngClass]="getAtsClass(resume.ats_score)">{{ resume.ats_score }}</span>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                [value]="resume.ats_score"
+                (change)="updateAtsScore(resume, +$any($event.target).value)"
+                class="ats-input"
+                title="Set ATS Score"
+              />
+            </div>
+          </td>
+          <td>
+            <button
+              class="toggle-btn"
+              [class.active]="resume.is_featured"
+              (click)="toggleFeatured(resume)"
+              [title]="resume.is_featured ? 'Remove from featured' : 'Mark as featured'"
+            >
+              {{ resume.is_featured ? '⭐ Featured' : '☆ Feature' }}
+            </button>
+          </td>
+          <td class="date-cell">{{ resume.created_at | date:'mediumDate' }}</td>
+          <td>
+            <button class="btn-delete" (click)="confirmDelete(resume.id)" title="Delete resume">🗑</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <div class="empty-icon">📄</div>
+        <p>No resumes found</p>
+        <small>Resumes will appear here once users create them</small>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" *ngIf="confirmDeleteId" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3>Delete Resume?</h3>
+      <p>This action cannot be undone. The resume will be permanently deleted.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="btn-confirm-delete" (click)="deleteResume()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

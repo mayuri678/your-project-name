@@ -94,6 +94,9 @@ export class AuthService {
 
   async register(email: string, password: string, name?: string, role: 'admin' | 'user' = 'user'): Promise<boolean> {
     if (!this.isBrowser()) return false;
+    
+    this.initializeUsers();
+    
     const registeredUsers = this.getRegisteredUsers();
     if (registeredUsers.some(u => u.email === email)) return false;
     
@@ -170,6 +173,7 @@ export class AuthService {
       });
       
       this.addLoggedInUser(user.email, user.name);
+      this.saveLoginToBackend(user.email, user.name);
     }
     return true;
   }
@@ -503,5 +507,21 @@ export class AuthService {
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+  }
+
+  private async saveLoginToBackend(email: string, name: string): Promise<void> {
+    try {
+      console.log('💾 Saving login to Supabase:', { email, name, timestamp: new Date().toISOString() });
+      
+      const { data, error } = await this.supabaseAuthService.saveLoginHistory(email, 'local_auth');
+      
+      if (error) {
+        console.warn('⚠️ Failed to save login to Supabase:', error);
+      } else {
+        console.log('✅ Login saved to Supabase:', data);
+      }
+    } catch (error) {
+      console.warn('⚠️ Supabase unavailable for login history:', error);
+    }
   }
 }

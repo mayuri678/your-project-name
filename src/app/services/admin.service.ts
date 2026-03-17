@@ -171,16 +171,20 @@ export class AdminService {
   getDashboardStats(): Observable<DashboardStats> {
     return from(Promise.all([
       this.supabaseService.getUsers(),
-      this.supabaseService.getAllTemplates()
+      this.supabaseService.getAllTemplates(),
+      this.supabaseService.getAllResumes(),
+      this.supabaseService.getAllNotifications()
     ])).pipe(
-      map(([usersResult, templatesResult]) => {
+      map(([usersResult, templatesResult, resumesResult, notifResult]) => {
         const userCount = usersResult.data?.length || 0;
         const templateCount = templatesResult.data?.length || 0;
-        
-        // Get logged in users for real count
+        const resumeCount = resumesResult.data?.length || 0;
+        const featuredCount = (resumesResult.data || []).filter((r: any) => r.is_featured).length;
+        const unreadNotif = (notifResult.data || []).filter((n: any) => !n.is_read).length;
+
         const loggedInUsers = this.getCurrentLoggedInUsers();
         const totalRealUsers = Math.max(userCount, loggedInUsers.length);
-        
+
         const stats: DashboardStats = {
           users: {
             total: totalRealUsers,
@@ -201,49 +205,26 @@ export class AdminService {
             pending: Math.floor(totalRealUsers * 0.1) || 1,
             resolved: totalRealUsers * 2,
             total: totalRealUsers * 2 + Math.floor(totalRealUsers * 0.1) || 1
-          }
+          },
+          resumes: { total: resumeCount, featured: featuredCount },
+          notifications: { unread: unreadNotif }
         };
-        
-        console.log('Real Dashboard Stats:', {
-          supabaseUsers: userCount,
-          loggedInUsers: loggedInUsers.length,
-          totalUsers: totalRealUsers,
-          stats
-        });
-        
         return stats;
       }),
       catchError(() => {
         const loggedInUsers = this.getCurrentLoggedInUsers();
         const realUserCount = loggedInUsers.length || 1;
-        
         const downloads = this.calculateRealDownloads(0, realUserCount);
         const revenue = this.calculateRealRevenue(downloads, realUserCount);
         const subscriptions = this.calculateRealSubscriptions(realUserCount);
-        
-        const fallbackStats: DashboardStats = {
-          users: {
-            total: realUserCount,
-            active: Math.floor(realUserCount * 0.9),
-            new: Math.floor(realUserCount * 0.2) || (realUserCount > 0 ? 1 : 0)
-          },
-          templates: {
-            total: 0,
-            premium: 0,
-            downloads: downloads
-          },
-          revenue: {
-            total: revenue,
-            monthly: Math.floor(revenue * 0.3),
-            subscriptions: subscriptions
-          },
-          feedback: {
-            pending: realUserCount > 0 ? 1 : 0,
-            resolved: Math.floor(realUserCount * 0.5),
-            total: Math.floor(realUserCount * 0.5) + (realUserCount > 0 ? 1 : 0)
-          }
-        };
-        return of(fallbackStats);
+        return of({
+          users: { total: realUserCount, active: Math.floor(realUserCount * 0.9), new: Math.floor(realUserCount * 0.2) || 1 },
+          templates: { total: 0, premium: 0, downloads },
+          revenue: { total: revenue, monthly: Math.floor(revenue * 0.3), subscriptions },
+          feedback: { pending: realUserCount > 0 ? 1 : 0, resolved: Math.floor(realUserCount * 0.5), total: Math.floor(realUserCount * 0.5) + 1 },
+          resumes: { total: 0, featured: 0 },
+          notifications: { unread: 0 }
+        });
       })
     );
   }

@@ -1,0 +1,54 @@
+@import '../resume-management/resume-management.component.css';
+@import '../download-tracking/download-tracking.component.css';
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.unread-badge {
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.settings-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.settings-card h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.notif-title { font-weight: 600; color: #1a1a2e; }
+.notif-msg { font-size: 0.78rem; color: #9ca3af; margin-top: 2px; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.unread-row td { background: #fafbff; }
+
+@media (max-width: 640px) {
+  .form-row { grid-template-columns: 1fr; }
+}

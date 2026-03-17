@@ -25,14 +25,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @Output() templates = new EventEmitter<void>();
 
   isAccountOpen: boolean = false;
-  isTemplatesOpen: boolean = false;
   loggedInUsers: LoggedInUser[] = [];
   currentUserEmail: string = '';
   isAdmin: boolean = false;
   private refreshInterval: any;
-
-  templateList: any[] = [];
-  isLoadingTemplates = false;
 
   showContactPopup = false;
   contactForm = {
@@ -54,11 +50,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadLoggedInUsers();
     this.checkAdminStatus();
-    this.loadAdminTemplates();
     
     if (typeof window !== 'undefined') {
       window.addEventListener('adminTemplateCreated', () => {
-        this.loadAdminTemplates();
       });
       
       // Listen for profile updates
@@ -211,15 +205,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onTemplatesClick(): void {
-    if (this.loggedIn) {
-      this.router.navigate(['/home']).then(() => {
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('openTemplateManager'));
-        }, 100);
-      });
-    } else {
-      this.goToLogin();
-    }
+    this.router.navigate(['/templates']);
   }
 
   toggleTemplates(): void {
@@ -227,21 +213,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.goToLogin();
       return;
     }
-    this.isTemplatesOpen = !this.isTemplatesOpen;
+    this.router.navigate(['/templates']);
   }
 
   closeTemplates(): void {
-    this.isTemplatesOpen = false;
   }
 
   selectTemplate(template: any): void {
-    this.router.navigate(['/resume'], {
-      queryParams: { 
-        template: template.id,
-        edit: 'true' 
-      }
-    });
-    this.closeTemplates();
   }
 
   checkAdminStatus(): void {
@@ -342,44 +320,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   async loadAdminTemplates(): Promise<void> {
-    try {
-      this.isLoadingTemplates = true;
-      
-      // Default 28 templates
-      this.templateList = [
-        { id: 'template1', name: 'Classic Blue', category: 'Professional', description: 'Traditional professional look' },
-        { id: 'template2', name: 'Modern Sidebar', category: 'Creative', description: 'Contemporary design with sidebar' },
-        { id: 'template3', name: 'Header Style', category: 'Professional', description: 'Clean header-focused layout' },
-        { id: 'template4', name: 'Minimal Black', category: 'Minimalist', description: 'Sleek minimalist design' },
-        { id: 'template5', name: 'Professional Navy', category: 'Professional', description: 'Corporate navy theme' },
-        { id: 'template6', name: 'Creative Orange', category: 'Creative', description: 'Vibrant creative design' },
-        { id: 'template7', name: 'Executive Gray', category: 'Executive', description: 'Senior executive template' },
-        { id: 'template8', name: 'Tech Modern', category: 'Technology', description: 'Perfect for tech professionals' },
-        { id: 'template9', name: 'Academic Dark Blue', category: 'Academic', description: 'Ideal for academic positions' },
-        { id: 'template10', name: 'Startup Green', category: 'Creative', description: 'Dynamic startup vibe' },
-        { id: 'template11', name: 'Corporate Navy', category: 'Professional', description: 'Corporate standard design' },
-        { id: 'template12', name: 'Artistic Purple', category: 'Creative', description: 'Artistic and creative layout' },
-        { id: 'template13', name: 'Fresh Graduate', category: 'Entry Level', description: 'Perfect for new graduates' },
-        { id: 'template14', name: 'Healthcare Pro', category: 'Healthcare', description: 'Medical professionals template' },
-        { id: 'template15', name: 'Finance Expert', category: 'Finance', description: 'Banking and finance focused' },
-        { id: 'template16', name: 'Marketing Guru', category: 'Marketing', description: 'Creative marketing template' },
-        { id: 'template17', name: 'Engineering Pro', category: 'Engineering', description: 'Technical engineering layout' },
-        { id: 'template18', name: 'Sales Champion', category: 'Sales', description: 'Results-driven sales template' },
-        { id: 'template19', name: 'Designer Portfolio', category: 'Design', description: 'Showcase your design skills' },
-        { id: 'template20', name: 'Legal Professional', category: 'Legal', description: 'Law and legal services' },
-        { id: 'template21', name: 'Consultant Elite', category: 'Consulting', description: 'Management consulting style' },
-        { id: 'template22', name: 'Teacher Choice', category: 'Education', description: 'Education sector template' },
-        { id: 'template23', name: 'Entrepreneur Bold', category: 'Business', description: 'Bold entrepreneurial design' },
-        { id: 'template24', name: 'Data Scientist', category: 'Technology', description: 'Analytics and data focused' },
-        { id: 'template25', name: 'Simple Clean', category: 'Minimalist', description: 'Clean and simple design' },
-        { id: 'template26', name: 'Modern Professional', category: 'Professional', description: 'Modern professional style' },
-        { id: 'template27', name: 'Creative Bold', category: 'Creative', description: 'Bold creative design' },
-        { id: 'template28', name: 'Executive Elite', category: 'Executive', description: 'Elite executive template' }
-      ];
-    } catch (error) {
-      console.error('Error loading templates:', error);
-    } finally {
-      this.isLoadingTemplates = false;
-    }
   }
 }

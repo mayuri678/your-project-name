@@ -1,0 +1,148 @@
+<div class="panel-page">
+  <div class="page-header">
+    <div>
+      <h1>Download Tracking</h1>
+      <p>Monitor resume downloads, user activity, and template usage</p>
+    </div>
+    <button class="btn-refresh" (click)="loadDownloads()">↻ Refresh</button>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-mini">
+      <div class="stat-num">{{ totalDownloads }}</div>
+      <div class="stat-label">Total Downloads</div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-num">{{ monthlyDownloads }}</div>
+      <div class="stat-label">Last 30 Days</div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-num">{{ uniqueUsers }}</div>
+      <div class="stat-label">Unique Users</div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-num">{{ templateStats.length }}</div>
+      <div class="stat-label">Templates Used</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">All Downloads</button>
+    <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">Per User</button>
+    <button class="tab-btn" [class.active]="activeTab === 'templates'" (click)="activeTab = 'templates'">Template Usage</button>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading downloads...</p>
+  </div>
+
+  <div class="error-banner" *ngIf="error && !loading">⚠️ {{ error }}</div>
+
+  <!-- All Downloads Tab -->
+  <div *ngIf="!loading && !error && activeTab === 'all'">
+    <div class="filters-bar">
+      <input
+        type="text"
+        placeholder="Search by user, template, format..."
+        [(ngModel)]="searchQuery"
+        (input)="applyFilters()"
+        class="search-input"
+      />
+      <span class="result-count">{{ filteredDownloads.length }} records</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table" *ngIf="filteredDownloads.length > 0; else emptyDl">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Template</th>
+            <th>Format</th>
+            <th>Downloaded At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let dl of filteredDownloads">
+            <td>{{ dl.user_email }}</td>
+            <td>{{ dl.template_id || dl.resume_id || '—' }}</td>
+            <td><span class="badge badge-info">{{ dl.format | uppercase }}</span></td>
+            <td class="date-cell">{{ dl.downloaded_at | date:'medium' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #emptyDl>
+        <div class="empty-state">
+          <div class="empty-icon">⬇️</div>
+          <p>No downloads recorded yet</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Per User Tab -->
+  <div *ngIf="!loading && !error && activeTab === 'users'">
+    <div class="table-wrapper">
+      <table class="data-table" *ngIf="userStats.length > 0; else emptyUser">
+        <thead>
+          <tr>
+            <th>User Email</th>
+            <th>Downloads</th>
+            <th>Last Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let stat of userStats">
+            <td>{{ stat.user_email }}</td>
+            <td>
+              <span class="download-count">{{ stat.download_count }}</span>
+            </td>
+            <td class="date-cell">{{ stat.last_download | date:'mediumDate' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #emptyUser>
+        <div class="empty-state">
+          <div class="empty-icon">👤</div>
+          <p>No user download data</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Template Usage Tab -->
+  <div *ngIf="!loading && !error && activeTab === 'templates'">
+    <div class="table-wrapper">
+      <table class="data-table" *ngIf="templateStats.length > 0; else emptyTpl">
+        <thead>
+          <tr>
+            <th>Template</th>
+            <th>Usage Count</th>
+            <th>Popularity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let stat of templateStats; let i = index">
+            <td>{{ stat.template_name }}</td>
+            <td><span class="download-count">{{ stat.usage_count }}</span></td>
+            <td>
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="templateStats[0].usage_count > 0 ? (stat.usage_count / templateStats[0].usage_count) * 100 : 0"
+                ></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #emptyTpl>
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <p>No template usage data</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
