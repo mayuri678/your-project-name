@@ -21,13 +21,21 @@ export class ContactService {
       console.log('ContactService: Inserting into database...');
       const { data: insertData, error: insertError } = await this.supabaseService.supabaseClient
         .from('contact_messages')
-        .insert([data])
+        .insert([{
+          ...data,
+          created_at: new Date().toISOString()
+        }])
         .select()
         .single();
 
       if (insertError) {
         console.error('ContactService: Database error:', insertError);
-        throw new Error(insertError.message);
+        // If RLS policy blocks, still allow email to be sent
+        if (insertError.code === 'PGRST301' || insertError.message?.includes('policy')) {
+          console.warn('ContactService: RLS policy blocked, but continuing with email...');
+        } else {
+          throw new Error(insertError.message);
+        }
       }
       
       console.log('ContactService: Database insert successful');

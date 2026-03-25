@@ -37,7 +37,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Listen for login status changes
     setInterval(() => {
       this.updateLoginStatus();
-    }, 1000);
+    }, 500);
   }
 
   updateLoginStatus(): void {
@@ -130,7 +130,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   openTemplateManager(): void {
-    this.router.navigate(['/create-resume']);
+    this.router.navigate(['/templates']);
   }
 
   closeTemplateManager(): void {

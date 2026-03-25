@@ -55,18 +55,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
       window.addEventListener('adminTemplateCreated', () => {
       });
       
-      // Listen for profile updates
       window.addEventListener('storage', () => {
         this.loadLoggedInUsers();
         this.cdr.detectChanges();
       });
     }
     
+    // Subscribe to auth state changes
+    this.authService.loggedIn$.subscribe(loggedIn => {
+      this.loggedIn = loggedIn;
+      this.cdr.markForCheck();
+    });
+    
     this.refreshInterval = setInterval(() => {
       this.loadLoggedInUsers();
       this.checkAdminStatus();
+      this.loggedIn = this.authService.isLoggedIn();
       this.cdr.markForCheck();
-    }, 1000);
+    }, 500);
   }
 
   ngOnDestroy(): void {
@@ -315,8 +321,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logoutCurrentUser(): void {
+    this.userDataService.clearCurrentUserData();
     this.authService.logout();
-    this.router.navigate(['/login']);
+    this.loadLoggedInUsers();
+    this.loggedIn = false;
+    this.closeAccount();
+    this.cdr.detectChanges();
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   async loadAdminTemplates(): Promise<void> {

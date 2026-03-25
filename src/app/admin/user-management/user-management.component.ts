@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
@@ -11,13 +11,14 @@ import { AdminUser } from '../../models/admin.models';
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.css']
 })
-export class UserManagementComponent implements OnInit {
+export class UserManagementComponent implements OnInit, OnDestroy {
   users: AdminUser[] = [];
   filteredUsers: AdminUser[] = [];
   searchTerm = '';
 
   selectedStatus = '';
   isLoading = false;
+  private refreshInterval: any;
 
   statuses = [
     { value: '', label: 'All Status' },
@@ -28,19 +29,38 @@ export class UserManagementComponent implements OnInit {
   constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
+    console.log('[UserManagement] Component initialized');
     this.loadUsers();
+    
+    // Auto-refresh every 3 seconds
+    this.refreshInterval = setInterval(() => {
+      console.log('[UserManagement] Auto-refreshing users...');
+      this.loadUsers();
+    }, 3000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      console.log('[UserManagement] Auto-refresh stopped');
+    }
   }
 
   loadUsers(): void {
+    if (this.isLoading) return;
+    
     this.isLoading = true;
+    console.log('[UserManagement] Loading users...');
+    
     this.adminService.getUsers().subscribe({
       next: (users) => {
+        console.log('[UserManagement] Users loaded:', users.length);
         this.users = users;
         this.applyFilters();
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading users:', error);
+        console.error('[UserManagement] Error loading users:', error);
         this.isLoading = false;
       }
     });

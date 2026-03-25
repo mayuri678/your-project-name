@@ -1,0 +1,82 @@
+<div style="max-width: 400px; margin: 50px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+  <h2 style="text-align: center; color: #333; margin-bottom: 30px;">Login</h2>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" style="padding: 12px; background: #d1fae5; color: #059669; border-radius: 6px; margin-bottom: 15px; text-align: center;">
+    {{ successMessage }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" style="padding: 12px; background: #fee2e2; color: #b91c1c; border-radius: 6px; margin-bottom: 15px; text-align: center;">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Login Form -->
+  <form (ngSubmit)="onLogin()" style="display: flex; flex-direction: column; gap: 15px;">
+    
+    <!-- Email Input -->
+    <div>
+      <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Email or Username</label>
+      <input 
+        type="text" 
+        [(ngModel)]="email" 
+        name="email"
+        placeholder="Enter email or username"
+        required
+        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+      />
+    </div>
+
+    <!-- Password Input -->
+    <div>
+      <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Password</label>
+      <input 
+        [type]="showPassword ? 'text' : 'password'" 
+        [(ngModel)]="password" 
+        name="password"
+        placeholder="Enter password"
+        required
+        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+      />
+      <button 
+        type="button" 
+        (click)="togglePasswordVisibility()"
+        style="margin-top: 5px; background: none; border: none; color: #5b86e5; cursor: pointer; font-size: 12px;"
+      >
+        {{ showPassword ? '🙈 Hide' : '👁️ Show' }}
+      </button>
+    </div>
+
+    <!-- Login Button -->
+    <button 
+      type="submit" 
+      [disabled]="isLoading"
+      style="padding: 12px; background: linear-gradient(90deg, #4f46e5 0%, #3b82f6 100%); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px;"
+    >
+      {{ isLoading ? '⏳ Logging in...' : '🔐 LOGIN' }}
+    </button>
+
+    <!-- Register Link -->
+    <div style="text-align: center; margin-top: 10px;">
+      <button 
+        type="button" 
+        (click)="toggleMode()"
+        style="background: none; border: none; color: #5b86e5; cursor: pointer; text-decoration: underline;"
+      >
+        Don't have an account? Register
+      </button>
+    </div>
+
+  </form>
+
+  <!-- Test Credentials -->
+  <div style="margin-top: 30px; padding: 15px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #0284c7;">
+    <strong style="color: #0c4a6e;">Test Credentials:</strong>
+    <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #0c4a6e; font-size: 13px;">
+      <li>user1 / user1</li>
+      <li>admin / admin</li>
+      <li>john@example.com / john123</li>
+    </ul>
+  </div>
+
+</div>

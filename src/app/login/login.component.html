@@ -13,7 +13,7 @@
   <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
 
   <!-- Login/Register Form -->
-  <form (ngSubmit)="isRegisterMode ? onRegister() : onLogin()" #authForm="ngForm" novalidate>
+  <div>
 
     <!-- Name (only for registration) -->
     <label for="name" class="input-label" *ngIf="isRegisterMode">Name (Optional)</label>
@@ -34,7 +34,6 @@
       id="email"
       name="email"
       [(ngModel)]="email"
-      required
       class="input-field"
       [placeholder]="isRegisterMode ? 'Enter your email' : 'Enter email or username'"
     />
@@ -47,7 +46,6 @@
         id="password"
         name="password"
         [(ngModel)]="password"
-        required
         class="input-field"
         placeholder="Enter your password"
         [style.paddingRight]="!isRegisterMode ? '40px' : '12px'"
@@ -65,8 +63,13 @@
       </button>
     </div>
 
-    <!-- Submit Button -->
-    <button type="submit" class="accept-btn full">
+    <!-- Submit Button - DIRECT CLICK HANDLER -->
+    <button 
+      type="button" 
+      class="accept-btn full"
+      (click)="isRegisterMode ? onRegister() : onLogin()"
+      [disabled]="isLoading"
+    >
       {{ isRegisterMode ? 'REGISTER' : 'LOGIN' }}
     </button>
 
@@ -91,7 +94,7 @@
     <!-- Cancel Button -->
     <button type="button" class="back-btn full" (click)="onClose()">BACK</button>
 
-  </form>
+  </div>
 
   <!-- Forgot Password Popup -->
   <div class="forgot-popup" *ngIf="showForgotPopup">
@@ -105,7 +108,7 @@
         </button>
         <button type="button" class="back-btn" (click)="closeForgotPopup()">Cancel</button>
       </div>
-      <div class="success-message" *ngIf="otpSent || successMessage">{{ successMessage || 'OTP sent to your email!' }}</div>
+      <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
       <div class="error" *ngIf="errorMessage && showForgotPopup">{{ errorMessage }}</div>
     </div>
   </div>
@@ -115,4 +118,3 @@
     <span class="foot-text">By continuing you agree to our Terms & Privacy.</span>
   </div>
 </div>
-

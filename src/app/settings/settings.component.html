@@ -103,6 +103,55 @@
       </div>
     </div>
 
+    <!-- Change Password Section -->
+    <div class="settings-section">
+      <h2>🔐 {{ getTranslation('changePassword') }}</h2>
+      <p>Update your password to keep your account secure</p>
+      
+      <div *ngIf="!showChangePassword" style="margin-bottom: 20px;">
+        <button type="button" class="btn btn-secondary" (click)="goToChangePassword()" style="margin-right: 10px;">
+          🔑 {{ getTranslation('changePassword') }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="openForgotPasswordModal()">
+          ❓ Forgot Password?
+        </button>
+      </div>
+
+      <div *ngIf="showChangePassword" class="change-password-form-inline">
+        <div *ngIf="passwordChangeMessage" class="alert alert-success">
+          ✅ {{ passwordChangeMessage }}
+        </div>
+        <div *ngIf="passwordChangeError" class="alert alert-error">
+          ❌ {{ passwordChangeError }}
+        </div>
+
+        <div class="form-group">
+          <label for="currentPwd">{{ getTranslation('currentPassword') }} *</label>
+          <input type="password" id="currentPwd" [(ngModel)]="changePasswordForm.currentPassword" class="form-control" placeholder="Enter current password">
+        </div>
+
+        <div class="form-group">
+          <label for="newPwd">{{ getTranslation('newPassword') }} *</label>
+          <input type="password" id="newPwd" [(ngModel)]="changePasswordForm.newPassword" class="form-control" placeholder="Enter new password (min 8 chars, 1 number, 1 special char)">
+          <small class="form-text">Requirements: At least 8 characters, 1 number, 1 special character</small>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPwd">{{ getTranslation('confirmPassword') }} *</label>
+          <input type="password" id="confirmPwd" [(ngModel)]="changePasswordForm.confirmPassword" class="form-control" placeholder="Confirm new password">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-primary" (click)="submitChangePassword()" [disabled]="isChangingPassword" style="flex: 1;">
+            {{ isChangingPassword ? '⏳ Updating...' : '🔑 Update Password' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelChangePassword()" [disabled]="isChangingPassword" style="flex: 1;">
+            ✕ Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Preferences -->
     <div class="settings-section">
       <h2>⚙️ {{ getTranslation('preferences') }}</h2>
@@ -217,8 +266,11 @@
       <button type="button" class="btn btn-primary" (click)="saveSettings()" style="margin-right: 10px;">
         💾 {{ getTranslation('saveChanges') }}
       </button>
-      <button type="button" class="btn btn-secondary" (click)="testButton()" style="margin-right: 10px;">
-        🧪 Test Button
+      <button type="button" class="btn btn-secondary" (click)="resetSettings()" style="margin-right: 10px;">
+        🔄 {{ getTranslation('reset') }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="exportData()" style="margin-right: 10px;">
+        📥 {{ getTranslation('exportData') }}
       </button>
       <button type="button" class="btn btn-danger" (click)="deleteAccount()">
         🗑️ {{ getTranslation('deleteAccount') }}
@@ -226,3 +278,9 @@
     </div>
   </div>
 </div>
+
+<!-- Forgot Password Modal -->
+<app-forgot-password-modal 
+  *ngIf="showForgotPasswordModal"
+  (close)="closeForgotPasswordModal()">
+</app-forgot-password-modal>

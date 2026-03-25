@@ -1075,9 +1075,14 @@ export class SupabaseService {
     channel: string;
   }) {
     try {
+      const payload = {
+        ...notification,
+        sent_at: new Date().toISOString(),
+        is_read: false
+      };
       const { data, error } = await this.supabase
         .from('notifications')
-        .insert(notification)
+        .insert(payload)
         .select()
         .single();
       return { data, error };

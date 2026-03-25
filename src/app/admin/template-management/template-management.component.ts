@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,7 +12,7 @@ import { ResumeTemplate } from '../../models/admin.models';
   templateUrl: './template-management.component.html',
   styleUrls: ['./template-management.component.css']
 })
-export class TemplateManagementComponent implements OnInit {
+export class TemplateManagementComponent implements OnInit, OnDestroy {
   templates: ResumeTemplate[] = [];
   filteredTemplates: ResumeTemplate[] = [];
   selectedTemplates: string[] = [];
@@ -25,6 +25,7 @@ export class TemplateManagementComponent implements OnInit {
   showEditForm = false;
   createError: string | null = null;
   createSuccess: string | null = null;
+  private refreshInterval: any;
 
   categories = ['Professional', 'Creative', 'Modern', 'Classic', 'Technical'];
   colors = ['Blue', 'Green', 'Red', 'Purple', 'Orange', 'Black', 'Gray'];
@@ -46,7 +47,7 @@ export class TemplateManagementComponent implements OnInit {
   constructor(private adminService: AdminService, private router: Router) {}
 
   ngOnInit(): void {
-    console.log('TemplateManagement: Component initialized');
+    console.log('[TemplateManagement] Component initialized');
     this.loadTemplates();
     
     if (typeof window !== 'undefined') {
@@ -56,24 +57,36 @@ export class TemplateManagementComponent implements OnInit {
         setTimeout(() => this.loadTemplates(), 500);
       }
     }
+    
+    // Auto-refresh every 3 seconds
+    this.refreshInterval = setInterval(() => {
+      console.log('[TemplateManagement] Auto-refreshing templates...');
+      this.loadTemplates();
+    }, 3000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      console.log('[TemplateManagement] Auto-refresh stopped');
+    }
   }
 
   loadTemplates(): void {
+    if (this.isLoading) return;
+    
     this.isLoading = true;
-    this.templates = [];
-    this.filteredTemplates = [];
-    console.log('TemplateManagement: Starting to load templates...');
+    console.log('[TemplateManagement] Loading templates...');
     
     this.adminService.getTemplates().subscribe({
       next: (templates) => {
-        console.log('TemplateManagement: Templates received:', templates.length, templates);
+        console.log('[TemplateManagement] Templates loaded:', templates.length);
         this.templates = templates;
         this.applyFilters();
         this.isLoading = false;
-        console.log('TemplateManagement: Loading complete, isLoading:', this.isLoading);
       },
       error: (error) => {
-        console.error('TemplateManagement: Error loading templates:', error);
+        console.error('[TemplateManagement] Error loading templates:', error);
         this.isLoading = false;
         this.templates = [];
         this.filteredTemplates = [];

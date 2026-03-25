@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
@@ -11,7 +11,7 @@ import { Resume } from '../../models/admin.models';
   templateUrl: './resume-management.component.html',
   styleUrls: ['./resume-management.component.css']
 })
-export class ResumeManagementComponent implements OnInit {
+export class ResumeManagementComponent implements OnInit, OnDestroy {
   resumes: Resume[] = [];
   filteredResumes: Resume[] = [];
   loading = true;
@@ -19,20 +19,41 @@ export class ResumeManagementComponent implements OnInit {
   searchQuery = '';
   filterStatus = 'all';
   confirmDeleteId: string | null = null;
+  private refreshInterval: any;
 
   constructor(private supabase: SupabaseService) {}
 
   ngOnInit(): void {
+    console.log('[ResumeManagement] Component initialized');
     this.loadResumes();
+    
+    // Auto-refresh every 3 seconds
+    this.refreshInterval = setInterval(() => {
+      console.log('[ResumeManagement] Auto-refreshing resumes...');
+      this.loadResumes();
+    }, 3000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      console.log('[ResumeManagement] Auto-refresh stopped');
+    }
   }
 
   async loadResumes(): Promise<void> {
+    if (this.loading && this.resumes.length > 0) return;
+    
     this.loading = true;
     this.error = '';
+    console.log('[ResumeManagement] Loading resumes...');
+    
     const { data, error } = await this.supabase.getAllResumes();
     if (error) {
+      console.error('[ResumeManagement] Error loading resumes:', error);
       this.error = 'Could not connect to Supabase. Check your connection.';
     } else {
+      console.log('[ResumeManagement] Resumes loaded:', data?.length || 0);
       this.resumes = (data || []).map((r: any) => ({
         ...r,
         user_email: r.users?.email || 'Unknown',

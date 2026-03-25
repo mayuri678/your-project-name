@@ -37,32 +37,27 @@ export class ContactComponent implements OnInit {
       return;
     }
 
-    // Save to Supabase
-    const result = await this.contactService.submitContactForm({
+    // Try to save to Supabase (non-blocking)
+    this.contactService.submitContactForm({
       full_name: this.name,
       email: this.email,
       message: this.message
-    });
+    }).catch(err => console.log('Database save skipped:', err));
 
-    if (result.success) {
-      // Open email client
-      const to = 'gulvemayuri63@gmail.com';
-      const subject = encodeURIComponent('Website Contact Enquiry');
-      const body = encodeURIComponent(
-        `Name: ${this.name}\nEmail: ${this.email}\n\nMessage:\n${this.message}`
-      );
-      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-      
-      alert('Thank you! Your message has been saved.');
-      this.router.navigate(['/']);
-    } else {
-      alert(`Error: ${result.error || 'Failed to send message. Please try again.'}`);
-    }
+    // Always open email client
+    const to = 'gulvemayuri63@gmail.com';
+    const subject = encodeURIComponent('Website Contact Enquiry');
+    const body = encodeURIComponent(
+      `Name: ${this.name}\nEmail: ${this.email}\n\nMessage:\n${this.message}`
+    );
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    
+    alert('Thank you! Your message has been sent.');
+    setTimeout(() => this.router.navigate(['/']), 1000);
   }
 
   cancel(): void {
     this.router.navigate(['/']);
   }
 }
-
 

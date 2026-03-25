@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { EmailService } from './services/email.service';
 import { SupabaseAuthService } from './services/supabase-auth.service';
+import { BehaviorSubject } from 'rxjs';
 
 export interface LoggedInUser {
   email: string;
@@ -44,6 +45,8 @@ export class AuthService {
   private loggedIn = false;
   private currentUser: { email: string; name: string } | null = null;
   private loggedInUsers: LoggedInUser[] = [];
+  private loggedInSubject = new BehaviorSubject<boolean>(false);
+  public loggedIn$ = this.loggedInSubject.asObservable();
   
   private readonly defaultUsers: UserAccount[] = [
     { email: 'admin', password: 'admin', name: 'Admin System Administrator', role: 'admin' },
@@ -62,6 +65,7 @@ export class AuthService {
       this.loggedIn = localStorage.getItem('loggedIn') === 'true';
       this.loadLoggedInUsers();
       this.initializeUsers();
+      this.loggedInSubject.next(this.loggedIn);
     }
   }
 
@@ -69,7 +73,11 @@ export class AuthService {
     if (!this.isBrowser()) return;
     const stored = localStorage.getItem('registeredUsers');
     if (!stored) {
+      console.log('📝 Initializing default users...');
       this.saveRegisteredUsers(this.defaultUsers);
+      console.log('✅ Default users saved:', this.defaultUsers.map(u => u.email));
+    } else {
+      console.log('✅ Users already exist in localStorage');
     }
   }
 
@@ -104,7 +112,6 @@ export class AuthService {
     registeredUsers.push({ email, password, name: userName, role });
     this.saveRegisteredUsers(registeredUsers);
     
-    // Save to Supabase
     try {
       const uniqueId = email.replace(/[@.]/g, '_').toLowerCase();
       const profileData = {
@@ -127,34 +134,37 @@ export class AuthService {
   }
 
   login(email: string, password: string): boolean {
+    console.log('🔐 AuthService.login() called with:', email);
+    
     this.clearUserSession();
+    
     if (!email || !password) {
       console.log('❌ Login failed: Missing email or password');
       return false;
     }
     
     const registeredUsers = this.getRegisteredUsers();
-    console.log('🔍 Looking for user:', email, 'in', registeredUsers.length, 'registered users');
-    console.log('📋 Available users:', registeredUsers.map(u => ({ email: u.email, password: u.password, role: u.role })));
+    console.log('📋 Available users:', registeredUsers.map(u => u.email));
     
     const user = registeredUsers.find(u => u.email === email);
     
     if (!user) {
       console.log('❌ Login failed: User not found:', email);
+      console.log('📋 Available users were:', registeredUsers.map(u => u.email));
       return false;
     }
     
     console.log('🔍 Found user:', user.email, 'Checking password...');
     console.log('Expected password:', user.password);
     console.log('Provided password:', password);
-    console.log('Passwords match:', user.password === password);
+    console.log('Match:', user.password === password);
     
     if (user.password !== password) {
       console.log('❌ Login failed: Wrong password for:', email);
       return false;
     }
     
-    console.log('✅ Login successful for:', email, 'with role:', user.role);
+    console.log('✅ Login successful for:', email);
     
     this.loggedIn = true;
     this.currentUser = { email: user.email, name: user.name };
@@ -165,27 +175,41 @@ export class AuthService {
       localStorage.setItem('currentUserName', user.name);
       localStorage.setItem('currentUserRole', user.role || 'user');
       
-      console.log('💾 Saved to localStorage:', {
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        savedRole: localStorage.getItem('currentUserRole')
-      });
-      
       this.addLoggedInUser(user.email, user.name);
       this.saveLoginToBackend(user.email, user.name);
     }
+    
+    this.loggedInSubject.next(true);
+    console.log('✅ Login state updated');
     return true;
   }
 
   logout(): void {
+    console.log('🔴 LOGOUT CALLED - Clearing all data');
+    
     this.loggedIn = false;
     this.currentUser = null;
+    
     if (this.isBrowser()) {
       const currentEmail = localStorage.getItem('currentUserEmail');
-      if (currentEmail) this.removeLoggedInUser(currentEmail);
+      console.log('Clearing data for user:', currentEmail);
+      
+      // Remove from logged in users
+      if (currentEmail) {
+        this.removeLoggedInUser(currentEmail);
+        localStorage.removeItem(`userProfile_${currentEmail}`);
+      }
+      
+      // Clear ALL session data
       this.clearUserSession();
+      this.clearAllTokens();
+      
+      console.log('✅ After logout - loggedIn:', localStorage.getItem('loggedIn'));
+      console.log('✅ After logout - currentUserEmail:', localStorage.getItem('currentUserEmail'));
     }
+    
+    this.loggedInSubject.next(false);
+    console.log('✅ Logout complete');
   }
 
   logoutUser(email: string): void {
@@ -195,8 +219,17 @@ export class AuthService {
     }
   }
 
+  private clearAllTokens(): void {
+    if (!this.isBrowser()) return;
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('jwtToken');
+    sessionStorage.removeItem('refreshToken');
+  }
+
   isLoggedIn(): boolean {
-    return this.isBrowser() ? localStorage.getItem('loggedIn') === 'true' : this.loggedIn;
+    const result = this.isBrowser() ? localStorage.getItem('loggedIn') === 'true' : this.loggedIn;
+    return result;
   }
 
   getCurrentUser(): { email: string; name: string } | null {
@@ -298,6 +331,7 @@ export class AuthService {
     localStorage.setItem('currentUserEmail', email);
     localStorage.setItem('currentUserName', name);
     localStorage.setItem('currentUserRole', role);
+    this.loggedInSubject.next(true);
   }
 
   async forgotPassword(email: string): Promise<{success: boolean, message: string}> {
@@ -325,7 +359,6 @@ export class AuthService {
       localStorage.setItem(`resetToken_${resetToken}`, JSON.stringify(resetData));
     }
     
-    // Save to Supabase
     try {
       const supabaseResetData = {
         email: email,
@@ -335,14 +368,10 @@ export class AuthService {
         ip_address: 'client_ip'
       };
       
-      console.log('💾 Saving password reset request to Supabase:', supabaseResetData);
-      
       const { data, error } = await this.supabaseAuthService.savePasswordResetRequest(supabaseResetData);
       
       if (error) {
         console.warn('⚠️ Supabase password reset save failed:', error);
-      } else {
-        console.log('✅ Password reset request saved to Supabase:', data);
       }
     } catch (error) {
       console.warn('⚠️ Supabase unavailable for password reset:', error);
@@ -394,15 +423,10 @@ export class AuthService {
     this.saveRegisteredUsers(registeredUsers);
     localStorage.removeItem(`resetToken_${token}`);
     
-    // Mark token as used in Supabase
     try {
-      console.log('💾 Marking reset token as used in Supabase:', token);
       const result = await this.supabaseAuthService.markResetTokenAsUsed(token);
-      
       if (result.error) {
         console.warn('⚠️ Failed to mark token as used in Supabase:', result.error);
-      } else {
-        console.log('✅ Token marked as used in Supabase:', result.data);
       }
     } catch (error) {
       console.warn('⚠️ Supabase unavailable for token update:', error);
@@ -411,7 +435,7 @@ export class AuthService {
     return { success: true, message: 'Password reset successfully' };
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<{success: boolean, message: string}> {
+  changePassword(currentPassword: string, newPassword: string): {success: boolean, message: string} {
     const currentUser = this.getCurrentUser();
     if (!currentUser) return { success: false, message: 'No user is currently logged in' };
 
@@ -429,29 +453,23 @@ export class AuthService {
     return { success: true, message: 'Password changed successfully' };
   }
 
-  // Supabase-based forgot password
   async supabaseForgotPassword(email: string): Promise<{success: boolean, message: string}> {
     try {
-      console.log('📧 Sending Supabase password reset email to:', email);
-      
       const { data, error } = await this.supabaseAuthService.sendPasswordResetEmail(email);
       
       if (error) {
-        console.error('❌ Supabase forgot password error:', error);
         return {
           success: false,
           message: error.message || 'Failed to send reset email'
         };
       }
       
-      console.log('✅ Supabase password reset email sent successfully');
       return {
         success: true,
         message: 'Password reset email sent successfully! Check your inbox.'
       };
       
     } catch (error) {
-      console.error('Error in Supabase forgot password:', error);
       return {
         success: false,
         message: 'An unexpected error occurred. Please try again.'
@@ -459,24 +477,17 @@ export class AuthService {
     }
   }
 
-  // Supabase-based password reset
   async supabaseResetPassword(newPassword: string): Promise<{success: boolean, message: string}> {
     try {
-      console.log('🔄 Updating password via Supabase Auth');
-      
       const { data, error } = await this.supabaseAuthService.updatePasswordWithSupabase(newPassword);
       
       if (error) {
-        console.error('❌ Supabase password update error:', error);
         return {
           success: false,
           message: error.message || 'Failed to update password'
         };
       }
       
-      console.log('✅ Password updated successfully via Supabase');
-      
-      // Auto-login user after successful password reset
       const currentUser = this.supabaseAuthService.getCurrentUser();
       if (currentUser?.email) {
         this.addLoggedInUser(currentUser.email, currentUser.email.split('@')[0]);
@@ -489,7 +500,6 @@ export class AuthService {
       };
       
     } catch (error) {
-      console.error('Error in Supabase password reset:', error);
       return {
         success: false,
         message: 'An unexpected error occurred. Please try again.'
@@ -503,22 +513,32 @@ export class AuthService {
     localStorage.removeItem('currentUserEmail');
     localStorage.removeItem('currentUserName');
     localStorage.removeItem('currentUserRole');
+    sessionStorage.removeItem('loggedIn');
+    sessionStorage.removeItem('currentUserEmail');
+    sessionStorage.removeItem('currentUserName');
+    sessionStorage.removeItem('currentUserRole');
   }
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
 
+  setJwtToken(token: string): void {
+    if (!this.isBrowser()) return;
+    localStorage.setItem('jwtToken', token);
+  }
+
+  getJwtToken(): string | null {
+    if (!this.isBrowser()) return null;
+    return localStorage.getItem('jwtToken');
+  }
+
   private async saveLoginToBackend(email: string, name: string): Promise<void> {
     try {
-      console.log('💾 Saving login to Supabase:', { email, name, timestamp: new Date().toISOString() });
-      
       const { data, error } = await this.supabaseAuthService.saveLoginHistory(email, 'local_auth');
       
       if (error) {
         console.warn('⚠️ Failed to save login to Supabase:', error);
-      } else {
-        console.log('✅ Login saved to Supabase:', data);
       }
     } catch (error) {
       console.warn('⚠️ Supabase unavailable for login history:', error);

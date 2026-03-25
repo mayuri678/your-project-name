@@ -207,6 +207,30 @@ export class SupabaseAuthService {
     return { data, error };
   }
 
+  // Update password in user_data table
+  async updatePasswordInDatabase(email: string, newPassword: string): Promise<{ data: any; error: any }> {
+    console.log('🔄 Updating password in database for:', email);
+    
+    try {
+      const { data, error } = await this.supabase
+        .from('user_data')
+        .update({ password: newPassword, updated_at: new Date().toISOString() })
+        .eq('email', email)
+        .select();
+      
+      if (error) {
+        console.error('❌ Database password update failed:', error);
+      } else {
+        console.log('✅ Password updated in database:', data);
+      }
+      
+      return { data, error };
+    } catch (error) {
+      console.error('❌ Exception updating password in database:', error);
+      return { data: null, error };
+    }
+  }
+
   // Get session from URL hash (for password reset)
   async getSessionFromUrl(): Promise<{ data: any; error: any }> {
     const { data, error } = await this.supabase.auth.getSession();

@@ -85,7 +85,8 @@ export class AdminNotificationsComponent implements OnInit {
     }
 
     if (result.error) {
-      this.error = 'Failed to send notification. Check Supabase RLS policies.';
+      console.error('Notification error:', result.error);
+      this.error = result.error.message || 'Failed to send notification. Check Supabase RLS policies.';
     } else {
       this.successMsg = this.form.broadcast
         ? 'Broadcast sent to all users!'

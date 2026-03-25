@@ -15,12 +15,9 @@ export class LogoutGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
-    // Clear all user data when accessing logout route
     this.userDataService.clearCurrentUserData();
     this.authService.logout();
-    
-    // Redirect to logged-out page
-    this.router.navigate(['/logged-out']);
-    return false; // Prevent navigation to the logout route itself
+    this.router.navigate(['/login']);
+    return false;
   }
 }

@@ -6,11 +6,12 @@ import { AuthService } from '../auth.service';
 import { UserDataService } from '../services/user-data.service';
 import { SupabaseAuthService } from '../services/supabase-auth.service';
 import { HeaderComponent } from '../header/header.component';
+import { ForgotPasswordModalComponent } from '../forgot-password/forgot-password-modal.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent, ForgotPasswordModalComponent],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css']
 })
@@ -27,7 +28,7 @@ export class SettingsComponent implements OnInit {
     github: ''
   };
 
-  originalEmail: string = ''; // Track original login email
+  originalEmail: string = '';
 
   preferences = {
     notifications: true,
@@ -52,6 +53,17 @@ export class SettingsComponent implements OnInit {
     totalResumes: 0,
     accountType: 'Free'
   };
+
+  showChangePassword: boolean = false;
+  showForgotPasswordModal: boolean = false;
+  changePasswordForm = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  };
+  passwordChangeMessage: string = '';
+  passwordChangeError: string = '';
+  isChangingPassword: boolean = false;
 
   isLoggedIn: boolean = false;
   successMessage: string = '';
@@ -92,7 +104,13 @@ export class SettingsComponent implements OnInit {
       reset: 'Reset',
       exportData: 'Export Data',
       deleteAccount: 'Delete Account',
-      viewProfile: 'View Profile'
+      viewProfile: 'View Profile',
+      changePassword: 'Change Password',
+      currentPassword: 'Current Password',
+      newPassword: 'New Password',
+      confirmPassword: 'Confirm Password',
+      updatePassword: 'Update Password',
+      cancel: 'Cancel'
     },
     hi: {
       settings: 'सेटिंग्स',
@@ -127,7 +145,13 @@ export class SettingsComponent implements OnInit {
       reset: 'रीसेट',
       exportData: 'डेटा निर्यात करें',
       deleteAccount: 'खाता हटाएं',
-      viewProfile: 'प्रोफ़ाइल देखें'
+      viewProfile: 'प्रोफ़ाइल देखें',
+      changePassword: 'पासवर्ड बदलें',
+      currentPassword: 'वर्तमान पासवर्ड',
+      newPassword: 'नया पासवर्ड',
+      confirmPassword: 'पासवर्ड की पुष्टि करें',
+      updatePassword: 'पासवर्ड अपडेट करें',
+      cancel: 'रद्द करें'
     },
     mr: {
       settings: 'सेटिंग्ज',
@@ -162,7 +186,13 @@ export class SettingsComponent implements OnInit {
       reset: 'रीसेट',
       exportData: 'डेटा निर्यात करा',
       deleteAccount: 'खाते हटवा',
-      viewProfile: 'प्रोफाइल पहा'
+      viewProfile: 'प्रोफाइल पहा',
+      changePassword: 'पासवर्ड बदला',
+      currentPassword: 'सध्याचा पासवर्ड',
+      newPassword: 'नवीन पासवर्ड',
+      confirmPassword: 'पासवर्ड पुष्टी करा',
+      updatePassword: 'पासवर्ड अपडेट करा',
+      cancel: 'रद्द करा'
     }
   };
 
@@ -180,46 +210,7 @@ export class SettingsComponent implements OnInit {
       return;
     }
     this.loadUserData();
-    // Don't load from backend on init - let user see current values
-    // this.loadSettingsFromBackend();
     this.currentLanguage = this.preferences.language;
-  }
-
-  async loadSettingsFromBackend(): Promise<void> {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
-
-    try {
-      const { data, error } = await this.supabaseAuthService.getUserSettings(currentUser.email);
-      if (data && !error) {
-        this.userProfile.name = data.full_name || this.userProfile.name;
-        this.userProfile.phone = data.phone || '';
-        this.userProfile.address = data.address || '';
-        this.userProfile.bio = data.bio || '';
-        this.userProfile.website = data.website || '';
-        this.userProfile.linkedin = data.linkedin || '';
-        this.userProfile.github = data.github || '';
-        
-        this.preferences.notifications = data.notifications ?? true;
-        this.preferences.emailUpdates = data.email_updates ?? true;
-        this.preferences.darkMode = data.dark_mode ?? false;
-        this.preferences.language = data.language || 'en';
-        this.preferences.autoSave = data.auto_save ?? true;
-        this.preferences.templatePreview = data.template_preview ?? true;
-        
-        this.privacy.profileVisible = data.profile_visible ?? true;
-        this.privacy.showEmail = data.show_email ?? false;
-        this.privacy.showPhone = data.show_phone ?? false;
-        this.privacy.allowDownloads = data.allow_downloads ?? true;
-        this.privacy.shareAnalytics = data.share_analytics ?? false;
-        
-        this.accountInfo.memberSince = data.member_since ? new Date(data.member_since).toLocaleDateString() : this.accountInfo.memberSince;
-        this.accountInfo.totalResumes = data.total_resumes || 0;
-        this.accountInfo.accountType = data.account_type || 'Free';
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
   }
 
   loadUserData(): void {
@@ -227,54 +218,41 @@ export class SettingsComponent implements OnInit {
     if (currentUser) {
       this.userProfile.name = currentUser.name;
       this.userProfile.email = currentUser.email;
-      this.originalEmail = currentUser.email; // Save original email
+      this.originalEmail = currentUser.email;
       
-      // Load profile data
       const profileData = this.userDataService.getUserData('profile');
       if (profileData) {
         this.userProfile = { ...this.userProfile, ...profileData };
       }
       
-      // Load preferences
       const preferencesData = this.userDataService.getUserData('preferences');
       if (preferencesData) {
         this.preferences = { ...this.preferences, ...preferencesData };
       }
       
-      // Load privacy settings
       const privacyData = this.userDataService.getUserData('privacy');
       if (privacyData) {
         this.privacy = { ...this.privacy, ...privacyData };
       }
       
-      // Load account info
       this.loadAccountInfo(currentUser);
     }
   }
 
   loadAccountInfo(user: any): void {
-    // Get member since date
     const memberSince = localStorage.getItem(`memberSince_${user.email}`);
     this.accountInfo.memberSince = memberSince || new Date().toLocaleDateString();
     
-    // Get last login
     const lastLogin = localStorage.getItem(`lastLogin_${user.email}`);
     this.accountInfo.lastLogin = lastLogin || new Date().toLocaleDateString();
     
-    // Get resume count using service
     this.accountInfo.totalResumes = this.userDataService.getResumeCount();
-    
-    // Set account type
     this.accountInfo.accountType = this.authService.isAdmin() ? 'Admin' : 'Free';
   }
 
   async saveSettings(): Promise<void> {
-    console.log('🔘 Save button clicked!');
     const currentUser = this.authService.getCurrentUser();
-    console.log('👤 Current user:', currentUser);
-    
     if (!currentUser) {
-      console.error('❌ No user logged in!');
       this.errorMessage = 'Please login first.';
       return;
     }
@@ -282,7 +260,7 @@ export class SettingsComponent implements OnInit {
     this.currentLanguage = this.preferences.language;
     
     const settingsData = {
-      user_email: this.originalEmail, // Use original email for lookup
+      user_email: this.originalEmail,
       full_name: this.userProfile.name,
       phone: this.userProfile.phone,
       address: this.userProfile.address,
@@ -306,32 +284,112 @@ export class SettingsComponent implements OnInit {
       account_type: this.accountInfo.accountType
     };
     
-    console.log('💾 Settings data to save:', settingsData);
-    
-    // Always save to localStorage first
     this.saveToLocalStorage();
-    console.log('✅ Saved to localStorage');
     
     try {
-      console.log('🔄 Calling backend...');
       const { data, error } = await this.supabaseAuthService.saveUserSettings(settingsData);
-      console.log('📊 Backend response:', { data, error });
       
       if (error) {
-        console.warn('⚠️ Backend save failed:', error);
         this.successMessage = 'Settings saved locally (backend unavailable).';
       } else {
-        console.log('✅ Backend save successful!');
         this.successMessage = this.getTranslation('saveChanges') + ' successfully!';
       }
     } catch (error) {
-      console.error('❌ Error saving settings:', error);
       this.successMessage = 'Settings saved locally.';
     }
     
     setTimeout(() => {
       this.successMessage = '';
     }, 3000);
+  }
+
+  goToChangePassword(): void {
+    this.showChangePassword = !this.showChangePassword;
+    if (this.showChangePassword) {
+      this.changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+      this.passwordChangeMessage = '';
+      this.passwordChangeError = '';
+    }
+  }
+
+  async submitChangePassword(): Promise<void> {
+    this.passwordChangeMessage = '';
+    this.passwordChangeError = '';
+
+    if (!this.changePasswordForm.currentPassword || !this.changePasswordForm.newPassword || !this.changePasswordForm.confirmPassword) {
+      this.passwordChangeError = 'All fields are required';
+      return;
+    }
+
+    if (this.changePasswordForm.newPassword !== this.changePasswordForm.confirmPassword) {
+      this.passwordChangeError = 'New password and confirm password do not match';
+      return;
+    }
+
+    if (this.changePasswordForm.newPassword.length < 8) {
+      this.passwordChangeError = 'Password must be at least 8 characters';
+      return;
+    }
+
+    if (!/\d/.test(this.changePasswordForm.newPassword)) {
+      this.passwordChangeError = 'Password must contain at least 1 number';
+      return;
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(this.changePasswordForm.newPassword)) {
+      this.passwordChangeError = 'Password must contain at least 1 special character';
+      return;
+    }
+
+    this.isChangingPassword = true;
+    const token = localStorage.getItem('authToken') || '';
+
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          currentPassword: this.changePasswordForm.currentPassword,
+          newPassword: this.changePasswordForm.newPassword,
+          confirmPassword: this.changePasswordForm.confirmPassword
+        })
+      });
+
+      const data = await response.json();
+      this.isChangingPassword = false;
+
+      if (data.success) {
+        this.passwordChangeMessage = data.message || 'Password changed successfully!';
+        this.changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+        setTimeout(() => {
+          this.showChangePassword = false;
+          this.passwordChangeMessage = '';
+        }, 2000);
+      } else {
+        this.passwordChangeError = data.message || 'Failed to change password';
+      }
+    } catch (error: any) {
+      this.isChangingPassword = false;
+      this.passwordChangeError = error.message || 'An error occurred while changing password';
+    }
+  }
+
+  cancelChangePassword(): void {
+    this.showChangePassword = false;
+    this.changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+    this.passwordChangeMessage = '';
+    this.passwordChangeError = '';
+  }
+
+  openForgotPasswordModal(): void {
+    this.showForgotPasswordModal = true;
+  }
+
+  closeForgotPasswordModal(): void {
+    this.showForgotPasswordModal = false;
   }
 
   private saveToLocalStorage(): void {
@@ -362,19 +420,11 @@ export class SettingsComponent implements OnInit {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       const currentUser = this.authService.getCurrentUser();
       if (currentUser) {
-        // Clear all user data
         this.userDataService.clearCurrentUserData();
-        
-        // Remove additional data
         localStorage.removeItem(`memberSince_${currentUser.email}`);
         localStorage.removeItem(`lastLogin_${currentUser.email}`);
-        
-        // Logout user
         this.authService.logoutUser(currentUser.email);
-        
-        // Navigate to home
         this.router.navigate(['/home']);
-        
         alert('Account deleted successfully!');
       }
     }
@@ -407,10 +457,6 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  goToProfile(): void {
-    this.router.navigate(['/profile']);
-  }
-
   onLogout(): void {
     this.router.navigate(['/home']);
   }
@@ -429,23 +475,5 @@ export class SettingsComponent implements OnInit {
 
   onTemplates(): void {
     this.router.navigate(['/templates']);
-  }
-
-  // Method to update resume count when user creates a resume
-  updateResumeCount(): void {
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      // Mark that user has created a resume
-      localStorage.setItem(`hasCreatedResume_${currentUser.email}`, 'true');
-      
-      // Reload account info to update count
-      this.loadAccountInfo(currentUser);
-    }
-  }
-
-  // Test button to verify click events
-  testButton(): void {
-    console.log('🧪 TEST BUTTON CLICKED!');
-    alert('Test button works! If you see this, click events are working.');
   }
 }
