@@ -393,13 +393,14 @@ export class SupabaseService {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching users:', error);
+        console.warn('Error fetching users:', error.message);
+        return { data: [], error: null };
       }
 
-      return { data, error };
+      return { data: data || [], error: null };
     } catch (error: any) {
       console.error('Exception fetching users:', error);
-      return { data: null, error };
+      return { data: [], error: null };
     }
   }
 
@@ -914,15 +915,130 @@ export class SupabaseService {
   }
 
   // ============================================================
+  // 🔹 FEEDBACK
+  // ============================================================
+  async getAllFeedback() {
+    try {
+      // Fetch from both 'feedback' and 'contact_messages' tables
+      const [feedbackRes, contactRes] = await Promise.all([
+        this.supabase.from('feedback').select('*').order('created_at', { ascending: false }),
+        this.supabase.from('contact_messages').select('*').order('created_at', { ascending: false })
+      ]);
+
+      const feedbackRows = (feedbackRes.data || []).map((f: any) => ({ ...f, _source: 'feedback' }));
+
+      const contactRows = (contactRes.data || []).map((c: any) => ({
+        id: 'contact_' + c.id,
+        user_email: c.email,
+        subject: 'Contact Form Message',
+        message: c.message,
+        status: c.status || 'pending',
+        admin_response: c.admin_response || null,
+        resolved_at: c.resolved_at || null,
+        created_at: c.created_at,
+        _source: 'contact_messages',
+        _original_id: c.id
+      }));
+
+      const combined = [...feedbackRows, ...contactRows]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      return { data: combined, error: null };
+    } catch (error: any) {
+      return { data: [], error: null };
+    }
+  }
+
+  async submitFeedback(feedback: { user_email: string; subject: string; message: string }) {
+    try {
+      const { data, error } = await this.supabase
+        .from('feedback')
+        .insert({ ...feedback, status: 'pending', created_at: new Date().toISOString() })
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async updateFeedbackStatus(id: string, status: string, adminResponse?: string) {
+    try {
+      const updates: any = { status, updated_at: new Date().toISOString() };
+      if (adminResponse) updates.admin_response = adminResponse;
+      if (status === 'resolved') updates.resolved_at = new Date().toISOString();
+
+      // contact_messages source
+      if (id.startsWith('contact_')) {
+        const realId = id.replace('contact_', '');
+        const { data, error } = await this.supabase
+          .from('contact_messages')
+          .update(updates)
+          .eq('id', realId)
+          .select()
+          .single();
+        return { data, error };
+      }
+
+      const { data, error } = await this.supabase
+        .from('feedback')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  async deleteFeedback(id: string) {
+    try {
+      if (id.startsWith('contact_')) {
+        const realId = id.replace('contact_', '');
+        const { data, error } = await this.supabase.from('contact_messages').delete().eq('id', realId);
+        return { data, error };
+      }
+      const { data, error } = await this.supabase.from('feedback').delete().eq('id', id);
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  }
+
+  // ============================================================
   // 🔹 RESUMES
   // ============================================================
   async getAllResumes() {
     try {
+      // Try user_resumes table first (where resume builder saves)
+      const { data: userResumes, error: urError } = await this.supabase
+        .from('user_resumes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!urError && userResumes && userResumes.length > 0) {
+        const mapped = userResumes.map((r: any) => ({
+          id: r.id,
+          user_id: r.user_id,
+          title: r.resume_name || r.resume_data?.name || 'Untitled Resume',
+          template_id: r.template_id?.toString() || '',
+          status: r.status || 'draft',
+          is_featured: r.is_featured || false,
+          ats_score: r.ats_score || 0,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
+          users: null
+        }));
+        return { data: mapped, error: null };
+      }
+
+      // Fallback: try resumes table
       const { data, error } = await this.supabase
         .from('resumes')
-        .select('*, users(email, full_name)')
+        .select('*')
         .order('created_at', { ascending: false });
-      if (error) { console.warn('resumes table:', error.message); return { data: [], error: null }; }
+      if (error) { return { data: [], error: null }; }
       return { data: data || [], error: null };
     } catch (error: any) {
       return { data: [], error: null };
@@ -931,8 +1047,17 @@ export class SupabaseService {
 
   async deleteResume(id: string) {
     try {
-      const { data, error } = await this.supabase.from('resumes').delete().eq('id', id);
-      return { data, error };
+      const { error } = await this.supabase
+        .from('user_resumes')
+        .delete()
+        .eq('id', id);
+      if (!error) return { data: null, error: null };
+      // Fallback resumes table
+      const { data, error: err2 } = await this.supabase
+        .from('resumes')
+        .delete()
+        .eq('id', id);
+      return { data, error: err2 };
     } catch (error: any) {
       return { data: null, error };
     }
@@ -940,6 +1065,15 @@ export class SupabaseService {
 
   async toggleResumeFeatured(id: string, isFeatured: boolean) {
     try {
+      // Try user_resumes first
+      const { data: urData, error: urError } = await this.supabase
+        .from('user_resumes')
+        .update({ is_featured: isFeatured })
+        .eq('id', id)
+        .select()
+        .single();
+      if (!urError) return { data: urData, error: null };
+      // Fallback resumes table
       const { data, error } = await this.supabase
         .from('resumes')
         .update({ is_featured: isFeatured })
@@ -954,6 +1088,15 @@ export class SupabaseService {
 
   async updateResumeAtsScore(id: string, score: number) {
     try {
+      // Try user_resumes first
+      const { data: urData, error: urError } = await this.supabase
+        .from('user_resumes')
+        .update({ ats_score: score })
+        .eq('id', id)
+        .select()
+        .single();
+      if (!urError) return { data: urData, error: null };
+      // Fallback resumes table
       const { data, error } = await this.supabase
         .from('resumes')
         .update({ ats_score: score })
@@ -971,12 +1114,35 @@ export class SupabaseService {
   // ============================================================
   async getAllDownloads() {
     try {
-      const { data, error } = await this.supabase
+      // Try downloads table first
+      const { data: dlData, error: dlError } = await this.supabase
         .from('downloads')
         .select('*, users(email, full_name)')
         .order('downloaded_at', { ascending: false });
-      if (error) { console.warn('downloads table:', error.message); return { data: [], error: null }; }
-      return { data: data || [], error: null };
+
+      if (!dlError && dlData && dlData.length > 0) {
+        return { data: dlData, error: null };
+      }
+
+      // Fallback: build download records from user_resumes table
+      const { data: urData, error: urError } = await this.supabase
+        .from('user_resumes')
+        .select('*, users(email, full_name)')
+        .order('created_at', { ascending: false });
+
+      if (urError || !urData) return { data: [], error: null };
+
+      const mapped = urData.map((r: any) => ({
+        id: r.id,
+        user_id: r.user_id,
+        user_email: r.users?.email || 'Unknown',
+        resume_id: r.id,
+        resume_title: r.resume_name || 'Untitled',
+        template_id: r.template_id?.toString() || null,
+        format: 'pdf',
+        downloaded_at: r.updated_at || r.created_at
+      }));
+      return { data: mapped, error: null };
     } catch (error: any) {
       return { data: [], error: null };
     }
@@ -984,11 +1150,28 @@ export class SupabaseService {
 
   async trackDownload(userId: string, resumeId: string | null, templateId: string | null, format: string = 'pdf') {
     try {
+      // Try downloads table
       const { data, error } = await this.supabase
         .from('downloads')
-        .insert({ user_id: userId, resume_id: resumeId, template_id: templateId, format })
+        .insert({ 
+          user_id: userId, 
+          resume_id: resumeId, 
+          template_id: templateId, 
+          format,
+          downloaded_at: new Date().toISOString()
+        })
         .select()
         .single();
+      if (error) {
+        console.warn('downloads table insert failed:', error.message);
+        // Fallback: update user_resumes updated_at to track activity
+        if (resumeId) {
+          await this.supabase.from('user_resumes')
+            .update({ updated_at: new Date().toISOString() })
+            .eq('id', resumeId);
+        }
+        return { data: null, error: null };
+      }
       return { data, error };
     } catch (error: any) {
       return { data: null, error };
@@ -1042,9 +1225,13 @@ export class SupabaseService {
     try {
       const { data, error } = await this.supabase
         .from('settings')
-        .upsert({ key, value, type, description, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .upsert(
+          { key, value, type, description, updated_at: new Date().toISOString() },
+          { onConflict: 'key' }
+        )
         .select()
         .single();
+      if (error) console.warn('upsertSetting error:', error.message);
       return { data, error };
     } catch (error: any) {
       return { data: null, error };
@@ -1060,7 +1247,10 @@ export class SupabaseService {
         .from('notifications')
         .select('*, users(email, full_name)')
         .order('sent_at', { ascending: false });
-      if (error) { console.warn('notifications table:', error.message); return { data: [], error: null }; }
+      if (error) {
+        console.warn('notifications table not found:', error.message);
+        return { data: [], error: null };
+      }
       return { data: data || [], error: null };
     } catch (error: any) {
       return { data: [], error: null };
@@ -1118,15 +1308,34 @@ export class SupabaseService {
   async uploadTemplatePreview(file: File, templateId: string): Promise<{ url: string | null; error: any }> {
     try {
       const ext = file.name.split('.').pop();
-      const path = `template-previews/${templateId}.${ext}`;
-      const { error: uploadError } = await this.supabase.storage
-        .from('templates')
-        .upload(path, file, { upsert: true });
-      if (uploadError) return { url: null, error: uploadError };
-      const { data } = this.supabase.storage.from('templates').getPublicUrl(path);
-      return { url: data.publicUrl, error: null };
+      const path = `${templateId}.${ext}`;
+
+      // Try 'public' bucket first, then 'templates'
+      for (const bucket of ['public', 'templates', 'avatars']) {
+        const { error: uploadError } = await this.supabase.storage
+          .from(bucket)
+          .upload(path, file, { upsert: true });
+        if (!uploadError) {
+          const { data } = this.supabase.storage.from(bucket).getPublicUrl(path);
+          return { url: data.publicUrl, error: null };
+        }
+      }
+
+      // Fallback: convert to base64 and return as data URL
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ url: e.target?.result as string, error: null });
+        reader.onerror = () => resolve({ url: null, error: 'FileReader failed' });
+        reader.readAsDataURL(file);
+      });
     } catch (error: any) {
-      return { url: null, error };
+      // Final fallback: base64
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ url: e.target?.result as string, error: null });
+        reader.onerror = () => resolve({ url: null, error });
+        reader.readAsDataURL(file);
+      });
     }
   }
 

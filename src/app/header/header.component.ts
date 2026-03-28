@@ -37,6 +37,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     message: ''
   };
 
+  siteLogo = '';
+  siteName = 'Resume Builder';
+
   constructor(
     private authService: AuthService, 
     private userDataService: UserDataService,
@@ -48,6 +51,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadSiteSettings();
     this.loadLoggedInUsers();
     this.checkAdminStatus();
     
@@ -79,6 +83,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
+  }
+
+  async loadSiteSettings(): Promise<void> {
+    try {
+      // Check localStorage cache first for instant display
+      const cached = localStorage.getItem('site_settings');
+      if (cached) {
+        const map = JSON.parse(cached);
+        if (map['site_logo']) this.siteLogo = map['site_logo'];
+        if (map['site_name']) this.siteName = map['site_name'];
+        this.cdr.markForCheck();
+      }
+      // Always fetch fresh from DB
+      const { data } = await this.supabaseService.getAllSettings();
+      if (data && data.length > 0) {
+        const map: Record<string, string> = {};
+        data.forEach((s: any) => map[s.key] = s.value);
+        localStorage.setItem('site_settings', JSON.stringify(map));
+        if (map['site_logo']) this.siteLogo = map['site_logo'];
+        if (map['site_name']) this.siteName = map['site_name'];
+        this.cdr.markForCheck();
+      }
+    } catch { /* use defaults */ }
   }
 
   loadLoggedInUsers(): void {

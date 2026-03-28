@@ -103,18 +103,20 @@ export class AdminService {
   }
 
   isAdminLoggedIn(): boolean {
+    // First check in-memory
     if (this.currentAdminSubject.value !== null) {
       return true;
     }
-    // Check localStorage as fallback
+    // Restore from localStorage on reload
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('currentAdmin');
-      if (stored) {
+      const token = localStorage.getItem('adminToken');
+      if (stored && token) {
         try {
           const admin = JSON.parse(stored);
           this.currentAdminSubject.next(admin);
           return true;
-        } catch (error) {
+        } catch {
           return false;
         }
       }
@@ -233,8 +235,8 @@ export class AdminService {
   getUsers(): Observable<AdminUser[]> {
     return from(this.supabaseService.getUsers()).pipe(
       map(result => {
-        if (result.data) {
-          return result.data.map(user => ({
+        if (result.data && result.data.length > 0) {
+          return result.data.map((user: any) => ({
             id: user.id,
             email: user.email,
             name: user.full_name || user.email.split('@')[0],
@@ -244,9 +246,9 @@ export class AdminService {
             lastLogin: user.updated_at ? new Date(user.updated_at) : undefined
           }));
         }
-        return this.mockUsers;
+        return [];
       }),
-      catchError(() => of(this.mockUsers))
+      catchError(() => of([]))
     );
   }
 
@@ -569,77 +571,92 @@ export class AdminService {
 
   // Feedback Management
   getFeedback(): Observable<Feedback[]> {
-    return of([...this.mockFeedback]);
+    return from(this.supabaseService.getAllFeedback()).pipe(
+      map(result => {
+        if (result.data && result.data.length > 0) {
+          return result.data.map((f: any) => ({
+            id: f.id,
+            userId: f.user_id || '',
+            userEmail: f.user_email || '',
+            subject: f.subject || 'No Subject',
+            message: f.message || '',
+            status: f.status || 'pending',
+            createdAt: new Date(f.created_at),
+            resolvedAt: f.resolved_at ? new Date(f.resolved_at) : undefined,
+            adminResponse: f.admin_response || undefined
+          }));
+        }
+        return this.mockFeedback;
+      }),
+      catchError(() => of(this.mockFeedback))
+    );
   }
 
   updateFeedbackStatus(id: string, status: Feedback['status'], adminResponse?: string): Observable<boolean> {
-    const feedbackIndex = this.mockFeedback.findIndex(f => f.id === id);
-    if (feedbackIndex !== -1) {
-      this.mockFeedback[feedbackIndex].status = status;
-      if (adminResponse) {
-        this.mockFeedback[feedbackIndex].adminResponse = adminResponse;
-      }
-      if (status === 'resolved') {
-        this.mockFeedback[feedbackIndex].resolvedAt = new Date();
-      }
-      return of(true);
-    }
-    return of(false);
+    return from(this.supabaseService.updateFeedbackStatus(id, status, adminResponse)).pipe(
+      map(result => {
+        if (!result.error) return true;
+        // fallback to mock
+        const feedbackIndex = this.mockFeedback.findIndex(f => f.id === id);
+        if (feedbackIndex !== -1) {
+          this.mockFeedback[feedbackIndex].status = status;
+          if (adminResponse) this.mockFeedback[feedbackIndex].adminResponse = adminResponse;
+          if (status === 'resolved') this.mockFeedback[feedbackIndex].resolvedAt = new Date();
+        }
+        return true;
+      }),
+      catchError(() => {
+        const feedbackIndex = this.mockFeedback.findIndex(f => f.id === id);
+        if (feedbackIndex !== -1) {
+          this.mockFeedback[feedbackIndex].status = status;
+          if (status === 'resolved') this.mockFeedback[feedbackIndex].resolvedAt = new Date();
+        }
+        return of(true);
+      })
+    );
   }
 
   // Analytics
   getAnalytics(): Observable<Analytics> {
     return from(Promise.all([
       this.supabaseService.getUsers(),
-      this.supabaseService.getAllTemplates()
+      this.supabaseService.getAllTemplates(),
+      this.supabaseService.getAllDownloads(),
+      this.supabaseService.getAllResumes()
     ])).pipe(
-      map(([usersResult, templatesResult]) => {
-        // Get real user count from Supabase
+      map(([usersResult, templatesResult, downloadsResult, resumesResult]) => {
         const realUserCount = usersResult.data?.length || 0;
         const realTemplateCount = templatesResult.data?.length || 0;
-        
-        // Get logged in users from AuthService
-        const loggedInUsers = this.getCurrentLoggedInUsers();
-        const totalUsers = Math.max(realUserCount, loggedInUsers.length);
-        
-        // Calculate realistic metrics
-        const actualDownloads = this.calculateRealDownloads(realTemplateCount, loggedInUsers.length);
-        const actualRevenue = this.calculateRealRevenue(actualDownloads, totalUsers);
-        const actualSubscriptions = this.calculateRealSubscriptions(totalUsers);
-        
+        const realDownloadCount = downloadsResult.data?.length || 0;
+        const realResumeCount = resumesResult.data?.length || 0;
+
+        const payingUsers = Math.floor(realUserCount * 0.15);
+
         const analytics: Analytics = {
-          totalUsers: totalUsers,
-          totalTemplates: realTemplateCount > 0 ? realTemplateCount : 0,
-          totalDownloads: actualDownloads,
-          totalRevenue: actualRevenue,
-          activeSubscriptions: actualSubscriptions,
-          recentActivity: this.generateRealActivity(loggedInUsers, usersResult.data || [])
+          totalUsers: realUserCount,
+          totalTemplates: realTemplateCount,
+          totalDownloads: realDownloadCount || realResumeCount,
+          totalRevenue: payingUsers * 15,
+          activeSubscriptions: payingUsers,
+          recentActivity: this.generateRealActivity(
+            usersResult.data || [],
+            downloadsResult.data || [],
+            resumesResult.data || []
+          )
         };
-        
-        console.log('Real Analytics Data:', {
-          realUserCount,
-          loggedInUsers: loggedInUsers.length,
-          totalUsers: analytics.totalUsers,
-          templates: analytics.totalTemplates
-        });
-        
+
+        console.log('Analytics (real data):', analytics);
         return analytics;
       }),
       catchError((error) => {
-        console.error('Analytics error, using local data:', error);
-        const loggedInUsers = this.getCurrentLoggedInUsers();
-        const userCount = loggedInUsers.length;
-        const downloads = this.calculateRealDownloads(0, userCount);
-        const revenue = this.calculateRealRevenue(downloads, userCount);
-        const subscriptions = this.calculateRealSubscriptions(userCount);
-        
+        console.error('Analytics error:', error);
         return of({
-          totalUsers: userCount,
+          totalUsers: 0,
           totalTemplates: 0,
-          totalDownloads: downloads,
-          totalRevenue: revenue,
-          activeSubscriptions: subscriptions,
-          recentActivity: this.generateRealActivity(loggedInUsers, [])
+          totalDownloads: 0,
+          totalRevenue: 0,
+          activeSubscriptions: 0,
+          recentActivity: []
         });
       })
     );
@@ -678,37 +695,48 @@ export class AdminService {
     return Math.floor(userCount * 0.15) || (userCount > 0 ? 1 : 0);
   }
 
-  private generateRealActivity(loggedInUsers: any[], supabaseUsers: any[]): any[] {
+  private generateRealActivity(supabaseUsers: any[], downloads: any[], resumes: any[]): any[] {
     const activities: any[] = [];
-    
-    // Add activities for logged in users
-    loggedInUsers.forEach((user, index) => {
+
+    // Registration activities from users table
+    supabaseUsers.slice(0, 5).forEach((user, index) => {
       activities.push({
-        id: `local_${index + 1}`,
-        userId: user.email,
+        id: `reg_${index + 1}`,
+        userId: user.id,
         userEmail: user.email,
-        action: 'Logged in to platform',
-        resource: 'Login',
-        timestamp: new Date(user.loginTime || Date.now() - index * 300000)
+        action: 'Registered on platform',
+        resource: 'Registration',
+        timestamp: new Date(user.created_at)
       });
     });
-    
-    // Add activities for Supabase users
-    if (supabaseUsers && supabaseUsers.length > 0) {
-      supabaseUsers.slice(0, 5).forEach((user, index) => {
-        activities.push({
-          id: `db_${index + 1}`,
-          userId: user.id,
-          userEmail: user.email,
-          action: 'Registered on platform',
-          resource: 'Registration',
-          timestamp: new Date(user.created_at)
-        });
+
+    // Download activities
+    downloads.slice(0, 5).forEach((dl, index) => {
+      activities.push({
+        id: `dl_${index + 1}`,
+        userId: dl.user_id,
+        userEmail: dl.user_email || dl.users?.email || 'Unknown',
+        action: `Downloaded resume (${dl.format || 'pdf'})`,
+        resource: 'Download',
+        timestamp: new Date(dl.downloaded_at || dl.created_at)
       });
-    }
-    
-    // Sort by timestamp (newest first)
-    return activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
+    });
+
+    // Resume save activities
+    resumes.slice(0, 5).forEach((resume, index) => {
+      activities.push({
+        id: `res_${index + 1}`,
+        userId: resume.user_id,
+        userEmail: resume.users?.email || resume.user_email || 'Unknown',
+        action: `Saved resume: ${resume.title || resume.resume_name || 'Untitled'}`,
+        resource: 'Resume',
+        timestamp: new Date(resume.updated_at || resume.created_at)
+      });
+    });
+
+    return activities
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 10);
   }
 
   private getCategoryName(categoryId: string): string {

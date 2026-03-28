@@ -3,8 +3,9 @@
 
     <!-- Left: Logo and Company Name -->
     <div class="header-left">
-      <div class="logo">RB</div>
-      <h1 class="company-name">Resume Builder</h1>
+      <div class="logo" *ngIf="!siteLogo">{{ siteName.charAt(0) }}{{ siteName.split(' ')[1]?.charAt(0) || 'B' }}</div>
+      <img *ngIf="siteLogo" [src]="siteLogo" alt="Logo" class="site-logo-img" />
+      <h1 class="company-name">{{ siteName }}</h1>
     </div>
 
     <!-- Navigation Links -->
@@ -13,6 +14,7 @@
       <a class="nav-link" routerLink="/about" routerLinkActive="active">About</a>
       <a class="nav-link" routerLink="/templates" routerLinkActive="active">Templates</a>
       <a class="nav-link" routerLink="/my-templates" routerLinkActive="active">My Templates</a>
+      <a class="nav-link ai-writer-link" routerLink="/ai-resume-writer" routerLinkActive="active">🤖 AI Writer</a>
     </nav>
 
     <!-- Right: Contact and Account -->

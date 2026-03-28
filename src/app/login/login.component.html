@@ -100,11 +100,11 @@
   <div class="forgot-popup" *ngIf="showForgotPopup">
     <div class="popup-content">
       <h4>Reset Password</h4>
-      <p>Enter your email to receive OTP</p>
+      <p>Enter your email to receive a password reset link</p>
       <input type="email" [(ngModel)]="forgotEmail" placeholder="Enter your email" class="input-field">
       <div class="popup-buttons">
         <button type="button" class="accept-btn" (click)="sendOTP()" [disabled]="!forgotEmail.trim() || isLoading">
-          {{ isLoading ? 'Redirecting...' : 'Send OTP' }}
+          {{ isLoading ? 'Sending...' : 'Send Reset Link' }}
         </button>
         <button type="button" class="back-btn" (click)="closeForgotPopup()">Cancel</button>
       </div>

@@ -22,6 +22,7 @@ export const routes: Routes = [
   { path: 'reset-password', loadComponent: () => import('./reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
   { path: 'help', loadComponent: () => import('./help/help.component').then(m => m.HelpComponent) },
   { path: 'resume-generator', loadComponent: () => import('./resume-generator/resume-generator.component').then(m => m.ResumeGeneratorComponent) },
+  { path: 'ai-resume-writer', loadComponent: () => import('./ai-resume-writer/ai-resume-writer.component').then(m => m.AiResumeWriterComponent) },
   
   // Admin routes
   { path: 'admin/login', loadComponent: () => import('./admin/admin-login/admin-login.component').then(m => m.AdminLoginComponent) },
@@ -38,8 +39,6 @@ export const routes: Routes = [
       { path: 'analytics', loadComponent: () => import('./admin/analytics/analytics.component').then(m => m.AnalyticsComponent) },
       { path: 'feedback', loadComponent: () => import('./admin/feedback-management/feedback-management.component').then(m => m.FeedbackManagementComponent) },
       { path: 'resume-management', loadComponent: () => import('./admin/resume-management/resume-management.component').then(m => m.ResumeManagementComponent) },
-      { path: 'download-tracking', loadComponent: () => import('./admin/download-tracking/download-tracking.component').then(m => m.DownloadTrackingComponent) },
-      { path: 'notifications', loadComponent: () => import('./admin/admin-notifications/admin-notifications.component').then(m => m.AdminNotificationsComponent) },
       { path: 'settings', loadComponent: () => import('./admin/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent) }
     ]
   },

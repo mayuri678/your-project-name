@@ -332,15 +332,62 @@ export class ResumeBuilderComponent implements OnInit, AfterViewInit {
     const element = document.querySelector('.template-preview-container') as HTMLElement;
     if (!element) return;
 
-    const canvas = await html2canvas(element, { scale: 2 });
+    // Read PDF settings from Supabase
+    let pageSize = 'a4';
+    let margin = 0;
+    let watermarkEnabled = false;
+    let watermarkText = 'Resume Builder';
+
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+      const { data: settings } = await supabase.from('settings').select('key,value');
+      if (settings) {
+        const map: Record<string, string> = {};
+        settings.forEach((s: any) => map[s.key] = s.value);
+        pageSize = (map['pdf_page_size'] || 'A4').toLowerCase();
+        margin = parseInt(map['pdf_margin'] || '0');
+        watermarkEnabled = map['pdf_watermark_enabled'] === 'true';
+        watermarkText = map['pdf_watermark_text'] || 'Resume Builder';
+      }
+    } catch { /* use defaults */ }
+
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgWidth = 210;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    const pdf = new jsPDF('p', 'mm', pageSize as any);
+
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const usableW = pageW - margin * 2;
+    const imgH = (canvas.height * usableW) / canvas.width;
+
+    pdf.addImage(imgData, 'PNG', margin, margin, usableW, imgH);
+
+    // Watermark
+    if (watermarkEnabled && watermarkText) {
+      pdf.setFontSize(40);
+      pdf.setTextColor(200, 200, 200);
+      pdf.text(watermarkText, pageW / 2, pageH / 2, { align: 'center', angle: 45 });
+    }
+
     pdf.save(`resume-${this.resumeData.name || 'download'}.pdf`);
-    
+
+    // Track download
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('downloads').insert({
+          user_id: user.id,
+          resume_id: this.currentResumeId || null,
+          template_id: this.selectedTemplateId?.toString() || null,
+          format: 'pdf',
+          downloaded_at: new Date().toISOString()
+        });
+      }
+    } catch { }
+
     this.saveToMyTemplates();
   }
 

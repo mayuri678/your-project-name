@@ -39,22 +39,6 @@ import { Analytics } from '../../models/admin.models';
             <p>Downloads</p>
           </div>
         </div>
-
-        <div class="metric-card revenue">
-          <div class="metric-icon">💰</div>
-          <div class="metric-content">
-            <h3>\${{ analytics.totalRevenue }}</h3>
-            <p>Revenue</p>
-          </div>
-        </div>
-
-        <div class="metric-card subscriptions">
-          <div class="metric-icon">💳</div>
-          <div class="metric-content">
-            <h3>{{ analytics.activeSubscriptions }}</h3>
-            <p>Active Subscriptions</p>
-          </div>
-        </div>
       </div>
 
       <div class="charts-section">
@@ -151,20 +135,13 @@ export class AnalyticsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading analytics:', error);
-        // Set fallback analytics data
         this.analytics = {
-          totalUsers: 245,
-          totalTemplates: 32,
-          totalDownloads: 1847,
-          totalRevenue: 4250,
-          activeSubscriptions: 67,
-          recentActivity: [
-            { id: '1', userId: '1', userEmail: 'john.doe@example.com', action: 'Downloaded Professional Template', resource: 'Template', timestamp: new Date() },
-            { id: '2', userId: '2', userEmail: 'jane.smith@example.com', action: 'Subscribed to Premium Plan', resource: 'Subscription', timestamp: new Date(Date.now() - 300000) },
-            { id: '3', userId: '3', userEmail: 'mike.wilson@example.com', action: 'Created new resume', resource: 'Resume', timestamp: new Date(Date.now() - 600000) },
-            { id: '4', userId: '4', userEmail: 'sarah.johnson@example.com', action: 'Downloaded Creative Template', resource: 'Template', timestamp: new Date(Date.now() - 900000) },
-            { id: '5', userId: '5', userEmail: 'alex.brown@example.com', action: 'Updated profile information', resource: 'Profile', timestamp: new Date(Date.now() - 1200000) }
-          ]
+          totalUsers: 0,
+          totalTemplates: 0,
+          totalDownloads: 0,
+          totalRevenue: 0,
+          activeSubscriptions: 0,
+          recentActivity: []
         };
         this.generateUserGrowthData();
       }

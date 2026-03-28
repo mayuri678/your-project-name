@@ -69,40 +69,6 @@
     </div>
   </div>
 
-  <!-- Quick Actions -->
-  <div class="quick-actions" *ngIf="stats">
-    <h2>Quick Actions</h2>
-    <div class="actions-grid">
-      <a class="action-btn" routerLink="/admin/user-management">
-        <i class="icon">👤</i>
-        <span>Manage Users</span>
-      </a>
-      <a class="action-btn" routerLink="/admin/resume-management">
-        <i class="icon">📋</i>
-        <span>View Resumes</span>
-      </a>
-      <a class="action-btn" routerLink="/admin/template-management">
-        <i class="icon">➕</i>
-        <span>Create Template</span>
-      </a>
-      <a class="action-btn" routerLink="/admin/download-tracking">
-        <i class="icon">📊</i>
-        <span>Download Stats</span>
-      </a>
-      <a class="action-btn" routerLink="/admin/notifications">
-        <i class="icon">✉️</i>
-        <span>Send Notification</span>
-        <span class="badge" *ngIf="stats.notifications?.unread && stats.notifications!.unread > 0">
-          {{ stats.notifications!.unread }}
-        </span>
-      </a>
-      <a class="action-btn" routerLink="/admin/settings">
-        <i class="icon">⚙️</i>
-        <span>Settings</span>
-      </a>
-    </div>
-  </div>
-
   <!-- Recent Activity -->
   <div class="recent-activity" *ngIf="stats">
     <h2>Platform Summary</h2>

@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
+import { SupabaseService } from '../../services/supabase.service';
 import { AdminUser } from '../../models/admin.models';
 
 @Component({
@@ -15,7 +16,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   users: AdminUser[] = [];
   filteredUsers: AdminUser[] = [];
   searchTerm = '';
-
   selectedStatus = '';
   isLoading = false;
   private refreshInterval: any;
@@ -26,44 +26,43 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     { value: 'inactive', label: 'Inactive' }
   ];
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private supabaseService: SupabaseService
+  ) {}
 
   ngOnInit(): void {
-    console.log('[UserManagement] Component initialized');
     this.loadUsers();
-    
-    // Auto-refresh every 3 seconds
-    this.refreshInterval = setInterval(() => {
-      console.log('[UserManagement] Auto-refreshing users...');
-      this.loadUsers();
-    }, 3000);
   }
 
   ngOnDestroy(): void {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      console.log('[UserManagement] Auto-refresh stopped');
-    }
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
   }
 
-  loadUsers(): void {
-    if (this.isLoading) return;
-    
+  async loadUsers(): Promise<void> {
     this.isLoading = true;
-    console.log('[UserManagement] Loading users...');
-    
-    this.adminService.getUsers().subscribe({
-      next: (users) => {
-        console.log('[UserManagement] Users loaded:', users.length);
-        this.users = users;
-        this.applyFilters();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('[UserManagement] Error loading users:', error);
-        this.isLoading = false;
+    try {
+      const result = await this.supabaseService.getUsers();
+      if (result.data && result.data.length > 0) {
+        this.users = result.data.map((user: any) => ({
+          id: user.id,
+          email: user.email,
+          name: user.full_name || user.email.split('@')[0],
+          role: 'user' as AdminUser['role'],
+          isActive: true,
+          createdAt: new Date(user.created_at),
+          lastLogin: user.updated_at ? new Date(user.updated_at) : undefined
+        }));
+      } else {
+        this.users = [];
       }
-    });
+      this.applyFilters();
+    } catch {
+      this.users = [];
+      this.filteredUsers = [];
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   applyFilters(): void {

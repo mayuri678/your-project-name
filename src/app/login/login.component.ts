@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { SupabaseAuthService } from '../services/supabase-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +28,8 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private supabaseAuth: SupabaseAuthService
   ) {}
 
   ngOnInit(): void {
@@ -52,33 +54,35 @@ export class LoginComponent implements OnInit {
 
     const emailTrimmed = this.email.trim();
     const passwordTrimmed = this.password.trim();
-    const nameTrimmed = this.name.trim() || (emailTrimmed.includes('@') ? emailTrimmed.split('@')[0] : emailTrimmed);
+    const nameTrimmed = this.name.trim() || emailTrimmed.split('@')[0];
 
     try {
-      const success = await this.authService.register(emailTrimmed, passwordTrimmed, nameTrimmed, 'user');
-      
-      if (!success) {
-        this.errorMessage = 'Email already registered';
+      const { data, error } = await this.supabaseAuth.signUp(emailTrimmed, passwordTrimmed);
+
+      if (error) {
+        this.errorMessage = error.message || 'Registration failed. Please try again.';
         this.isLoading = false;
         return;
       }
 
-      this.successMessage = 'Account created successfully! Logging you in...';
-      
-      setTimeout(() => {
+      if (data?.session) {
+        // Auto-logged in (email confirmation disabled)
         this.authService.setCurrentUser(emailTrimmed, nameTrimmed, 'user');
         this.authService.addLoggedInUser(emailTrimmed, nameTrimmed);
-        this.router.navigate(['/home'], { replaceUrl: true });
-      }, 1000);
+        this.successMessage = 'Account created! Redirecting...';
+        setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 800);
+      } else {
+        // Email confirmation required
+        this.successMessage = 'Account created! Please check your email to confirm your account.';
+        this.isLoading = false;
+      }
     } catch (error) {
-      console.error('Registration error:', error);
       this.errorMessage = 'Registration failed. Please try again.';
       this.isLoading = false;
     }
   }
 
   async onLogin(): Promise<void> {
-    console.log('🔐 Login button clicked');
     this.errorMessage = '';
     this.successMessage = '';
     this.isLoading = true;
@@ -92,33 +96,62 @@ export class LoginComponent implements OnInit {
     const emailTrimmed = this.email.trim();
     const passwordTrimmed = this.password.trim();
 
-    console.log('Attempting login with:', emailTrimmed);
-
-    // Admin login
+    // Admin shortcut
     if (emailTrimmed === 'admin' && passwordTrimmed === 'admin') {
-      console.log('Admin login');
       this.authService.setCurrentUser('admin@example.com', 'Admin User', 'admin');
       this.successMessage = 'Admin login successful!';
       setTimeout(() => this.router.navigate(['/admin/dashboard'], { replaceUrl: true }), 500);
       return;
     }
 
-    // Local auth login
-    const loginSuccess = this.authService.login(emailTrimmed, passwordTrimmed);
-    console.log('Login result:', loginSuccess);
+    try {
+      // Step 1: Try Supabase signIn
+      const { data, error } = await this.supabaseAuth.signIn(emailTrimmed, passwordTrimmed);
 
-    if (!loginSuccess) {
-      this.errorMessage = 'Invalid email or password';
+      if (!error && data?.user) {
+        const name = data.user.user_metadata?.['full_name'] || emailTrimmed.split('@')[0];
+        this.authService.setCurrentUser(emailTrimmed, name, 'user');
+        this.authService.addLoggedInUser(emailTrimmed, name);
+        this.successMessage = 'Login successful!';
+        setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
+        return;
+      }
+
+      // Step 2: signIn failed → try signUp (auto-create account)
+      const { data: signUpData, error: signUpError } = await this.supabaseAuth.signUp(emailTrimmed, passwordTrimmed);
+
+      if (!signUpError && signUpData?.user) {
+        const name = emailTrimmed.split('@')[0];
+        this.authService.setCurrentUser(emailTrimmed, name, 'user');
+        this.authService.addLoggedInUser(emailTrimmed, name);
+
+        if (signUpData.session) {
+          // Email confirmation OFF → session ready
+          this.successMessage = 'Login successful!';
+          setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
+        } else {
+          // Email confirmation ON → still navigate (local session set)
+          this.successMessage = 'Login successful!';
+          setTimeout(() => this.router.navigate(['/home'], { replaceUrl: true }), 500);
+        }
+        return;
+      }
+
+      // Step 3: signUp also failed → user exists but wrong password
+      const errMsg = (error?.message || '').toLowerCase();
+      if (errMsg.includes('email not confirmed')) {
+        this.errorMessage = 'Please confirm your email. Check your inbox.';
+      } else if ((signUpError?.message || '').toLowerCase().includes('already registered')) {
+        this.errorMessage = 'Incorrect password. Use Forgot Password to reset.';
+      } else {
+        this.errorMessage = 'Invalid email or password.';
+      }
       this.isLoading = false;
-      return;
-    }
 
-    this.successMessage = 'Login successful!';
-    console.log('Login successful, navigating to home');
-    
-    setTimeout(() => {
-      this.router.navigate(['/home'], { replaceUrl: true });
-    }, 500);
+    } catch (err: any) {
+      this.errorMessage = 'Login failed. Please try again.';
+      this.isLoading = false;
+    }
   }
 
   toggleMode(): void {
@@ -153,16 +186,22 @@ export class LoginComponent implements OnInit {
       this.errorMessage = 'Please enter your email';
       return;
     }
-    
+
     this.errorMessage = '';
+    this.successMessage = '';
     this.isLoading = true;
-    
+
     try {
-      console.log('Sending OTP to:', this.forgotEmail);
-      this.router.navigate(['/forgot-password']);
-    } catch (error) {
-      console.error('Navigation error:', error);
-      this.errorMessage = 'Navigation failed. Please try again.';
+      const { error } = await this.supabaseAuth.sendPasswordResetEmail(this.forgotEmail.trim());
+
+      if (error) {
+        this.errorMessage = error.message || 'Failed to send reset email.';
+      } else {
+        this.successMessage = 'Password reset link sent! Check your email.';
+        setTimeout(() => this.closeForgotPopup(), 2500);
+      }
+    } catch {
+      this.errorMessage = 'Failed to send reset email. Please try again.';
     } finally {
       this.isLoading = false;
     }

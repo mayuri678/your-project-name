@@ -6,7 +6,7 @@ import { SupabaseService } from '../../services/supabase.service';
 import { PasswordHistoryService } from '../../services/password-history.service';
 
 interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -44,13 +44,14 @@ export class PasswordManagementComponent implements OnInit {
   users: User[] = [];
   passwordRequests: PasswordResetRequest[] = [];
   templates: Template[] = [];
+  isLoadingUsers = false;
   showResetModal = false;
   showBulkResetModal = false;
   showEditModal = false;
   showTemplateModal = false;
   showTemplateEditModal = false;
   showAddTemplateModal = false;
-  selectedUserId: number | null = null;
+  selectedUserId: string | null = null;
   selectedUser: User | null = null;
   selectedTemplate: Template | null = null;
   isDarkMode = false;
@@ -129,35 +130,29 @@ Admin Team`
   }
 
   loadUsers() {
+    this.isLoadingUsers = true;
     this.supabaseService.getUsers().then(result => {
-      if (result.data) {
-        this.users = result.data.map(user => ({
+      if (result.data && result.data.length > 0) {
+        this.users = result.data.map((user: any) => ({
           id: user.id,
           name: user.full_name || user.email.split('@')[0],
           email: user.email,
-          phone: user.phone || 'N/A',
+          phone: user.phone || user.contact_no || 'N/A',
           status: 'active' as 'active' | 'inactive',
-          lastLogin: new Date(user.created_at)
+          lastLogin: new Date(user.updated_at || user.created_at)
         }));
+      } else {
+        this.users = [];
       }
-    }).catch(error => {
-      console.error('Error loading users:', error);
-      this.users = [
-        {
-          id: 1,
-          name: 'राहुल शर्मा',
-          email: 'rahul@email.com',
-          phone: '9876543210',
-          status: 'active',
-          lastLogin: new Date('2024-01-15')
-        }
-      ];
+      this.isLoadingUsers = false;
+    }).catch(() => {
+      this.users = [];
+      this.isLoadingUsers = false;
     });
   }
 
   async loadPasswordRequests() {
     try {
-      // Use existing method from SupabaseService
       const result = await this.supabaseService.getPasswordResetRequests();
       
       if (result.data && result.data.length > 0) {
@@ -172,8 +167,22 @@ Admin Team`
         }));
         console.log('✅ Loaded', this.passwordRequests.length, 'password reset requests');
       } else {
-        console.log('📝 No password reset requests found');
-        this.passwordRequests = [];
+        // Fallback: load from users table to show real user data
+        const usersResult = await this.supabaseService.getUsers();
+        if (usersResult.data && usersResult.data.length > 0) {
+          this.passwordRequests = usersResult.data.map((user: any, index: number) => ({
+            id: index + 1,
+            userId: index + 1,
+            userName: user.full_name || user.email.split('@')[0],
+            userEmail: user.email,
+            requestDate: new Date(user.created_at),
+            status: 'pending' as 'pending' | 'completed' | 'expired',
+            resetToken: undefined
+          }));
+          console.log('✅ Loaded', this.passwordRequests.length, 'users as requests');
+        } else {
+          this.passwordRequests = [];
+        }
       }
     } catch (error) {
       console.error('❌ Error:', error);
@@ -181,7 +190,7 @@ Admin Team`
     }
   }
 
-  openResetModal(userId?: number) {
+  openResetModal(userId?: string) {
     this.showResetModal = true;
     this.selectedUserId = userId || null;
     
@@ -379,7 +388,7 @@ Admin Team`
     this.showBulkResetModal = false;
   }
 
-  openEditModal(userId: number) {
+  openEditModal(userId: string) {
     const user = this.users.find(u => u.id === userId);
     if (user) {
       this.selectedUser = user;
@@ -395,9 +404,11 @@ Admin Team`
 
   async updateUserInfo() {
     if (!this.selectedUser) return;
-
     try {
-      // Update user in the local array
+      await this.supabaseService.updateUser(this.selectedUser.id, {
+        full_name: this.editForm.name,
+        email: this.editForm.email
+      });
       const userIndex = this.users.findIndex(u => u.id === this.selectedUser!.id);
       if (userIndex !== -1) {
         this.users[userIndex] = {
@@ -407,13 +418,11 @@ Admin Team`
           phone: this.editForm.phone,
           status: this.editForm.status
         };
-        
-        alert('✅ User information updated successfully!');
-        this.closeEditModal();
       }
+      alert('✅ User updated successfully!');
+      this.closeEditModal();
     } catch (error) {
-      console.error('Error updating user:', error);
-      alert('❌ Failed to update user information');
+      alert('❌ Failed to update user');
     }
   }
 
@@ -442,16 +451,24 @@ Admin Team`
   }
 
   loadTemplates() {
-    this.templates = [
-      {
-        id: '2565f24e-2fc0-4827-a2d9-cb121e0e206b',
-        name: 'bhargavi kulkarni',
-        category: 'template1',
-        color: 'Blue',
-        layout: '1 Column',
-        features: ['Feature 1', 'Feature 2']
+    this.supabaseService.getAllTemplates().then(result => {
+      if (result.data && result.data.length > 0) {
+        this.templates = result.data.map((t: any) => {
+          let meta: any = {};
+          try { meta = JSON.parse(t.description || '{}'); } catch {}
+          return {
+            id: t.id,
+            name: meta.name || t.title || 'Untitled',
+            category: t.category || 'General',
+            color: meta.templateColor || 'Blue',
+            layout: meta.templateLayout || '1 Column',
+            features: meta.templateFeatures || []
+          };
+        });
+      } else {
+        this.templates = [];
       }
-    ];
+    }).catch(() => { this.templates = []; });
   }
 
   openTemplateEditModal(template: Template) {

@@ -24,44 +24,29 @@ export class ResumeManagementComponent implements OnInit, OnDestroy {
   constructor(private supabase: SupabaseService) {}
 
   ngOnInit(): void {
-    console.log('[ResumeManagement] Component initialized');
     this.loadResumes();
-    
-    // Auto-refresh every 3 seconds
-    this.refreshInterval = setInterval(() => {
-      console.log('[ResumeManagement] Auto-refreshing resumes...');
-      this.loadResumes();
-    }, 3000);
   }
 
   ngOnDestroy(): void {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      console.log('[ResumeManagement] Auto-refresh stopped');
-    }
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
   }
 
   async loadResumes(): Promise<void> {
-    if (this.loading && this.resumes.length > 0) return;
-    
     this.loading = true;
     this.error = '';
-    console.log('[ResumeManagement] Loading resumes...');
-    
-    const { data, error } = await this.supabase.getAllResumes();
-    if (error) {
-      console.error('[ResumeManagement] Error loading resumes:', error);
-      this.error = 'Could not connect to Supabase. Check your connection.';
-    } else {
-      console.log('[ResumeManagement] Resumes loaded:', data?.length || 0);
+    try {
+      const { data } = await this.supabase.getAllResumes();
       this.resumes = (data || []).map((r: any) => ({
         ...r,
         user_email: r.users?.email || 'Unknown',
         user_name: r.users?.full_name || r.users?.email?.split('@')[0] || 'Unknown'
       }));
       this.applyFilters();
+    } catch {
+      this.error = 'Could not load resumes.';
+    } finally {
+      this.loading = false;
     }
-    this.loading = false;
   }
 
   applyFilters(): void {
@@ -99,12 +84,15 @@ export class ResumeManagementComponent implements OnInit, OnDestroy {
 
   async deleteResume(): Promise<void> {
     if (!this.confirmDeleteId) return;
-    const { error } = await this.supabase.deleteResume(this.confirmDeleteId);
-    if (!error) {
-      this.resumes = this.resumes.filter(r => r.id !== this.confirmDeleteId);
-      this.applyFilters();
-    }
+    const id = this.confirmDeleteId;
     this.confirmDeleteId = null;
+    const { error } = await this.supabase.deleteResume(id);
+    if (!error) {
+      this.resumes = this.resumes.filter(r => r.id !== id);
+      this.applyFilters();
+    } else {
+      alert('❌ Delete failed: ' + (error as any)?.message);
+    }
   }
 
   cancelDelete(): void {

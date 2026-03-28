@@ -42,14 +42,17 @@ export class SupabaseAuthService {
 
   constructor() {
     if (SupabaseAuthService.instance) {
-      return SupabaseAuthService.instance;
+      this.supabase = SupabaseAuthService.instance.supabase;
+      this.currentUserSubject = SupabaseAuthService.instance.currentUserSubject;
+      this.sessionSubject = SupabaseAuthService.instance.sessionSubject;
+      return;
     }
-    
+
     this.supabase = createClient(
       'https://kwlaqovlzhxghwtilxxu.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3bGFxb3Zsemh4Z2h3dGlseHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MjQ0MzMsImV4cCI6MjA3ODUwMDQzM30.L2jcB8zc2sN1GH3F9CNhKLbaD2jAFs_iGmcFSYA6vQA'
     );
-    
+
     SupabaseAuthService.instance = this;
     this.initializeAuth();
   }
@@ -72,64 +75,40 @@ export class SupabaseAuthService {
     });
   }
 
-  // Login with email and password
   async signIn(email: string, password: string) {
-    console.log('🔐 Login attempt:', { email, timestamp: new Date().toISOString() });
-    
-    const { data, error } = await this.supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    
+    const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
+
     if (error) {
-      console.error('❌ Login failed:', { email, error: error.message });
+      console.error('❌ Supabase signIn error:', error.message, '| status:', error.status);
     } else {
-      console.log('✅ Login successful:', { 
-        email, 
-        userId: data.user?.id,
-        timestamp: new Date().toISOString() 
-      });
-      
-      if (data.user) {
-        await this.ensureUserProfile(data.user);
-      }
+      console.log('✅ Supabase signIn success:', data.user?.email);
+      if (data.user) await this.ensureUserProfile(data.user);
     }
-    
+
     return { data, error };
   }
 
-  // Sign up with email and password
   async signUp(email: string, password: string) {
-    console.log('🔐 Sign up attempt:', { email, timestamp: new Date().toISOString() });
-    
-    const { data, error } = await this.supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/login`
-      }
-    });
-    
+    const { data, error } = await this.supabase.auth.signUp({ email, password });
+
     if (error) {
-      console.error('❌ Sign up failed:', { email, error: error.message });
-    } else {
-      console.log('✅ Sign up successful:', { 
-        email, 
-        userId: data.user?.id,
-        confirmed: data.user?.email_confirmed_at,
-        timestamp: new Date().toISOString() 
-      });
-      
-      if (data.user) {
-        await this.createUserProfileOnSignup(data.user);
-        
-        // Auto-login after signup if email confirmation is disabled
-        if (data.session) {
-          console.log('✅ User auto-logged in after signup');
-        }
+      console.error('❌ Sign up failed:', email, error.message);
+      return { data, error };
+    }
+
+    if (data.user) {
+      await this.createUserProfileOnSignup(data.user);
+    }
+
+    // If no session (email confirmation required), try signIn immediately
+    if (!data.session && data.user) {
+      const signInResult = await this.supabase.auth.signInWithPassword({ email, password });
+      if (!signInResult.error && signInResult.data.session) {
+        console.log('✅ Auto sign-in after signup success:', email);
+        return { data: signInResult.data, error: null };
       }
     }
-    
+
     return { data, error };
   }
 

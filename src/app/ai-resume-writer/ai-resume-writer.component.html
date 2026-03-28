@@ -1,0 +1,99 @@
+<div class="ai-writer-container">
+  <app-header [loggedIn]="true"></app-header>
+
+  <div class="page-content">
+    <!-- Hero Header -->
+    <div class="page-header">
+      <button class="back-btn" (click)="goBack()">← Back</button>
+      <div class="header-text">
+        <h1>🤖 AI Resume Writer</h1>
+        <p>Generate professional resume bullet points tailored to your job role</p>
+      </div>
+    </div>
+
+    <!-- Input Card -->
+    <div class="input-card">
+      <label class="input-label">Job Role</label>
+      <div class="input-row">
+        <input
+          type="text"
+          class="role-input"
+          [(ngModel)]="jobRole"
+          placeholder="e.g., Frontend Developer, Data Analyst, Product Manager..."
+          (keyup.enter)="generate()"
+        />
+        <button
+          class="generate-btn"
+          (click)="generate()"
+          [disabled]="isLoading || !jobRole.trim()">
+          <span *ngIf="!isLoading">✨ Generate</span>
+          <span *ngIf="isLoading" class="spinner-wrap">
+            <span class="spinner"></span> Generating...
+          </span>
+        </button>
+      </div>
+      <p class="hint">Try: Frontend Developer · Data Analyst · Backend Developer · Software Engineer · Product Manager</p>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="error-banner" *ngIf="errorMessage">
+      <span class="error-icon">⚠️</span>
+      <span class="error-text">{{ errorMessage }}</span>
+      <button class="error-dismiss" (click)="dismissError()">✕</button>
+    </div>
+
+    <!-- Info Banner (fallback notice) -->
+    <div class="info-banner" *ngIf="infoMessage">
+      <span class="info-icon">ℹ️</span>
+      <span class="info-text">{{ infoMessage }}</span>
+      <button class="info-dismiss" (click)="dismissInfo()">✕</button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="loading-spinner"></div>
+      <p>Crafting your professional bullet points...</p>
+    </div>
+
+    <!-- Results -->
+    <div class="results" *ngIf="sections.length && !isLoading">
+      <div class="results-header">
+        <h2>Resume Bullet Points for <span class="role-highlight">{{ jobRole }}</span></h2>
+        <button class="copy-all-btn" (click)="copyAll()">📋 Copy All</button>
+      </div>
+
+      <div class="sections-grid">
+        <div class="section-card" *ngFor="let section of sections; let si = index">
+          <div class="section-header">
+            <h3>{{ section.icon }} {{ section.title }}</h3>
+            <button class="copy-section-btn" (click)="copySection(section.points)" title="Copy section">📋</button>
+          </div>
+
+          <ul class="bullet-list">
+            <li *ngFor="let point of section.points; let pi = index" class="bullet-item">
+              <!-- View mode -->
+              <div class="bullet-view" *ngIf="!(editingIndex?.section === si && editingIndex?.point === pi)">
+                <span class="bullet-dot">•</span>
+                <span class="bullet-text">{{ point }}</span>
+                <button class="edit-btn" (click)="startEdit(si, pi)" title="Edit">✏️</button>
+              </div>
+              <!-- Edit mode -->
+              <div class="bullet-edit" *ngIf="editingIndex?.section === si && editingIndex?.point === pi">
+                <textarea class="edit-textarea" [(ngModel)]="editValue" rows="3"></textarea>
+                <div class="edit-actions">
+                  <button class="save-btn" (click)="saveEdit()">✅ Save</button>
+                  <button class="cancel-btn" (click)="cancelEdit()">✕ Cancel</button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Regenerate -->
+      <div class="regenerate-row">
+        <button class="regenerate-btn" (click)="generate()">🔄 Regenerate</button>
+      </div>
+    </div>
+  </div>
+</div>
