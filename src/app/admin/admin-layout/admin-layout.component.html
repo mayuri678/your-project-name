@@ -1,17 +1,8 @@
 <div class="admin-layout">
-  <!-- Header -->
-  <header class="admin-header">
-    <div class="header-left">
-      <h1>Admin Panel</h1>
-    </div>
-    <div class="header-right">
-      <div class="admin-info" *ngIf="currentAdmin">
-        <span class="admin-name">{{ currentAdmin.name }}</span>
-        <div class="admin-avatar">{{ currentAdmin.name.charAt(0) }}</div>
-        <button class="logout-btn" (click)="logout()">Logout</button>
-      </div>
-    </div>
-  </header>
+  <!-- Home Header -->
+  <div class="admin-header-wrap">
+    <app-header [loggedIn]="loggedIn"></app-header>
+  </div>
 
   <!-- Sidebar -->
   <nav class="sidebar">

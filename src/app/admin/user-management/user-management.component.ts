@@ -51,7 +51,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           role: 'user' as AdminUser['role'],
           isActive: true,
           createdAt: new Date(user.created_at),
-          lastLogin: user.updated_at ? new Date(user.updated_at) : undefined
+          lastLogin: user.last_active ? new Date(user.last_active) : (user.updated_at ? new Date(user.updated_at) : undefined)
         }));
       } else {
         this.users = [];
@@ -98,10 +98,12 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
 
   formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleString('en-IN', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   }
 

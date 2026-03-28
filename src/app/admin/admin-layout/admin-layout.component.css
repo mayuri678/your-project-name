@@ -10,16 +10,16 @@
   background-color: #f8fafc;
 }
 
-/* Header Styles */
+.admin-header-wrap {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+/* old .admin-header kept for reference but not used */
 .admin-header {
   grid-area: header;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header-left h1 {

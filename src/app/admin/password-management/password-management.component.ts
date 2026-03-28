@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe, TitleCasePipe, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
-import { PasswordHistoryService } from '../../services/password-history.service';
+import { PasswordHistoryService, PasswordChangeLog } from '../../services/password-history.service';
 
 interface User {
   id: string;
@@ -36,7 +36,7 @@ interface Template {
 @Component({
   selector: 'app-password-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DatePipe, TitleCasePipe, SlicePipe],
   templateUrl: './password-management.component.html',
   styleUrls: ['./password-management.component.css']
 })
@@ -55,6 +55,13 @@ export class PasswordManagementComponent implements OnInit {
   selectedUser: User | null = null;
   selectedTemplate: Template | null = null;
   isDarkMode = false;
+  showHistory = false;
+  passwordHistory: PasswordChangeLog[] = [];
+  filteredPasswordHistory: PasswordChangeLog[] = [];
+  historyEmailFilter = '';
+  historyTypeFilter = '';
+  historyUserChanges = 0;
+  historyAdminResets = 0;
   
   resetForm = {
     email: '',
@@ -114,7 +121,7 @@ Admin Team`
 
   constructor(
     private supabaseService: SupabaseService,
-    private passwordHistory: PasswordHistoryService
+    private passwordHistoryService: PasswordHistoryService
   ) {}
 
   ngOnInit() {
@@ -122,6 +129,7 @@ Admin Team`
     this.loadUsers();
     this.loadTemplates();
     this.loadPasswordRequests();
+    this.loadPasswordHistory();
     
     // Refresh every 30 seconds
     setInterval(() => {
@@ -139,7 +147,7 @@ Admin Team`
           email: user.email,
           phone: user.phone || user.contact_no || 'N/A',
           status: 'active' as 'active' | 'inactive',
-          lastLogin: new Date(user.updated_at || user.created_at)
+          lastLogin: new Date(user.last_active || user.updated_at || user.created_at)
         }));
       } else {
         this.users = [];
@@ -232,7 +240,7 @@ Admin Team`
         }
         
         await this.supabaseService.logPasswordChangeActivity(this.resetForm.email, 'admin_reset', 'admin@example.com');
-        this.passwordHistory.logPasswordChange({
+        this.passwordHistoryService.logPasswordChange({
           userId: request?.userId.toString() || '',
           userEmail: this.resetForm.email,
           userName: request?.userName || this.resetForm.email,
@@ -259,7 +267,7 @@ Admin Team`
         }
         
         await this.supabaseService.logPasswordChangeActivity(this.resetForm.email, 'admin_reset', 'admin@example.com');
-        this.passwordHistory.logPasswordChange({
+        this.passwordHistoryService.logPasswordChange({
           userId: request?.userId.toString() || '',
           userEmail: this.resetForm.email,
           userName: request?.userName || this.resetForm.email,
@@ -577,5 +585,41 @@ Admin Team`
   toggleDarkMode() {
     this.isDarkMode = !this.isDarkMode;
     localStorage.setItem('adminDarkMode', this.isDarkMode.toString());
+  }
+
+  async loadPasswordHistory(): Promise<void> {
+    const result = await this.supabaseService.getPasswordChangeHistory();
+    const supabaseLogs: PasswordChangeLog[] = (result.data || []).map((r: any) => ({
+      id: r.id?.toString(),
+      userId: r.user_id || '',
+      userEmail: r.email,
+      userName: r.email?.split('@')[0] || '',
+      changeType: r.change_type as 'change' | 'reset' | 'admin_reset',
+      changedBy: r.admin_email || r.email,
+      timestamp: new Date(r.changed_at)
+    }));
+    const localLogs = this.passwordHistoryService.getHistory().filter(l => !supabaseLogs.find(s => s.id === l.id));
+    this.passwordHistory = [...supabaseLogs, ...localLogs]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    this.applyHistoryFilter();
+  }
+
+  applyHistoryFilter(): void {
+    this.filteredPasswordHistory = this.passwordHistory.filter(log => {
+      const emailMatch = !this.historyEmailFilter || log.userEmail.toLowerCase().includes(this.historyEmailFilter.toLowerCase());
+      const typeMatch = !this.historyTypeFilter || log.changeType === this.historyTypeFilter;
+      return emailMatch && typeMatch;
+    });
+    this.historyUserChanges = this.passwordHistory.filter(l => l.changeType === 'change').length;
+    this.historyAdminResets = this.passwordHistory.filter(l => l.changeType === 'admin_reset').length;
+  }
+
+  getHistoryTypeLabel(type: string): string {
+    switch (type) {
+      case 'change': return 'User Change';
+      case 'reset': return 'Password Reset';
+      case 'admin_reset': return 'Admin Reset';
+      default: return type;
+    }
   }
 }

@@ -90,8 +90,8 @@ export class SupabaseService {
         // Add user to logged-in users list
         this.authService.addLoggedInUser(email, nameFromEmail);
 
-          // Ensure user exists in custom users table
-          await this.ensureUserInTable(result.data.session.user.id, email, nameFromEmail);
+          // Ensure user exists and update last_active in one call
+          await this.ensureUserInTable(result.data.session.user.id, email, nameFromEmail, true);
       } catch {}
     }
     return result;
@@ -182,18 +182,13 @@ export class SupabaseService {
   }
 
   // 🔹 Ensure user exists in custom users table
-  private async ensureUserInTable(userId: string, email: string, fullName: string): Promise<void> {
+  private async ensureUserInTable(userId: string, email: string, fullName: string, updateLastActive = false): Promise<void> {
     try {
-      console.log('🔍 Checking user in table:', { userId, email, fullName });
-      
-      // Check if user exists
       const { data: existingUser, error: selectError } = await this.supabase
         .from('users')
         .select('id')
         .eq('email', email)
         .maybeSingle();
-
-      console.log('🔍 User check result:', { existingUser, selectError });
 
       if (selectError) {
         console.error('❌ Error checking user:', selectError);
@@ -201,24 +196,20 @@ export class SupabaseService {
       }
 
       if (!existingUser) {
-        console.log('➕ User not found, creating new user...');
         const { data: newUser, error: insertError } = await this.supabase
           .from('users')
           .insert([{
             id: userId,
             email: email,
             full_name: fullName,
+            last_active: updateLastActive ? new Date().toISOString() : null,
             created_at: new Date().toISOString()
           }])
           .select()
           .single();
 
         if (insertError) {
-          console.error('❌ Error creating user:', insertError);
-          
-          // If insert fails due to conflict, try update
           if (insertError.code === '23505') {
-            console.log('🔄 User already exists (conflict), updating...');
             const { error: updateError } = await this.supabase
               .from('users')
               .update({ 
@@ -228,28 +219,17 @@ export class SupabaseService {
             
             if (updateError) {
               console.error('❌ Error updating user:', updateError);
-            } else {
-              console.log('✅ User updated in table:', email);
             }
           }
-        } else {
-          console.log('✅ User created successfully:', newUser);
         }
       } else {
-        console.log('ℹ️ User already exists, updating if needed...');
-        // User exists, update full_name if needed
+        const updates: any = { full_name: fullName };
+        if (updateLastActive) updates.last_active = new Date().toISOString();
         const { error: updateError } = await this.supabase
           .from('users')
-          .update({ 
-            full_name: fullName
-          })
+          .update(updates)
           .eq('id', userId);
-        
-        if (updateError) {
-          console.error('❌ Error updating user:', updateError);
-        } else {
-          console.log('✅ User updated in table:', email);
-        }
+        if (updateError) console.error('❌ Error updating user:', updateError);
       }
     } catch (error) {
       console.error('❌ Unexpected error in ensureUserInTable:', error);
